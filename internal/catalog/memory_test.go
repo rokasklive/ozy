@@ -1,0 +1,58 @@
+package catalog
+
+import (
+	"context"
+	"testing"
+)
+
+func TestMemory_EmptyStoreQueriesAreClean(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	m := NewMemory()
+
+	servers, err := m.Servers(ctx)
+	if err != nil {
+		t.Fatalf("Servers() error = %v", err)
+	}
+	if len(servers) != 0 {
+		t.Errorf("Servers() len = %d, want 0", len(servers))
+	}
+
+	tools, err := m.Tools(ctx)
+	if err != nil {
+		t.Fatalf("Tools() error = %v", err)
+	}
+	if len(tools) != 0 {
+		t.Errorf("Tools() len = %d, want 0", len(tools))
+	}
+
+	stats, err := m.Stats(ctx)
+	if err != nil {
+		t.Fatalf("Stats() error = %v", err)
+	}
+	if stats.IndexedTools != 0 || stats.ConfiguredServers != 0 {
+		t.Errorf("Stats() = %+v, want zero counts", stats)
+	}
+
+	if _, ok, err := m.GetTool(ctx, "atlassian.confluence_search"); err != nil || ok {
+		t.Errorf("GetTool() on empty store = (ok=%t, err=%v), want (false, nil)", ok, err)
+	}
+}
+
+func TestMemory_StatsCountFreshness(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	m := NewMemory()
+	m.PutServer(Server{ID: "atlassian", Status: ServerOnline})
+	m.PutTool(Tool{ToolRef: "atlassian.a", ServerID: "atlassian", Freshness: FreshnessFresh})
+	m.PutTool(Tool{ToolRef: "atlassian.b", ServerID: "atlassian", Freshness: FreshnessStale})
+
+	stats, err := m.Stats(ctx)
+	if err != nil {
+		t.Fatalf("Stats() error = %v", err)
+	}
+	want := Stats{ConfiguredServers: 1, IndexedTools: 2, FreshTools: 1, StaleTools: 1}
+	if stats != want {
+		t.Errorf("Stats() = %+v, want %+v", stats, want)
+	}
+}

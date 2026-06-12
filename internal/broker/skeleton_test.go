@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 func newBroker(t *testing.T) (Broker, *catalog.Memory) {

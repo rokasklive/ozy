@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/rokask/ozy/internal/catalog"
+	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
+
+	"github.com/rokasklive/ozy/internal/catalog"
 )
 
 const cfgWithSecret = `{
@@ -30,6 +33,34 @@ const cfgWithSecret = `{
     }
   }
 }`
+
+func TestMain(m *testing.M) {
+	if os.Getenv("OZY_TEST_MCP_SERVER") == "1" {
+		os.Exit(runTestMCPServer())
+	}
+	os.Exit(m.Run())
+}
+
+func runTestMCPServer() int {
+	server := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "ozy-test-mcp", Version: "0"}, nil)
+	mcpsdk.AddTool(server, &mcpsdk.Tool{
+		Name:        "fixture_search",
+		Title:       "Fixture Search",
+		Description: "Search fixture data",
+		InputSchema: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"query": map[string]any{"type": "string"},
+			},
+		},
+	}, func(context.Context, *mcpsdk.CallToolRequest, map[string]any) (*mcpsdk.CallToolResult, any, error) {
+		return &mcpsdk.CallToolResult{}, nil, nil
+	})
+	if err := server.Run(context.Background(), &mcpsdk.StdioTransport{}); err != nil {
+		return 1
+	}
+	return 0
+}
 
 func run(args ...string) (stdout, stderr string, code int) {
 	var out, errBuf bytes.Buffer
@@ -245,6 +276,118 @@ func TestInitWritesLoadableConfig(t *testing.T) {
 	}
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("init did not write config: %v", err)
+	}
+}
+
+func TestInitWritesDefaultUserConfigFile(t *testing.T) {
+	xdg := filepath.Join(t.TempDir(), "xdg")
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	t.Setenv("OZY_CONFIG", "")
+	t.Chdir(t.TempDir())
+	if err := os.WriteFile("ozy.jsonc", []byte(`{"mcp":{}}`), 0o644); err != nil {
+		t.Fatalf("write project-local config: %v", err)
+	}
+
+	out, _, code := run("init")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0\n%s", code, out)
+	}
+	path := filepath.Join(xdg, "ozy", "ozy.jsonc")
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("init did not write default user config: %v", err)
+	}
+	if info.Mode().Perm() != 0o600 {
+		t.Fatalf("config mode = %o, want 600", info.Mode().Perm())
+	}
+	if _, err := os.Stat("ozy.jsonc"); err != nil {
+		t.Fatalf("project-local config should remain untouched: %v", err)
+	}
+}
+
+func TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(t *testing.T) {
+	catalogPath := filepath.Join(t.TempDir(), "catalog.json")
+	t.Setenv("OZY_CATALOG", catalogPath)
+	cfgPath := writeCfg(t, fmt.Sprintf(`{
+  "mcp": {
+    "fixture": {
+      "type": "local",
+      "command": [%q],
+      "environment": {"OZY_TEST_MCP_SERVER": "1"},
+      "timeout": 5000
+    }
+  }
+}`, os.Args[0]))
+
+	out, _, code := run("--config", cfgPath, "--format", "json", "index")
+	if code != 0 {
+		t.Fatalf("index exit code = %d, want 0\n%s", code, out)
+	}
+	var indexPayload struct {
+		OK             bool `json:"ok"`
+		ServersReached int  `json:"serversReached"`
+		ToolsIndexed   int  `json:"toolsIndexed"`
+	}
+	if err := json.Unmarshal([]byte(out), &indexPayload); err != nil {
+		t.Fatalf("index output is not valid JSON: %v\n%s", err, out)
+	}
+	if !indexPayload.OK || indexPayload.ServersReached != 1 || indexPayload.ToolsIndexed != 1 {
+		t.Fatalf("index payload = %+v, want one reached server and one tool", indexPayload)
+	}
+
+	out, _, code = run("--config", cfgPath, "--format", "json", "list")
+	if code != 0 {
+		t.Fatalf("list exit code = %d, want 0\n%s", code, out)
+	}
+	var listPayload struct {
+		Tools []struct {
+			ToolRef   string `json:"toolRef"`
+			ServerID  string `json:"serverId"`
+			Freshness string `json:"freshness"`
+		} `json:"tools"`
+	}
+	if err := json.Unmarshal([]byte(out), &listPayload); err != nil {
+		t.Fatalf("list output is not valid JSON: %v\n%s", err, out)
+	}
+	if len(listPayload.Tools) != 1 || listPayload.Tools[0].ToolRef != "fixture.fixture_search" ||
+		listPayload.Tools[0].ServerID != "fixture" || listPayload.Tools[0].Freshness != "fresh" {
+		t.Fatalf("list payload = %+v, want indexed fixture tool", listPayload)
+	}
+
+	out, _, code = run("--config", cfgPath, "--format", "json", "describe", "fixture.fixture_search")
+	if code != 0 {
+		t.Fatalf("describe exit code = %d, want 0\n%s", code, out)
+	}
+	var describePayload struct {
+		ToolRef     string         `json:"toolRef"`
+		InputSchema map[string]any `json:"inputSchema"`
+		Status      struct {
+			CatalogFreshness string `json:"catalogFreshness"`
+			ServerStatus     string `json:"serverStatus"`
+		} `json:"status"`
+	}
+	if err := json.Unmarshal([]byte(out), &describePayload); err != nil {
+		t.Fatalf("describe output is not valid JSON: %v\n%s", err, out)
+	}
+	if describePayload.ToolRef != "fixture.fixture_search" ||
+		describePayload.InputSchema["type"] != "object" ||
+		describePayload.Status.CatalogFreshness != "fresh" ||
+		describePayload.Status.ServerStatus != "online" {
+		t.Fatalf("describe payload = %+v, want fixture schema/status", describePayload)
+	}
+
+	out, _, code = run("--config", cfgPath, "--format", "json", "search", "fixture search")
+	if code != 0 {
+		t.Fatalf("search exit code = %d, want 0\n%s", code, out)
+	}
+	var searchPayload struct {
+		Decision string `json:"decision"`
+	}
+	if err := json.Unmarshal([]byte(out), &searchPayload); err != nil {
+		t.Fatalf("search output is not valid JSON: %v\n%s", err, out)
+	}
+	if searchPayload.Decision == "catalog_empty" {
+		t.Fatalf("search decision = catalog_empty, want populated catalog decision")
 	}
 }
 

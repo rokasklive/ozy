@@ -14,8 +14,8 @@ import (
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/rokask/ozy/internal/broker"
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/broker"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 // Adapter serves the Ozy MCP tools by delegating to a shared broker.

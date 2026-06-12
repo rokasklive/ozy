@@ -1,16 +1,16 @@
 # Graph Report - ozy  (2026-06-12)
 
 ## Corpus Check
-- 53 files · ~29,514 words
+- 59 files · ~34,710 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 682 nodes · 918 edges · 50 communities (47 shown, 3 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 43 edges (avg confidence: 0.8)
+- 772 nodes · 1061 edges · 56 communities (53 shown, 3 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 53 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ba9f08b9`
+- Built from commit: `4866e1e0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -65,18 +65,24 @@
 - [[_COMMUNITY_Community 47|Community 47]]
 - [[_COMMUNITY_Community 48|Community 48]]
 - [[_COMMUNITY_Community 49|Community 49]]
+- [[_COMMUNITY_Community 50|Community 50]]
+- [[_COMMUNITY_Community 51|Community 51]]
+- [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 53|Community 53]]
+- [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Config` - 26 edges
+1. `Config` - 31 edges
 2. `SPEC.md — Ozy Living Specification` - 25 edges
-3. `Connector` - 19 edges
+3. `Connector` - 20 edges
 4. `File` - 15 edges
-5. `Adapter` - 14 edges
-6. `run()` - 13 edges
-7. `newBroker()` - 12 edges
-8. `Memory` - 12 edges
-9. `T` - 12 edges
-10. `Daemon` - 12 edges
+5. `run()` - 15 edges
+6. `T` - 14 edges
+7. `Adapter` - 14 edges
+8. `NewMemory()` - 13 edges
+9. `newBroker()` - 12 edges
+10. `Memory` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `Execute()`  [INFERRED]
@@ -93,19 +99,19 @@
 ## Import Cycles
 - None detected.
 
-## Communities (50 total, 3 thin omitted)
+## Communities (56 total, 3 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
-Nodes (29): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_StatsCountFreshness(), Daemon, New(), NewWithStore(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore() (+21 more)
+Nodes (32): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_StatsCountFreshness(), Daemon, New(), NewWithStore(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore() (+24 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (28): Execute(), run(), TestCallStructuredFailureExitsNonZero(), TestDoctorDoesNotLeakSecret(), TestDoctorReportsMissingEnv(), TestDoctorReportsServerHealthAndRedactsSecrets(), TestEvalReturnsNotImplemented(), TestHelpListsAllCommands() (+20 more)
+Cohesion: 0.13
+Nodes (14): Execute(), Daemon, app, Command, Error, Writer, Writer, T (+6 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.08
-Nodes (33): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, cloneConfig(), cloneServerConfig(), configError() (+25 more)
+Cohesion: 0.07
+Nodes (37): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, cloneConfig(), cloneServerConfig(), cloneStringMap() (+29 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.07
@@ -121,19 +127,19 @@ Nodes (17): CallToolRequest, Error, ErrorEnvelope, NewErrorEnvelope(), NotImplem
 
 ### Community 6 - "Community 6"
 Cohesion: 0.16
-Nodes (19): Client, Connector, configError(), connectionError(), scrub(), secretValues(), WithMaxConcurrency(), headerRoundTripper (+11 more)
+Nodes (20): Client, Connector, configError(), connectionError(), isOAuthAuthFailure(), scrub(), secretValues(), WithMaxConcurrency() (+12 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.14
 Nodes (18): skeleton, NewSkeleton(), CallResult, CatalogStats, ClientSession, DescribeResult, FindResult, Broker (+10 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.16
-Nodes (20): Cmd, Connection, hasEnv(), inMemoryFactory(), resultsByID(), TestConnector_ConnectionErrorExcludesSecretValues(), TestConnector_ConnectsInMemoryServerAndListsTools(), TestConnector_DisabledServersAreSkipped() (+12 more)
+Cohesion: 0.14
+Nodes (24): Cmd, Connection, blockingTransport, hasEnv(), inMemoryFactory(), resultsByID(), TestConnector_ConnectionErrorExcludesSecretValues(), TestConnector_ConnectsInMemoryServerAndListsTools() (+16 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.17
-Nodes (16): Connector, New(), normalizeSchema(), normalizeTool(), WithClock(), Indexer, Option, Summary (+8 more)
+Cohesion: 0.16
+Nodes (19): Connector, New(), normalizeSchema(), normalizeTool(), scrub(), secretValues(), WithClock(), Indexer (+11 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.18
@@ -144,8 +150,8 @@ Cohesion: 0.12
 Nodes (16): 11. Configuration model, 12. Refresh and freshness behavior, 13. Token economy requirements, 15. CLI contract, 16. Security and privacy boundaries, 17. Observability and diagnostics, 1. Purpose of this document, 20. Accepted architectural baseline (+8 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.12
-Nodes (15): MODIFIED Requirements, Scenario: JSONC comments and trailing commas are accepted, Scenario: Loading a valid JSONC configuration, Scenario: Local server without a command is rejected, Scenario: Remote server without a url is rejected, Scenario: Unknown server type is rejected, Requirement: Configuration discovery and loading, Requirement: Configuration validation (+7 more)
+Cohesion: 0.15
+Nodes (16): MODIFIED Requirements, Scenario: JSONC comments and trailing commas are accepted, Scenario: Loading a valid JSONC configuration, Scenario: Local server without a command is rejected, Scenario: Remote server without a url is rejected, Scenario: Unknown server type is rejected, MODIFIED Requirements, Requirement: Configuration discovery and loading (+8 more)
 
 ### Community 13 - "Community 13"
 Cohesion: 0.13
@@ -164,8 +170,8 @@ Cohesion: 0.13
 Nodes (14): daemon-runtime, Purpose, Requirements, Requirement: Catalog store interface placeholder, Requirement: Daemon lifecycle, Requirement: Graceful degradation of optional subsystems, Requirement: Shared in-process broker seam, Scenario: Catalog store seam is present (+6 more)
 
 ### Community 17 - "Community 17"
-Cohesion: 0.25
-Nodes (4): asError(), app, Command, Error
+Cohesion: 0.21
+Nodes (5): asError(), WriteStarter(), app, Command, Error
 
 ### Community 18 - "Community 18"
 Cohesion: 0.14
@@ -180,8 +186,8 @@ Cohesion: 0.14
 Nodes (13): ADDED Requirements, Requirement: Discover tools via tools/list, Requirement: Discovered tools carry freshness and runtime status, Requirement: List and describe reflect discovered tools, Requirement: `ozy index` populates the catalog, Requirement: Stable toolRef normalization, Scenario: A discovered tool gets a stable toolRef, Scenario: A freshly indexed tool is marked fresh (+5 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.15
-Nodes (12): ADDED Requirements, Requirement: Configuration discovery and loading, Requirement: Configuration validation, Requirement: Environment reference resolution, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, Scenario: Explicit config path override, Scenario: Invalid configuration is rejected with a structured error (+4 more)
+Cohesion: 0.19
+Nodes (13): ADDED Requirements, ADDED Requirements, Requirement: Configuration discovery and loading, Requirement: Configuration validation, Requirement: Environment reference resolution, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, Scenario: Explicit config path override (+5 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.15
@@ -192,12 +198,12 @@ Cohesion: 0.33
 Nodes (6): Memory, Context, RWMutex, Server, Stats, Tool
 
 ### Community 24 - "Community 24"
-Cohesion: 0.17
-Nodes (11): ADDED Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Output formats, Requirement: Structured handling of unimplemented operations, Scenario: All MVP commands are registered, Scenario: CLI routes through the shared broker, Scenario: Command-specific help (+3 more)
+Cohesion: 0.21
+Nodes (12): ADDED Requirements, ADDED Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Output formats, Requirement: Structured handling of unimplemented operations, Scenario: All MVP commands are registered, Scenario: CLI routes through the shared broker (+4 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.33
-Nodes (10): TestDefaultPathPrecedence(), TestLoad_MissingEnvVarIsDiagnostic(), TestLoad_MissingFile(), TestLoad_ValidationErrorsNameServerAndField(), TestLoad_ValidJSONCWithOpencodeMCPShape(), TestRedacted_HidesResolvedSecretsAndShowsEnvRefs(), TestWriteStarter(), writeTemp() (+2 more)
+Cohesion: 0.26
+Nodes (16): ConfigHome(), configHomeFor(), DefaultPath(), Home(), TestConfigHomeFallbacks(), TestDefaultPathPrecedence(), TestLoad_ExampleMCPFixture(), TestLoad_MissingEnvVarIsDiagnostic() (+8 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.17
@@ -283,25 +289,49 @@ Nodes (3): 5.1 Included in MVP, 5.2 Excluded from MVP, 5. Current MVP scope
 Cohesion: 0.67
 Nodes (3): 6.1 Main components, 6.2 Adapter paths, 6. System model
 
+### Community 50 - "Community 50"
+Cohesion: 0.08
+Nodes (23): Requirement: Configuration initialization writes to user config home, Requirement: Opencode MCP section compatibility, Scenario: Default timeout is applied, Scenario: Enabled defaults to true, Scenario: Enabled false disables server, Scenario: Example fixture loads successfully, Scenario: Init honors explicit config override, Scenario: Init refuses to overwrite config (+15 more)
+
+### Community 51 - "Community 51"
+Cohesion: 0.28
+Nodes (19): run(), runTestMCPServer(), TestCallStructuredFailureExitsNonZero(), TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(), TestDoctorDoesNotLeakSecret(), TestDoctorReportsMissingEnv(), TestDoctorReportsServerHealthAndRedactsSecrets(), TestEvalReturnsNotImplemented() (+11 more)
+
+### Community 52 - "Community 52"
+Cohesion: 0.18
+Nodes (10): Context, D1: Make config-home resolution explicit in `internal/config`, D2: `ozy init` writes only to the resolved config path, D3: Match opencode `mcp` section shape, not full opencode config, D4: Add deterministic CLI acceptance coverage plus opt-in real-server check, Decisions, Goals / Non-Goals, Migration Plan (+2 more)
+
+### Community 53 - "Community 53"
+Cohesion: 0.29
+Nodes (6): Requirement: CLI exposes tools from explicit MCP configuration, Scenario: Describing an indexed tool from the CLI, Scenario: Indexing tools from the example config, Scenario: Listing indexed tools from the CLI, Scenario: Search uses the populated catalog, ADDED Requirements
+
+### Community 54 - "Community 54"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 55 - "Community 55"
+Cohesion: 0.33
+Nodes (5): 1. Config Home Resolution, 2. Init And Opencode MCP Compatibility, 3. Downstream Timeout Handling, 4. CLI Tool Resolution From Config, 5. Documentation And Verification
+
 ## Knowledge Gaps
-- **285 isolated node(s):** `Broker`, `CatalogStats`, `FindResult`, `DescribeResult`, `CallResult` (+280 more)
+- **324 isolated node(s):** `Broker`, `CatalogStats`, `FindResult`, `DescribeResult`, `CallResult` (+319 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `NewFile()` connect `Community 10` to `Community 0`, `Community 1`, `Community 14`?**
-  _High betweenness centrality (0.069) - this node is a cross-community bridge._
-- **Why does `New()` connect `Community 0` to `Community 10`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **Why does `NewWithStore()` connect `Community 0` to `Community 7`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `NewFile()` connect `Community 10` to `Community 0`, `Community 51`, `Community 14`?**
+  _High betweenness centrality (0.110) - this node is a cross-community bridge._
+- **Why does `NewErrorEnvelope()` connect `Community 5` to `Community 1`?**
+  _High betweenness centrality (0.105) - this node is a cross-community bridge._
+- **Why does `run()` connect `Community 51` to `Community 1`?**
+  _High betweenness centrality (0.100) - this node is a cross-community bridge._
 - **What connects `Broker`, `CatalogStats`, `FindResult` to the rest of the system?**
-  _285 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _324 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08076923076923077 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07575757575757576 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12987012987012986 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.07936507936507936 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07200929152148665 - nodes in this community are weakly interconnected._

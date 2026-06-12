@@ -2,15 +2,17 @@ package index
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/config"
-	"github.com/rokask/ozy/internal/contract"
-	"github.com/rokask/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/downstream"
 )
 
 type fakeConnector struct {
@@ -31,6 +33,15 @@ func (f fakeSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsd
 }
 
 func (fakeSession) Close() error { return nil }
+
+type blockingSession struct{}
+
+func (blockingSession) ListTools(ctx context.Context, _ *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
+	<-ctx.Done()
+	return nil, ctx.Err()
+}
+
+func (blockingSession) Close() error { return nil }
 
 func TestIndexer_NormalizesDiscoveredTools(t *testing.T) {
 	t.Parallel()
@@ -131,5 +142,61 @@ func TestIndexer_NoReachableServersIsInstructional(t *testing.T) {
 	}
 	if summary.AgentInstruction == "" {
 		t.Fatal("no-reachable-server summary must be instructional")
+	}
+}
+
+func TestIndexer_PerServerTimeoutCancelsListTools(t *testing.T) {
+	t.Parallel()
+	indexer := New(catalog.NewMemory(), fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "slow",
+			Session:  blockingSession{},
+		},
+	}})
+
+	summary := indexer.Run(context.Background(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"slow": {Type: "remote", URL: "memory", Enabled: true, Timeout: 1},
+		},
+	})
+
+	if summary.OK {
+		t.Fatal("summary.OK = true, want false when only server times out")
+	}
+	if len(summary.Errors) != 1 || summary.Errors[0].Type != contract.ErrTypeDownstreamCallFailed {
+		t.Fatalf("summary errors = %+v, want one downstream call failure", summary.Errors)
+	}
+	if !strings.Contains(summary.Errors[0].Message, context.DeadlineExceeded.Error()) {
+		t.Fatalf("timeout error = %q, want deadline exceeded", summary.Errors[0].Message)
+	}
+}
+
+func TestIndexer_ListToolsErrorRedactsConfiguredSecrets(t *testing.T) {
+	t.Parallel()
+	const secret = "supersecretvalue"
+	indexer := New(catalog.NewMemory(), fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "remote",
+			Session:  fakeSession{err: errors.New("tools/list failed with " + secret)},
+		},
+	}})
+
+	summary := indexer.Run(context.Background(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"remote": {
+				Type:        "remote",
+				URL:         "memory",
+				Enabled:     true,
+				Headers:     map[string]string{"Authorization": "Bearer " + secret},
+				Environment: map[string]string{"TOKEN": secret},
+			},
+		},
+	})
+
+	if len(summary.Errors) != 1 {
+		t.Fatalf("summary errors = %+v, want one error", summary.Errors)
+	}
+	if strings.Contains(summary.Errors[0].Message, secret) {
+		t.Fatalf("ListTools error leaked secret: %+v", summary.Errors[0])
 	}
 }

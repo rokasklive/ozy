@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
 )
 
 func TestNew_WiresBrokerAndStore(t *testing.T) {

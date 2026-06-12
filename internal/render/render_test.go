@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 func TestOutput_JSONIsSingleDocument(t *testing.T) {

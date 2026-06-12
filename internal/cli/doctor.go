@@ -8,10 +8,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/config"
-	"github.com/rokask/ozy/internal/contract"
-	"github.com/rokask/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/downstream"
 )
 
 func (a *app) doctorCmd() *cobra.Command {

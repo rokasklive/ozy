@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"github.com/rokask/ozy/internal/cli"
+	"github.com/rokasklive/ozy/internal/cli"
 )
 
 func main() {

@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/rokask/ozy/internal/config"
-	"github.com/rokask/ozy/internal/contract"
-	"github.com/rokask/ozy/internal/daemon"
-	"github.com/rokask/ozy/internal/render"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/daemon"
+	"github.com/rokasklive/ozy/internal/render"
 )
 
 // Version is the build version reported by `ozy --version` and the MCP adapter.

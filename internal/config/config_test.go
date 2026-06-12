@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 const validJSONC = `{
@@ -60,7 +60,7 @@ func TestLoad_ValidJSONCWithOpencodeMCPShape(t *testing.T) {
 		t.Fatalf("Load() error = %v", cerr)
 	}
 	remote := loaded.Resolved.MCP["atlassian"]
-	if remote.Type != "remote" || remote.URL != "https://mcp.example.com/v1/mcp" || !remote.Enabled {
+	if remote.Type != "remote" || remote.URL != "https://mcp.example.com/v1/mcp" || !remote.IsEnabled() {
 		t.Errorf("remote server = %+v, want resolved remote server", remote)
 	}
 	if remote.Headers["Authorization"] != "Bearer s3cret" {
@@ -162,29 +162,147 @@ func TestRedacted_HidesResolvedSecretsAndShowsEnvRefs(t *testing.T) {
 
 func TestDefaultPathPrecedence(t *testing.T) {
 	t.Setenv("OZY_CONFIG", "")
-	t.Chdir(t.TempDir())
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	xdg := filepath.Join(t.TempDir(), "xdg")
+	t.Setenv("XDG_CONFIG_HOME", xdg)
 
-	if got := DefaultPath(); filepath.Base(got) != "ozy.jsonc" || strings.Contains(got, ".yaml") {
-		t.Fatalf("DefaultPath() = %q, want user config ozy.jsonc fallback", got)
+	wantDefault := filepath.Join(xdg, "ozy", "ozy.jsonc")
+	if got := Home(); got != filepath.Join(xdg, "ozy") {
+		t.Fatalf("Home() = %q, want %q", got, filepath.Join(xdg, "ozy"))
+	}
+	if got := DefaultPath(); got != wantDefault {
+		t.Fatalf("DefaultPath() = %q, want user config path %q", got, wantDefault)
 	}
 
 	if err := os.WriteFile("ozy.json", []byte(`{}`), 0o644); err != nil {
 		t.Fatalf("write ozy.json: %v", err)
 	}
-	if got := DefaultPath(); got != "ozy.json" {
-		t.Fatalf("DefaultPath() = %q, want ./ozy.json", got)
+	if got := DefaultPath(); got != wantDefault {
+		t.Fatalf("DefaultPath() = %q, want project-local files ignored in favor of %q", got, wantDefault)
 	}
 
 	if err := os.WriteFile("ozy.jsonc", []byte(`{}`), 0o644); err != nil {
 		t.Fatalf("write ozy.jsonc: %v", err)
 	}
-	if got := DefaultPath(); got != "ozy.jsonc" {
-		t.Fatalf("DefaultPath() = %q, want ./ozy.jsonc", got)
+	if got := DefaultPath(); got != wantDefault {
+		t.Fatalf("DefaultPath() = %q, want project-local files ignored in favor of %q", got, wantDefault)
 	}
 
 	t.Setenv("OZY_CONFIG", "/tmp/custom-ozy.jsonc")
 	if got := DefaultPath(); got != "/tmp/custom-ozy.jsonc" {
 		t.Fatalf("DefaultPath() = %q, want env override", got)
+	}
+}
+
+func TestConfigHomeFallbacks(t *testing.T) {
+	t.Setenv("OZY_CONFIG", "")
+	t.Setenv("XDG_CONFIG_HOME", "")
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	if got, want := Home(), filepath.Join(home, ".config", "ozy"); got != want {
+		t.Fatalf("Home() = %q, want %q", got, want)
+	}
+	if got := configHomeFor("windows", "", "C:\\Users\\Ada\\AppData\\Roaming"); got != filepath.Join("C:\\Users\\Ada\\AppData\\Roaming", "ozy") {
+		t.Fatalf("windows configHomeFor() = %q, want roaming config dir plus ozy", got)
+	}
+}
+
+func TestLoad_OpencodeMCPSectionCompatibility(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{
+  "mcp": {
+    "local": {
+      "type": "local",
+      "command": ["npx", "-y", "my-mcp"],
+      "cwd": "/tmp/workspace",
+      "environment": {"TOKEN": "{env:LOCAL_TOKEN}"}
+    },
+    "remote": {
+      "type": "remote",
+      "url": "https://mcp.example.com",
+      "headers": {"Authorization": "Bearer {env:REMOTE_TOKEN}"},
+      "oauth": {
+        "clientId": "{env:CLIENT_ID}",
+        "clientSecret": "{env:CLIENT_SECRET}",
+        "scope": "tools:read"
+      },
+      "enabled": false,
+      "timeout": 10000
+    },
+    "api-key": {
+      "type": "remote",
+      "url": "https://api-key.example.com/mcp",
+      "oauth": false
+    },
+    "old-server": {
+      "enabled": false
+    }
+  },
+  "agent": {"ignored": true},
+  "tools": {"ignored": false}
+}`)
+	t.Setenv("LOCAL_TOKEN", "local-secret")
+	t.Setenv("REMOTE_TOKEN", "remote-secret")
+
+	loaded, cerr := Load(path)
+	if cerr != nil {
+		t.Fatalf("Load() error = %v", cerr)
+	}
+
+	local := loaded.Resolved.MCP["local"]
+	if !local.IsEnabled() {
+		t.Fatal("local server omitted enabled, want enabled by default")
+	}
+	if local.CWD != "/tmp/workspace" {
+		t.Fatalf("local CWD = %q, want /tmp/workspace", local.CWD)
+	}
+	if local.Timeout != DefaultDiscoveryTimeoutMillis {
+		t.Fatalf("local Timeout = %d, want default %d", local.Timeout, DefaultDiscoveryTimeoutMillis)
+	}
+
+	remote := loaded.Resolved.MCP["remote"]
+	if remote.IsEnabled() {
+		t.Fatal("remote enabled=false, want disabled")
+	}
+	if remote.Headers["Authorization"] != "Bearer remote-secret" {
+		t.Fatalf("remote Authorization = %q, want resolved header", remote.Headers["Authorization"])
+	}
+	if remote.Timeout != 10000 {
+		t.Fatalf("remote Timeout = %d, want 10000", remote.Timeout)
+	}
+	if !strings.Contains(string(remote.OAuth), `"clientId"`) {
+		t.Fatalf("remote OAuth = %s, want preserved object", remote.OAuth)
+	}
+
+	apiKey := loaded.Resolved.MCP["api-key"]
+	if !apiKey.IsEnabled() {
+		t.Fatal("api-key server omitted enabled, want enabled by default")
+	}
+	if string(apiKey.OAuth) != "false" {
+		t.Fatalf("api-key OAuth = %s, want false", apiKey.OAuth)
+	}
+	if loaded.Resolved.MCP["old-server"].IsEnabled() {
+		t.Fatal("old-server enabled=false without type, want disabled compatibility entry")
+	}
+}
+
+func TestLoad_ExampleMCPFixture(t *testing.T) {
+	loaded, cerr := Load(filepath.Join("..", "..", "examples", "test_mcp_examples.jsonc"))
+	if cerr != nil {
+		t.Fatalf("Load(example fixture) error = %v", cerr)
+	}
+	for _, id := range []string{"searxng", "javadoc", "opengrok"} {
+		server := loaded.Resolved.MCP[id]
+		if server.Type != "local" || !server.IsEnabled() || len(server.Command) == 0 {
+			t.Fatalf("server %s = %+v, want enabled local server with command", id, server)
+		}
+		if len(server.Environment) == 0 {
+			t.Fatalf("server %s environment = %+v, want preserved environment map", id, server.Environment)
+		}
+	}
+	if got := loaded.Resolved.MCP["javadoc"].Timeout; got != 180000 {
+		t.Fatalf("javadoc timeout = %d, want 180000", got)
 	}
 }
 

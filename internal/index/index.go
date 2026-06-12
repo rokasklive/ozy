@@ -13,10 +13,10 @@ import (
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/config"
-	"github.com/rokask/ozy/internal/contract"
-	"github.com/rokask/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/downstream"
 )
 
 // Connector is the downstream dependency used by the indexer.
@@ -122,15 +122,23 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 			continue
 		}
 
+		server := config.ServerConfig{}
+		if cfg != nil {
+			server = cfg.MCP[result.ServerID]
+		}
 		summary.ServersReached++
 		i.recordServer(ctx, summary, result.ServerID, catalog.ServerOnline)
-		i.indexSession(ctx, summary, result.ServerID, result.Session)
+		i.indexSession(ctx, summary, result.ServerID, server, result.Session)
 		_ = result.Session.Close()
 	}
-	if summary.ServersReached == 0 {
+	switch {
+	case summary.ServersReached == 0:
 		summary.OK = false
 		summary.AgentInstruction = "No configured downstream server was reachable. Review the per-server errors, run `ozy doctor`, then retry `ozy index` after repairing configuration or connectivity."
-	} else if len(summary.Errors) > 0 {
+	case summary.ToolsIndexed == 0 && len(summary.Errors) > 0:
+		summary.OK = false
+		summary.AgentInstruction = "No downstream tools were indexed. Review the per-server errors, run `ozy doctor`, then retry `ozy index` after repairing configuration or connectivity."
+	case len(summary.Errors) > 0:
 		summary.AgentInstruction = "Some servers failed, but reachable servers were indexed. Use `ozy list` or `ozy describe` for indexed tools and repair failed servers separately."
 	}
 	return summary
@@ -149,15 +157,17 @@ func (i *Indexer) recordServer(ctx context.Context, summary *Summary, serverID s
 	}
 }
 
-func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID string, session downstream.Session) {
-	list, err := session.ListTools(ctx, nil)
+func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID string, server config.ServerConfig, session downstream.Session) {
+	listCtx, cancel := context.WithTimeout(ctx, server.DiscoveryTimeout())
+	defer cancel()
+	list, err := session.ListTools(listCtx, nil)
 	if err != nil {
 		summary.ServersFailed++
 		summary.Errors = append(summary.Errors, contract.Error{
 			Type:             contract.ErrTypeDownstreamCallFailed,
 			ServerID:         serverID,
 			Retryable:        true,
-			Message:          fmt.Sprintf("tools/list failed: %v", err),
+			Message:          fmt.Sprintf("tools/list failed: %v", scrub(err.Error(), server)),
 			AgentInstruction: "Check the downstream server health and retry indexing.",
 		})
 		return
@@ -187,6 +197,27 @@ func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID s
 		}
 		summary.ToolsIndexed++
 	}
+}
+
+func scrub(msg string, server config.ServerConfig) string {
+	for _, secret := range secretValues(server) {
+		if secret == "" || strings.Contains(secret, "{env:") {
+			continue
+		}
+		msg = strings.ReplaceAll(msg, secret, "****")
+	}
+	return msg
+}
+
+func secretValues(server config.ServerConfig) []string {
+	values := make([]string, 0, len(server.Headers)+len(server.Environment))
+	for _, v := range server.Headers {
+		values = append(values, v)
+	}
+	for _, v := range server.Environment {
+		values = append(values, v)
+	}
+	return values
 }
 
 func normalizeTool(serverID string, tool *mcpsdk.Tool, now time.Time) (catalog.Tool, error) {

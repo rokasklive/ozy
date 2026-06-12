@@ -12,11 +12,17 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
+	"time"
 
 	"github.com/tailscale/hujson"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
+
+// DefaultDiscoveryTimeoutMillis matches opencode's default MCP tool discovery
+// timeout when a server entry omits `timeout`.
+const DefaultDiscoveryTimeoutMillis = 5000
 
 // Config is the typed JSONC configuration model. Downstream MCP servers live in
 // MCP, while Ozy-owned sections remain top-level siblings.
@@ -33,10 +39,68 @@ type Config struct {
 type ServerConfig struct {
 	Type        string            `json:"type"`
 	Command     []string          `json:"command,omitempty"`
+	CWD         string            `json:"cwd,omitempty"`
 	Environment map[string]string `json:"environment,omitempty"`
 	URL         string            `json:"url,omitempty"`
 	Headers     map[string]string `json:"headers,omitempty"`
+	OAuth       json.RawMessage   `json:"oauth,omitempty"`
 	Enabled     bool              `json:"enabled"`
+	Timeout     int               `json:"timeout,omitempty"`
+}
+
+type serverConfigJSON struct {
+	Type        string            `json:"type"`
+	Command     []string          `json:"command"`
+	CWD         string            `json:"cwd"`
+	Environment map[string]string `json:"environment"`
+	URL         string            `json:"url"`
+	Headers     map[string]string `json:"headers"`
+	OAuth       json.RawMessage   `json:"oauth"`
+	Enabled     *bool             `json:"enabled"`
+	Timeout     *int              `json:"timeout"`
+}
+
+// UnmarshalJSON applies opencode MCP defaults: omitted `enabled` means enabled,
+// and omitted `timeout` means the documented 5000ms discovery timeout.
+func (s *ServerConfig) UnmarshalJSON(data []byte) error {
+	var raw serverConfigJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	enabled := true
+	if raw.Enabled != nil {
+		enabled = *raw.Enabled
+	}
+	timeout := DefaultDiscoveryTimeoutMillis
+	if raw.Timeout != nil {
+		timeout = *raw.Timeout
+	}
+	*s = ServerConfig{
+		Type:        raw.Type,
+		Command:     append([]string(nil), raw.Command...),
+		CWD:         raw.CWD,
+		Environment: cloneStringMap(raw.Environment),
+		URL:         raw.URL,
+		Headers:     cloneStringMap(raw.Headers),
+		OAuth:       append(json.RawMessage(nil), raw.OAuth...),
+		Enabled:     enabled,
+		Timeout:     timeout,
+	}
+	return nil
+}
+
+// IsEnabled reports whether Ozy should connect to this server.
+func (s ServerConfig) IsEnabled() bool {
+	return s.Enabled
+}
+
+// DiscoveryTimeout returns the per-server total discovery budget.
+func (s ServerConfig) DiscoveryTimeout() time.Duration {
+	timeout := s.Timeout
+	if timeout <= 0 {
+		timeout = DefaultDiscoveryTimeoutMillis
+	}
+	return time.Duration(timeout) * time.Millisecond
 }
 
 // EmbeddingConfig configures the optional embedding worker.
@@ -104,22 +168,40 @@ type Loaded struct {
 
 var envRefPattern = regexp.MustCompile(`\{env:([A-Za-z_][A-Za-z0-9_]*)\}`)
 
+// Home returns Ozy's user config directory.
+func Home() string {
+	if runtime.GOOS != "windows" {
+		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+			return configHomeFor(runtime.GOOS, xdg, "")
+		}
+		if home, err := os.UserHomeDir(); err == nil && home != "" {
+			return filepath.Join(home, ".config", "ozy")
+		}
+	}
+	dir, err := os.UserConfigDir()
+	if err != nil || dir == "" {
+		return "ozy"
+	}
+	return configHomeFor(runtime.GOOS, "", dir)
+}
+
+func configHomeFor(goos, xdgConfigHome, userConfigDir string) string {
+	if goos != "windows" && xdgConfigHome != "" {
+		return filepath.Join(xdgConfigHome, "ozy")
+	}
+	if userConfigDir == "" {
+		return "ozy"
+	}
+	return filepath.Join(userConfigDir, "ozy")
+}
+
 // DefaultPath returns the default configuration location, honoring OZY_CONFIG
-// before project-local ozy.jsonc/ozy.json and then the user config dir.
+// before the OS user config directory.
 func DefaultPath() string {
 	if p := os.Getenv("OZY_CONFIG"); p != "" {
 		return p
 	}
-	for _, p := range []string{"ozy.jsonc", "ozy.json"} {
-		if _, err := os.Stat(p); err == nil {
-			return p
-		}
-	}
-	dir, err := os.UserConfigDir()
-	if err != nil {
-		return "ozy.jsonc"
-	}
-	return filepath.Join(dir, "ozy", "ozy.jsonc")
+	return filepath.Join(Home(), "ozy.jsonc")
 }
 
 // Load reads, parses, validates, and resolves configuration at path. A missing
@@ -179,6 +261,9 @@ func unmarshalJSONC(data []byte, dst any) error {
 // first offending server and field.
 func validate(c *Config) *contract.Error {
 	for id, s := range c.MCP {
+		if !s.IsEnabled() && s.Type == "" {
+			continue
+		}
 		switch s.Type {
 		case "local":
 			if len(s.Command) == 0 || s.Command[0] == "" {
@@ -258,17 +343,19 @@ func cloneConfig(in Config) Config {
 func cloneServerConfig(in ServerConfig) ServerConfig {
 	out := in
 	out.Command = append([]string(nil), in.Command...)
-	if in.Environment != nil {
-		out.Environment = make(map[string]string, len(in.Environment))
-		for k, v := range in.Environment {
-			out.Environment[k] = v
-		}
+	out.Environment = cloneStringMap(in.Environment)
+	out.Headers = cloneStringMap(in.Headers)
+	out.OAuth = append(json.RawMessage(nil), in.OAuth...)
+	return out
+}
+
+func cloneStringMap(in map[string]string) map[string]string {
+	if in == nil {
+		return nil
 	}
-	if in.Headers != nil {
-		out.Headers = make(map[string]string, len(in.Headers))
-		for k, v := range in.Headers {
-			out.Headers[k] = v
-		}
+	out := make(map[string]string, len(in))
+	for k, v := range in {
+		out[k] = v
 	}
 	return out
 }

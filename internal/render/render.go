@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 // Normalize maps a raw format flag to a known format, defaulting unknown or empty

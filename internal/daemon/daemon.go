@@ -12,6 +12,7 @@ import (
 	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/downstream"
 )
 
 // Daemon holds the runtime wiring shared by the CLI and MCP adapter.
@@ -35,10 +36,14 @@ func New(cfg *config.Loaded) (*Daemon, error) {
 // NewWithStore constructs a daemon with an injected store. It keeps tests and
 // focused in-memory callers from touching the user's durable catalog.
 func NewWithStore(cfg *config.Loaded, store catalog.Store) *Daemon {
+	var resolved *config.Config
+	if cfg != nil {
+		resolved = cfg.Resolved
+	}
 	return &Daemon{
 		cfg:    cfg,
 		store:  store,
-		broker: broker.NewSkeleton(store),
+		broker: broker.NewLive(store, resolved, downstream.New()),
 	}
 }
 

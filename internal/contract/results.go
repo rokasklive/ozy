@@ -60,6 +60,18 @@ type Alternative struct {
 	Reason  string `json:"reason,omitempty"`
 }
 
+// Candidate is a live-discovered downstream tool surfaced in a findTool
+// choose_from_candidates response. Each candidate carries enough metadata for an
+// agent to select and call describeTool.
+type Candidate struct {
+	ToolRef            string         `json:"toolRef"`
+	ServerID           string         `json:"serverId"`
+	DownstreamToolName string         `json:"name"`
+	Title              string         `json:"title,omitempty"`
+	Description        string         `json:"description,omitempty"`
+	InputSchema        map[string]any `json:"inputSchema,omitempty"`
+}
+
 // FindResult is the findTool response (SPEC.md §9.1). It is a decision, not just
 // a list, and is always instructional.
 type FindResult struct {
@@ -69,6 +81,8 @@ type FindResult struct {
 	Confidence          string         `json:"confidence,omitempty"`
 	Reason              string         `json:"reason,omitempty"`
 	Selected            *SelectedTool  `json:"selected,omitempty"`
+	Candidates          []Candidate    `json:"candidates,omitempty"`
+	Errors              []Error        `json:"errors,omitempty"`
 	CatalogStats        *CatalogStats  `json:"catalogStats,omitempty"`
 	NextAction          *NextAction    `json:"nextAction,omitempty"`
 	LikelyFollowupTools []FollowupTool `json:"likelyFollowupTools,omitempty"`

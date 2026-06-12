@@ -104,14 +104,16 @@ func TestSearchJSONIsSingleDocument(t *testing.T) {
 	t.Setenv("OZY_TEST_TOKEN", "x")
 	out, _, code := run("--config", path, "--format", "json", "search", "find internal docs")
 	if code != 0 {
-		t.Fatalf("exit code = %d, want 0 (catalog_empty is a valid decision)", code)
+		t.Fatalf("exit code = %d, want 0 (findTool decisions are not errors)", code)
 	}
 	var payload map[string]any
 	if err := json.Unmarshal([]byte(out), &payload); err != nil {
 		t.Fatalf("output is not one JSON document: %v\n%s", err, out)
 	}
-	if payload["decision"] != "catalog_empty" {
-		t.Errorf("decision = %v, want catalog_empty", payload["decision"])
+	decision := payload["decision"]
+	// Live discovery: unreachable servers produce known_but_unavailable, not catalog_empty.
+	if decision != "known_but_unavailable" && decision != "catalog_empty" {
+		t.Errorf("decision = %v, want known_but_unavailable or catalog_empty", decision)
 	}
 }
 
@@ -263,8 +265,8 @@ func TestListDescribeAndSearchUsePersistedCatalog(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &searchPayload); err != nil {
 		t.Fatalf("search output is not valid JSON: %v\n%s", err, out)
 	}
-	if searchPayload.Decision != "no_good_match" {
-		t.Fatalf("search decision = %q, want no_good_match", searchPayload.Decision)
+	if searchPayload.Decision != "known_but_unavailable" {
+		t.Fatalf("search decision = %q, want known_but_unavailable (live discovery without reachable servers)", searchPayload.Decision)
 	}
 }
 

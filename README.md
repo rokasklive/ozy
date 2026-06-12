@@ -11,9 +11,10 @@ full product specification.
 
 > **Status:** early implementation. Ozy can load `ozy.jsonc`, connect to
 > configured downstream MCP servers, run `ozy index`, and persist discovered
-> tool metadata for offline `list` and `describe`. Search ranking and brokered
-> invocation are still pending; `search` returns `no_good_match` once the catalog
-> is non-empty and `call` remains live-gated.
+> tool metadata for offline `list` and `describe`. `findTool` performs live
+> downstream tool discovery via `tools/list` on each call and returns all
+> discovered tools to the agent — no pre-indexing required. Search ranking
+> and brokered invocation are still pending; `call` remains live-gated.
 
 ## Build
 
@@ -118,6 +119,56 @@ ensure the commands in `examples/test_mcp_examples.jsonc` are available and run:
 ```bash
 OZY_RUN_REAL_MCP_EXAMPLES=1 make check-real-mcp-examples
 ```
+
+## Using Ozy as an MCP server
+
+Ozy can be configured as an MCP server in opencode or any MCP-compatible agent
+harness. An agent that connects to Ozy sees exactly three tools (`findTool`,
+`describeTool`, `callTool`) and can discover all downstream tools by calling
+`findTool` — no `ozy index` required beforehand.
+
+### Minimal opencode configuration
+
+Add Ozy to your opencode `mcp.json` (or equivalent MCP client config):
+
+```jsonc
+{
+  "mcp": {
+    "ozy": {
+      "type": "local",
+      "command": ["ozy", "mcp"],
+      "cwd": "/path/to/your/project"
+    }
+  }
+}
+```
+
+Ozy reads its own downstream server list from `~/.config/ozy/ozy.jsonc` (or
+`$OZY_CONFIG`). On startup `ozy mcp` loads this config once; when an agent
+calls `findTool`, Ozy connects to every enabled downstream server, calls
+`tools/list`, and returns the complete live-discovered tool list as
+`choose_from_candidates` with stable `toolRef`s (e.g.
+`atlassian.confluence_search`). The agent can then call `describeTool` for
+a tool's full schema.
+
+### Quick start
+
+```bash
+# 1. Scaffold a config (one-time)
+ozy init
+
+# 2. Edit ~/.config/ozy/ozy.jsonc to declare your downstream MCP servers
+#    (copy-paste from your existing opencode mcp.json entries)
+
+# 3. Verify configuration
+ozy doctor
+
+# 4. Run the MCP adapter (open-code or other harness connects to this)
+ozy mcp
+```
+
+All three Ozy tools are advertised immediately; `findTool` discovers downstream
+tools live without requiring `ozy index`.
 
 ## Agent interface
 

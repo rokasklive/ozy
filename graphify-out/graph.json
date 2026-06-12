@@ -4,6 +4,69 @@
   "graph": {},
   "nodes": [
     {
+      "label": "ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L1",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z",
+      "community": 60,
+      "norm_label": "ses_142c43b83ffeinqeyoxsakty2z.json"
+    },
+    {
+      "label": "sessionID",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L2",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sessionid",
+      "community": 60,
+      "norm_label": "sessionid"
+    },
+    {
+      "label": "updatedAt",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L3",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_updatedat",
+      "community": 60,
+      "norm_label": "updatedat"
+    },
+    {
+      "label": "sources",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L4",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources",
+      "community": 60,
+      "norm_label": "sources"
+    },
+    {
+      "label": "background-task",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L5",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources_background_task",
+      "community": 60,
+      "norm_label": "background-task"
+    },
+    {
+      "label": "state",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L6",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_background_task_state",
+      "community": 60,
+      "norm_label": "state"
+    },
+    {
+      "label": "updatedAt",
+      "file_type": "code",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L7",
+      "id": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_background_task_updatedat",
+      "community": 60,
+      "norm_label": "updatedat"
+    },
+    {
       "label": "main.go",
       "file_type": "code",
       "source_file": "cmd/ozy/main.go",
@@ -29,6 +92,501 @@
       "id": "broker_broker",
       "community": 49,
       "norm_label": "broker"
+    },
+    {
+      "label": "live",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L23",
+      "id": "broker_live",
+      "community": 31,
+      "norm_label": "live"
+    },
+    {
+      "label": "Connector",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L16",
+      "id": "broker_connector",
+      "community": 31,
+      "norm_label": "connector"
+    },
+    {
+      "label": "skeleton",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L24",
+      "id": "skeleton",
+      "community": 31,
+      "norm_label": "skeleton"
+    },
+    {
+      "label": "Config",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L25",
+      "id": "internal_broker_live_go_config",
+      "community": 31,
+      "norm_label": "config"
+    },
+    {
+      "label": "NewLive()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "id": "broker_live_newlive",
+      "community": 31,
+      "norm_label": "newlive()"
+    },
+    {
+      "label": "Store",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "id": "internal_broker_live_go_store",
+      "community": 31,
+      "norm_label": "store"
+    },
+    {
+      "label": "Broker",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "id": "internal_broker_live_go_broker",
+      "community": 31,
+      "norm_label": "broker"
+    },
+    {
+      "label": ".FindTool()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L40",
+      "id": "broker_live_findtool",
+      "community": 31,
+      "norm_label": ".findtool()"
+    },
+    {
+      "label": "Context",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L40",
+      "id": "internal_broker_live_go_context",
+      "community": 31,
+      "norm_label": "context"
+    },
+    {
+      "label": "FindResult",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L40",
+      "id": "internal_broker_live_go_findresult",
+      "community": 31,
+      "norm_label": "findresult"
+    },
+    {
+      "label": ".DescribeTool()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L144",
+      "id": "broker_live_describetool",
+      "community": 31,
+      "norm_label": ".describetool()"
+    },
+    {
+      "label": "DescribeResult",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L144",
+      "id": "internal_broker_live_go_describeresult",
+      "community": 31,
+      "norm_label": "describeresult"
+    },
+    {
+      "label": ".CallTool()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L148",
+      "id": "broker_live_calltool",
+      "community": 31,
+      "norm_label": ".calltool()"
+    },
+    {
+      "label": "CallResult",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L148",
+      "id": "internal_broker_live_go_callresult",
+      "community": 31,
+      "norm_label": "callresult"
+    },
+    {
+      "label": ".List()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L152",
+      "id": "broker_live_list",
+      "community": 31,
+      "norm_label": ".list()"
+    },
+    {
+      "label": "ListResult",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L152",
+      "id": "internal_broker_live_go_listresult",
+      "community": 31,
+      "norm_label": "listresult"
+    },
+    {
+      "label": ".serverConfig()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L156",
+      "id": "broker_live_serverconfig",
+      "community": 31,
+      "norm_label": ".serverconfig()"
+    },
+    {
+      "label": "ServerConfig",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L156",
+      "id": "internal_broker_live_go_serverconfig",
+      "community": 31,
+      "norm_label": "serverconfig"
+    },
+    {
+      "label": ".listSessionTools()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "id": "broker_live_listsessiontools",
+      "community": 31,
+      "norm_label": ".listsessiontools()"
+    },
+    {
+      "label": "Session",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "id": "internal_broker_live_go_session",
+      "community": 31,
+      "norm_label": "session"
+    },
+    {
+      "label": "Tool",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "id": "internal_broker_live_go_tool",
+      "community": 31,
+      "norm_label": "tool"
+    },
+    {
+      "label": "Error",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "id": "internal_broker_live_go_error",
+      "community": 31,
+      "norm_label": "error"
+    },
+    {
+      "label": ".normalizeCandidate()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L177",
+      "id": "broker_live_normalizecandidate",
+      "community": 31,
+      "norm_label": ".normalizecandidate()"
+    },
+    {
+      "label": "Candidate",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L177",
+      "id": "candidate",
+      "community": 31,
+      "norm_label": "candidate"
+    },
+    {
+      "label": "normalizeInputSchema()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L189",
+      "id": "broker_live_normalizeinputschema",
+      "community": 31,
+      "norm_label": "normalizeinputschema()"
+    },
+    {
+      "label": "candidateRefs()",
+      "file_type": "code",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L201",
+      "id": "broker_live_candidaterefs",
+      "community": 31,
+      "norm_label": "candidaterefs()"
+    },
+    {
+      "label": "live_test.go",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L1",
+      "id": "broker_live_test",
+      "community": 25,
+      "norm_label": "live_test.go"
+    },
+    {
+      "label": "fakeConnector",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L16",
+      "id": "broker_fakeconnector",
+      "community": 25,
+      "norm_label": "fakeconnector"
+    },
+    {
+      "label": "Result",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L17",
+      "id": "internal_broker_live_test_go_result",
+      "community": 25,
+      "norm_label": "result"
+    },
+    {
+      "label": ".ConnectAll()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "id": "broker_fakeconnector_connectall",
+      "community": 25,
+      "norm_label": ".connectall()"
+    },
+    {
+      "label": "Context",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "id": "internal_broker_live_test_go_context",
+      "community": 25,
+      "norm_label": "context"
+    },
+    {
+      "label": "Config",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "id": "internal_broker_live_test_go_config",
+      "community": 25,
+      "norm_label": "config"
+    },
+    {
+      "label": "fakeSession",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L24",
+      "id": "broker_fakesession",
+      "community": 25,
+      "norm_label": "fakesession"
+    },
+    {
+      "label": "Tool",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L25",
+      "id": "internal_broker_live_test_go_tool",
+      "community": 25,
+      "norm_label": "tool"
+    },
+    {
+      "label": ".ListTools()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "id": "broker_fakesession_listtools",
+      "community": 25,
+      "norm_label": ".listtools()"
+    },
+    {
+      "label": "ListToolsParams",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "id": "internal_broker_live_test_go_listtoolsparams",
+      "community": 25,
+      "norm_label": "listtoolsparams"
+    },
+    {
+      "label": "ListToolsResult",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "id": "internal_broker_live_test_go_listtoolsresult",
+      "community": 25,
+      "norm_label": "listtoolsresult"
+    },
+    {
+      "label": ".Close()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L33",
+      "id": "broker_fakesession_close",
+      "community": 25,
+      "norm_label": ".close()"
+    },
+    {
+      "label": "failingSession",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L35",
+      "id": "broker_failingsession",
+      "community": 25,
+      "norm_label": "failingsession"
+    },
+    {
+      "label": ".ListTools()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L37",
+      "id": "broker_failingsession_listtools",
+      "community": 25,
+      "norm_label": ".listtools()"
+    },
+    {
+      "label": ".Close()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L41",
+      "id": "broker_failingsession_close",
+      "community": 25,
+      "norm_label": ".close()"
+    },
+    {
+      "label": "newLiveBroker()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "id": "broker_live_test_newlivebroker",
+      "community": 25,
+      "norm_label": "newlivebroker()"
+    },
+    {
+      "label": "T",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "id": "internal_broker_live_test_go_t",
+      "community": 25,
+      "norm_label": "t"
+    },
+    {
+      "label": "Connector",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "id": "connector",
+      "community": 25,
+      "norm_label": "connector"
+    },
+    {
+      "label": "Broker",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "id": "internal_broker_live_test_go_broker",
+      "community": 25,
+      "norm_label": "broker"
+    },
+    {
+      "label": "TestFindTool_LiveDiscoveryReturnsChooseFromCandidates()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L48",
+      "id": "broker_live_test_testfindtool_livediscoveryreturnschoosefromcandidates",
+      "community": 25,
+      "norm_label": "testfindtool_livediscoveryreturnschoosefromcandidates()"
+    },
+    {
+      "label": "TestFindTool_LiveDiscoveryZeroTools()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L120",
+      "id": "broker_live_test_testfindtool_livediscoveryzerotools",
+      "community": 25,
+      "norm_label": "testfindtool_livediscoveryzerotools()"
+    },
+    {
+      "label": "TestFindTool_PartialServerFailure()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L144",
+      "id": "broker_live_test_testfindtool_partialserverfailure",
+      "community": 25,
+      "norm_label": "testfindtool_partialserverfailure()"
+    },
+    {
+      "label": "TestFindTool_TotalDownstreamFailure()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L193",
+      "id": "broker_live_test_testfindtool_totaldownstreamfailure",
+      "community": 25,
+      "norm_label": "testfindtool_totaldownstreamfailure()"
+    },
+    {
+      "label": "TestFindTool_NoConfiguredServers()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L236",
+      "id": "broker_live_test_testfindtool_noconfiguredservers",
+      "community": 25,
+      "norm_label": "testfindtool_noconfiguredservers()"
+    },
+    {
+      "label": "TestFindTool_DisabledServersAreSkipped()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L249",
+      "id": "broker_live_test_testfindtool_disabledserversareskipped",
+      "community": 25,
+      "norm_label": "testfindtool_disabledserversareskipped()"
+    },
+    {
+      "label": "TestFindTool_SessionListToolsFails()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L267",
+      "id": "broker_live_test_testfindtool_sessionlisttoolsfails",
+      "community": 25,
+      "norm_label": "testfindtool_sessionlisttoolsfails()"
+    },
+    {
+      "label": "TestLiveBroker_PreservesDescribeCallPlaceholders()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L291",
+      "id": "broker_live_test_testlivebroker_preservesdescribecallplaceholders",
+      "community": 25,
+      "norm_label": "testlivebroker_preservesdescribecallplaceholders()"
+    },
+    {
+      "label": "contains()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L313",
+      "id": "broker_live_test_contains",
+      "community": 51,
+      "norm_label": "contains()"
+    },
+    {
+      "label": "searchSubstring()",
+      "file_type": "code",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L317",
+      "id": "broker_live_test_searchsubstring",
+      "community": 25,
+      "norm_label": "searchsubstring()"
     },
     {
       "label": "skeleton",
@@ -107,7 +665,7 @@
       "file_type": "code",
       "source_file": "internal/broker/skeleton.go",
       "source_location": "L39",
-      "id": "findresult",
+      "id": "internal_broker_skeleton_go_findresult",
       "community": 7,
       "norm_label": "findresult"
     },
@@ -125,7 +683,7 @@
       "file_type": "code",
       "source_file": "internal/broker/skeleton.go",
       "source_location": "L61",
-      "id": "describeresult",
+      "id": "internal_broker_skeleton_go_describeresult",
       "community": 7,
       "norm_label": "describeresult"
     },
@@ -143,7 +701,7 @@
       "file_type": "code",
       "source_file": "internal/broker/skeleton.go",
       "source_location": "L90",
-      "id": "callresult",
+      "id": "internal_broker_skeleton_go_callresult",
       "community": 7,
       "norm_label": "callresult"
     },
@@ -161,7 +719,7 @@
       "file_type": "code",
       "source_file": "internal/broker/skeleton.go",
       "source_location": "L112",
-      "id": "listresult",
+      "id": "internal_broker_skeleton_go_listresult",
       "community": 7,
       "norm_label": "listresult"
     },
@@ -171,7 +729,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L1",
       "id": "broker_skeleton_test",
-      "community": 31,
+      "community": 7,
       "norm_label": "skeleton_test.go"
     },
     {
@@ -180,7 +738,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L12",
       "id": "broker_skeleton_test_newbroker",
-      "community": 31,
+      "community": 7,
       "norm_label": "newbroker()"
     },
     {
@@ -189,7 +747,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L12",
       "id": "internal_broker_skeleton_test_go_t",
-      "community": 31,
+      "community": 7,
       "norm_label": "t"
     },
     {
@@ -198,7 +756,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L12",
       "id": "internal_broker_skeleton_test_go_broker",
-      "community": 31,
+      "community": 7,
       "norm_label": "broker"
     },
     {
@@ -207,7 +765,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L12",
       "id": "memory",
-      "community": 31,
+      "community": 7,
       "norm_label": "memory"
     },
     {
@@ -216,7 +774,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L18",
       "id": "broker_skeleton_test_testfindtool_emptycatalogreturnscatalogempty",
-      "community": 31,
+      "community": 7,
       "norm_label": "testfindtool_emptycatalogreturnscatalogempty()"
     },
     {
@@ -225,7 +783,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L37",
       "id": "broker_skeleton_test_testfindtool_nonemptycatalogreturnsnogoodmatch",
-      "community": 31,
+      "community": 7,
       "norm_label": "testfindtool_nonemptycatalogreturnsnogoodmatch()"
     },
     {
@@ -234,7 +792,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L56",
       "id": "broker_skeleton_test_testdescribetool_unknownreturnstoolnotfound",
-      "community": 31,
+      "community": 7,
       "norm_label": "testdescribetool_unknownreturnstoolnotfound()"
     },
     {
@@ -243,7 +801,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L73",
       "id": "broker_skeleton_test_testcalltool_knowntoolreturnsnotimplemented",
-      "community": 31,
+      "community": 7,
       "norm_label": "testcalltool_knowntoolreturnsnotimplemented()"
     },
     {
@@ -252,7 +810,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L96",
       "id": "broker_skeleton_test_testcalltool_unknowntoolreturnstoolnotfound",
-      "community": 31,
+      "community": 7,
       "norm_label": "testcalltool_unknowntoolreturnstoolnotfound()"
     },
     {
@@ -261,7 +819,7 @@
       "source_file": "internal/broker/skeleton_test.go",
       "source_location": "L110",
       "id": "broker_skeleton_test_testlist_emptycatalogisinstructional",
-      "community": 31,
+      "community": 7,
       "norm_label": "testlist_emptycatalogisinstructional()"
     },
     {
@@ -880,7 +1438,7 @@
       "label": "TestEvalReturnsNotImplemented()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L118",
+      "source_location": "L120",
       "id": "cli_cli_test_testevalreturnsnotimplemented",
       "community": 51,
       "norm_label": "testevalreturnsnotimplemented()"
@@ -889,7 +1447,7 @@
       "label": "TestIndexNoReachableServerReturnsInstructionalSummary()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L144",
+      "source_location": "L146",
       "id": "cli_cli_test_testindexnoreachableserverreturnsinstructionalsummary",
       "community": 51,
       "norm_label": "testindexnoreachableserverreturnsinstructionalsummary()"
@@ -898,7 +1456,7 @@
       "label": "TestCallStructuredFailureExitsNonZero()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L170",
+      "source_location": "L172",
       "id": "cli_cli_test_testcallstructuredfailureexitsnonzero",
       "community": 51,
       "norm_label": "testcallstructuredfailureexitsnonzero()"
@@ -907,7 +1465,7 @@
       "label": "TestListDescribeAndSearchUsePersistedCatalog()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L186",
+      "source_location": "L188",
       "id": "cli_cli_test_testlistdescribeandsearchusepersistedcatalog",
       "community": 51,
       "norm_label": "testlistdescribeandsearchusepersistedcatalog()"
@@ -916,7 +1474,7 @@
       "label": "TestInitWritesLoadableConfig()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L271",
+      "source_location": "L273",
       "id": "cli_cli_test_testinitwritesloadableconfig",
       "community": 51,
       "norm_label": "testinitwritesloadableconfig()"
@@ -925,7 +1483,7 @@
       "label": "TestInitWritesDefaultUserConfigFile()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L282",
+      "source_location": "L284",
       "id": "cli_cli_test_testinitwritesdefaultuserconfigfile",
       "community": 51,
       "norm_label": "testinitwritesdefaultuserconfigfile()"
@@ -934,7 +1492,7 @@
       "label": "TestCLIIndexesAndExposesToolsFromExplicitMCPConfig()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L308",
+      "source_location": "L310",
       "id": "cli_cli_test_testcliindexesandexposestoolsfromexplicitmcpconfig",
       "community": 51,
       "norm_label": "testcliindexesandexposestoolsfromexplicitmcpconfig()"
@@ -943,7 +1501,7 @@
       "label": "TestDoctorReportsServerHealthAndRedactsSecrets()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L394",
+      "source_location": "L396",
       "id": "cli_cli_test_testdoctorreportsserverhealthandredactssecrets",
       "community": 51,
       "norm_label": "testdoctorreportsserverhealthandredactssecrets()"
@@ -952,7 +1510,7 @@
       "label": "TestDoctorDoesNotLeakSecret()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L426",
+      "source_location": "L428",
       "id": "cli_cli_test_testdoctordoesnotleaksecret",
       "community": 51,
       "norm_label": "testdoctordoesnotleaksecret()"
@@ -961,7 +1519,7 @@
       "label": "TestDoctorReportsMissingEnv()",
       "file_type": "code",
       "source_file": "internal/cli/cli_test.go",
-      "source_location": "L439",
+      "source_location": "L441",
       "id": "cli_cli_test_testdoctorreportsmissingenv",
       "community": 51,
       "norm_label": "testdoctorreportsmissingenv()"
@@ -1431,7 +1989,7 @@
       "source_file": "internal/config/config.go",
       "source_location": "L172",
       "id": "config_config_home",
-      "community": 25,
+      "community": 2,
       "norm_label": "home()"
     },
     {
@@ -1440,7 +1998,7 @@
       "source_file": "internal/config/config.go",
       "source_location": "L188",
       "id": "config_config_confighomefor",
-      "community": 25,
+      "community": 2,
       "norm_label": "confighomefor()"
     },
     {
@@ -1449,7 +2007,7 @@
       "source_file": "internal/config/config.go",
       "source_location": "L200",
       "id": "config_config_defaultpath",
-      "community": 25,
+      "community": 2,
       "norm_label": "defaultpath()"
     },
     {
@@ -1548,7 +2106,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L1",
       "id": "config_config_test",
-      "community": 25,
+      "community": 51,
       "norm_label": "config_test.go"
     },
     {
@@ -1557,7 +2115,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L44",
       "id": "config_config_test_writetemp",
-      "community": 25,
+      "community": 51,
       "norm_label": "writetemp()"
     },
     {
@@ -1566,7 +2124,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L44",
       "id": "internal_config_config_test_go_t",
-      "community": 25,
+      "community": 51,
       "norm_label": "t"
     },
     {
@@ -1575,7 +2133,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L53",
       "id": "config_config_test_testload_validjsoncwithopencodemcpshape",
-      "community": 25,
+      "community": 51,
       "norm_label": "testload_validjsoncwithopencodemcpshape()"
     },
     {
@@ -1584,7 +2142,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L81",
       "id": "config_config_test_testload_missingfile",
-      "community": 25,
+      "community": 51,
       "norm_label": "testload_missingfile()"
     },
     {
@@ -1593,7 +2151,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L91",
       "id": "config_config_test_testload_missingenvvarisdiagnostic",
-      "community": 25,
+      "community": 51,
       "norm_label": "testload_missingenvvarisdiagnostic()"
     },
     {
@@ -1602,7 +2160,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L109",
       "id": "config_config_test_testload_validationerrorsnameserverandfield",
-      "community": 25,
+      "community": 51,
       "norm_label": "testload_validationerrorsnameserverandfield()"
     },
     {
@@ -1611,7 +2169,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L144",
       "id": "config_config_test_testredacted_hidesresolvedsecretsandshowsenvrefs",
-      "community": 25,
+      "community": 51,
       "norm_label": "testredacted_hidesresolvedsecretsandshowsenvrefs()"
     },
     {
@@ -1620,7 +2178,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L163",
       "id": "config_config_test_testdefaultpathprecedence",
-      "community": 25,
+      "community": 2,
       "norm_label": "testdefaultpathprecedence()"
     },
     {
@@ -1629,7 +2187,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L198",
       "id": "config_config_test_testconfighomefallbacks",
-      "community": 25,
+      "community": 2,
       "norm_label": "testconfighomefallbacks()"
     },
     {
@@ -1638,7 +2196,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L212",
       "id": "config_config_test_testload_opencodemcpsectioncompatibility",
-      "community": 25,
+      "community": 51,
       "norm_label": "testload_opencodemcpsectioncompatibility()"
     },
     {
@@ -1647,7 +2205,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L290",
       "id": "config_config_test_testload_examplemcpfixture",
-      "community": 25,
+      "community": 51,
       "norm_label": "testload_examplemcpfixture()"
     },
     {
@@ -1656,7 +2214,7 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L309",
       "id": "config_config_test_testwritestarter",
-      "community": 25,
+      "community": 51,
       "norm_label": "testwritestarter()"
     },
     {
@@ -1867,19 +2425,37 @@
       "norm_label": "alternative"
     },
     {
+      "label": "Candidate",
+      "file_type": "code",
+      "source_file": "internal/contract/results.go",
+      "source_location": "L66",
+      "id": "contract_candidate",
+      "community": 4,
+      "norm_label": "candidate"
+    },
+    {
       "label": "FindResult",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L65",
+      "source_location": "L77",
       "id": "contract_findresult",
       "community": 4,
       "norm_label": "findresult"
     },
     {
+      "label": "Error",
+      "file_type": "code",
+      "source_file": "internal/contract/results.go",
+      "source_location": "L85",
+      "id": "internal_contract_results_go_error",
+      "community": 4,
+      "norm_label": "error"
+    },
+    {
       "label": ".Render()",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L81",
+      "source_location": "L95",
       "id": "contract_findresult_render",
       "community": 4,
       "norm_label": ".render()"
@@ -1888,7 +2464,7 @@
       "label": "Example",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L103",
+      "source_location": "L117",
       "id": "contract_example",
       "community": 4,
       "norm_label": "example"
@@ -1897,7 +2473,7 @@
       "label": "RecommendedCall",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L109",
+      "source_location": "L123",
       "id": "contract_recommendedcall",
       "community": 4,
       "norm_label": "recommendedcall"
@@ -1906,7 +2482,7 @@
       "label": "RelatedTool",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L115",
+      "source_location": "L129",
       "id": "contract_relatedtool",
       "community": 4,
       "norm_label": "relatedtool"
@@ -1915,7 +2491,7 @@
       "label": "ToolStatus",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L121",
+      "source_location": "L135",
       "id": "contract_toolstatus",
       "community": 4,
       "norm_label": "toolstatus"
@@ -1924,7 +2500,7 @@
       "label": "DescribeResult",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L129",
+      "source_location": "L143",
       "id": "contract_describeresult",
       "community": 4,
       "norm_label": "describeresult"
@@ -1933,7 +2509,7 @@
       "label": ".Render()",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L142",
+      "source_location": "L156",
       "id": "contract_describeresult_render",
       "community": 4,
       "norm_label": ".render()"
@@ -1942,7 +2518,7 @@
       "label": "CallNextAction",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L155",
+      "source_location": "L169",
       "id": "contract_callnextaction",
       "community": 4,
       "norm_label": "callnextaction"
@@ -1951,7 +2527,7 @@
       "label": "CallResult",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L163",
+      "source_location": "L177",
       "id": "contract_callresult",
       "community": 4,
       "norm_label": "callresult"
@@ -1960,7 +2536,7 @@
       "label": ".Render()",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L172",
+      "source_location": "L186",
       "id": "contract_callresult_render",
       "community": 4,
       "norm_label": ".render()"
@@ -1969,7 +2545,7 @@
       "label": "ListedTool",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L180",
+      "source_location": "L194",
       "id": "contract_listedtool",
       "community": 4,
       "norm_label": "listedtool"
@@ -1978,7 +2554,7 @@
       "label": "ListResult",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L189",
+      "source_location": "L203",
       "id": "contract_listresult",
       "community": 4,
       "norm_label": "listresult"
@@ -1987,7 +2563,7 @@
       "label": ".Render()",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L196",
+      "source_location": "L210",
       "id": "contract_listresult_render",
       "community": 4,
       "norm_label": ".render()"
@@ -1996,7 +2572,7 @@
       "label": "DoctorCheck",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L215",
+      "source_location": "L229",
       "id": "contract_doctorcheck",
       "community": 4,
       "norm_label": "doctorcheck"
@@ -2005,7 +2581,7 @@
       "label": "DoctorResult",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L229",
+      "source_location": "L243",
       "id": "contract_doctorresult",
       "community": 4,
       "norm_label": "doctorresult"
@@ -2014,7 +2590,7 @@
       "label": ".Render()",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L236",
+      "source_location": "L250",
       "id": "contract_doctorresult_render",
       "community": 4,
       "norm_label": ".render()"
@@ -2023,7 +2599,7 @@
       "label": "Message",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L258",
+      "source_location": "L272",
       "id": "contract_message",
       "community": 4,
       "norm_label": "message"
@@ -2032,7 +2608,7 @@
       "label": ".Render()",
       "file_type": "code",
       "source_file": "internal/contract/results.go",
-      "source_location": "L264",
+      "source_location": "L278",
       "id": "contract_message_render",
       "community": 4,
       "norm_label": ".render()"
@@ -2041,117 +2617,117 @@
       "label": "Daemon",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L18",
+      "source_location": "L19",
       "id": "daemon_daemon",
-      "community": 0,
+      "community": 56,
       "norm_label": "daemon"
     },
     {
       "label": "Loaded",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L19",
+      "source_location": "L20",
       "id": "loaded",
-      "community": 0,
+      "community": 56,
       "norm_label": "loaded"
     },
     {
       "label": "Store",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L20",
+      "source_location": "L21",
       "id": "internal_daemon_daemon_go_store",
-      "community": 0,
+      "community": 56,
       "norm_label": "store"
     },
     {
       "label": "Broker",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L21",
+      "source_location": "L22",
       "id": "internal_daemon_daemon_go_broker",
-      "community": 0,
+      "community": 56,
       "norm_label": "broker"
     },
     {
       "label": "New()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L27",
+      "source_location": "L28",
       "id": "daemon_daemon_new",
-      "community": 0,
+      "community": 56,
       "norm_label": "new()"
     },
     {
       "label": "NewWithStore()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L37",
+      "source_location": "L38",
       "id": "daemon_daemon_newwithstore",
-      "community": 0,
+      "community": 56,
       "norm_label": "newwithstore()"
     },
     {
       "label": ".Broker()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L46",
+      "source_location": "L51",
       "id": "daemon_daemon_broker",
-      "community": 0,
+      "community": 56,
       "norm_label": ".broker()"
     },
     {
       "label": ".Store()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L49",
+      "source_location": "L54",
       "id": "daemon_daemon_store",
-      "community": 0,
+      "community": 56,
       "norm_label": ".store()"
     },
     {
       "label": ".Config()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L52",
+      "source_location": "L57",
       "id": "daemon_daemon_config",
-      "community": 0,
+      "community": 56,
       "norm_label": ".config()"
     },
     {
       "label": ".SemanticDegraded()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L57",
+      "source_location": "L62",
       "id": "daemon_daemon_semanticdegraded",
-      "community": 0,
+      "community": 56,
       "norm_label": ".semanticdegraded()"
     },
     {
       "label": ".Run()",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L64",
+      "source_location": "L69",
       "id": "daemon_daemon_run",
-      "community": 0,
+      "community": 56,
       "norm_label": ".run()"
     },
     {
       "label": "Context",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L64",
+      "source_location": "L69",
       "id": "internal_daemon_daemon_go_context",
-      "community": 0,
+      "community": 56,
       "norm_label": "context"
     },
     {
       "label": "Writer",
       "file_type": "code",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L64",
+      "source_location": "L69",
       "id": "internal_daemon_daemon_go_writer",
-      "community": 0,
+      "community": 56,
       "norm_label": "writer"
     },
     {
@@ -2160,7 +2736,7 @@
       "source_file": "internal/daemon/daemon_test.go",
       "source_location": "L1",
       "id": "daemon_daemon_test",
-      "community": 0,
+      "community": 56,
       "norm_label": "daemon_test.go"
     },
     {
@@ -2169,7 +2745,7 @@
       "source_file": "internal/daemon/daemon_test.go",
       "source_location": "L14",
       "id": "daemon_daemon_test_testnew_wiresbrokerandstore",
-      "community": 0,
+      "community": 56,
       "norm_label": "testnew_wiresbrokerandstore()"
     },
     {
@@ -2178,7 +2754,7 @@
       "source_file": "internal/daemon/daemon_test.go",
       "source_location": "L14",
       "id": "internal_daemon_daemon_test_go_t",
-      "community": 0,
+      "community": 56,
       "norm_label": "t"
     },
     {
@@ -2187,7 +2763,7 @@
       "source_file": "internal/daemon/daemon_test.go",
       "source_location": "L25",
       "id": "daemon_daemon_test_testnew_usespersistentcatalogstore",
-      "community": 0,
+      "community": 56,
       "norm_label": "testnew_usespersistentcatalogstore()"
     },
     {
@@ -2196,7 +2772,7 @@
       "source_file": "internal/daemon/daemon_test.go",
       "source_location": "L51",
       "id": "daemon_daemon_test_testrun_reportsreadyandstopsoncancel",
-      "community": 0,
+      "community": 56,
       "norm_label": "testrun_reportsreadyandstopsoncancel()"
     },
     {
@@ -2205,7 +2781,7 @@
       "source_file": "internal/daemon/daemon_test.go",
       "source_location": "L77",
       "id": "daemon_daemon_test_testrun_startswithsemanticdisabled",
-      "community": 0,
+      "community": 56,
       "norm_label": "testrun_startswithsemanticdisabled()"
     },
     {
@@ -2852,7 +3428,7 @@
       "file_type": "code",
       "source_file": "internal/index/index.go",
       "source_location": "L160",
-      "id": "session",
+      "id": "internal_index_index_go_session",
       "community": 9,
       "norm_label": "session"
     },
@@ -2987,7 +3563,7 @@
       "file_type": "code",
       "source_file": "internal/index/index_test.go",
       "source_location": "L31",
-      "id": "listtoolsparams",
+      "id": "internal_index_index_test_go_listtoolsparams",
       "community": 0,
       "norm_label": "listtoolsparams"
     },
@@ -2996,7 +3572,7 @@
       "file_type": "code",
       "source_file": "internal/index/index_test.go",
       "source_location": "L31",
-      "id": "listtoolsresult",
+      "id": "internal_index_index_test_go_listtoolsresult",
       "community": 0,
       "norm_label": "listtoolsresult"
     },
@@ -3258,79 +3834,214 @@
       "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L1",
       "id": "mcp_adapter_test",
-      "community": 7,
+      "community": 0,
       "norm_label": "adapter_test.go"
     },
     {
       "label": "connect()",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L14",
+      "source_location": "L16",
       "id": "mcp_adapter_test_connect",
-      "community": 7,
+      "community": 0,
       "norm_label": "connect()"
     },
     {
       "label": "T",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L14",
+      "source_location": "L16",
       "id": "internal_mcp_adapter_test_go_t",
-      "community": 7,
+      "community": 0,
       "norm_label": "t"
     },
     {
       "label": "ClientSession",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L14",
+      "source_location": "L16",
       "id": "clientsession",
-      "community": 7,
+      "community": 0,
       "norm_label": "clientsession"
     },
     {
       "label": "textPayload()",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L33",
+      "source_location": "L35",
       "id": "mcp_adapter_test_textpayload",
-      "community": 7,
+      "community": 0,
       "norm_label": "textpayload()"
     },
     {
       "label": "CallToolResult",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L33",
+      "source_location": "L35",
       "id": "internal_mcp_adapter_test_go_calltoolresult",
-      "community": 7,
+      "community": 0,
       "norm_label": "calltoolresult"
     },
     {
       "label": "TestAdapter_AdvertisesExactlyThreeTools()",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L49",
+      "source_location": "L51",
       "id": "mcp_adapter_test_testadapter_advertisesexactlythreetools",
-      "community": 7,
+      "community": 0,
       "norm_label": "testadapter_advertisesexactlythreetools()"
     },
     {
       "label": "TestAdapter_FindToolReturnsCatalogEmptyShape()",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L70",
+      "source_location": "L72",
       "id": "mcp_adapter_test_testadapter_findtoolreturnscatalogemptyshape",
-      "community": 7,
+      "community": 0,
       "norm_label": "testadapter_findtoolreturnscatalogemptyshape()"
+    },
+    {
+      "label": "fakeLiveConnector",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L90",
+      "id": "mcp_fakeliveconnector",
+      "community": 0,
+      "norm_label": "fakeliveconnector"
+    },
+    {
+      "label": "Result",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L91",
+      "id": "internal_mcp_adapter_test_go_result",
+      "community": 0,
+      "norm_label": "result"
+    },
+    {
+      "label": ".ConnectAll()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "id": "mcp_fakeliveconnector_connectall",
+      "community": 0,
+      "norm_label": ".connectall()"
+    },
+    {
+      "label": "Context",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "id": "internal_mcp_adapter_test_go_context",
+      "community": 0,
+      "norm_label": "context"
+    },
+    {
+      "label": "Config",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "id": "internal_mcp_adapter_test_go_config",
+      "community": 0,
+      "norm_label": "config"
+    },
+    {
+      "label": "fakeLiveSession",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L98",
+      "id": "mcp_fakelivesession",
+      "community": 0,
+      "norm_label": "fakelivesession"
+    },
+    {
+      "label": "Tool",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L99",
+      "id": "internal_mcp_adapter_test_go_tool",
+      "community": 0,
+      "norm_label": "tool"
+    },
+    {
+      "label": ".ListTools()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "id": "mcp_fakelivesession_listtools",
+      "community": 0,
+      "norm_label": ".listtools()"
+    },
+    {
+      "label": "ListToolsParams",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "id": "internal_mcp_adapter_test_go_listtoolsparams",
+      "community": 0,
+      "norm_label": "listtoolsparams"
+    },
+    {
+      "label": "ListToolsResult",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "id": "internal_mcp_adapter_test_go_listtoolsresult",
+      "community": 0,
+      "norm_label": "listtoolsresult"
+    },
+    {
+      "label": ".Close()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L107",
+      "id": "mcp_fakelivesession_close",
+      "community": 0,
+      "norm_label": ".close()"
+    },
+    {
+      "label": "connectLive()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L109",
+      "id": "mcp_adapter_test_connectlive",
+      "community": 0,
+      "norm_label": "connectlive()"
+    },
+    {
+      "label": "TestAdapter_FindToolReturnsLiveDiscoveredTools()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L145",
+      "id": "mcp_adapter_test_testadapter_findtoolreturnslivediscoveredtools",
+      "community": 0,
+      "norm_label": "testadapter_findtoolreturnslivediscoveredtools()"
+    },
+    {
+      "label": "TestAdapter_FindToolReportsEmptyLiveDiscovery()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L183",
+      "id": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "community": 0,
+      "norm_label": "testadapter_findtoolreportsemptylivediscovery()"
+    },
+    {
+      "label": "TestAdapter_IntegrationWithFixtureDownstreamServer()",
+      "file_type": "code",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L222",
+      "id": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "community": 0,
+      "norm_label": "testadapter_integrationwithfixturedownstreamserver()"
     },
     {
       "label": "TestAdapter_CallToolReturnsStructuredFailure()",
       "file_type": "code",
       "source_file": "internal/mcp/adapter_test.go",
-      "source_location": "L88",
+      "source_location": "L322",
       "id": "mcp_adapter_test_testadapter_calltoolreturnsstructuredfailure",
-      "community": 7,
+      "community": 0,
       "norm_label": "testadapter_calltoolreturnsstructuredfailure()"
     },
     {
@@ -3688,7 +4399,7 @@
       "label": "Build",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L18",
+      "source_location": "L19",
       "id": "readme_build",
       "community": 39,
       "norm_label": "build"
@@ -3697,7 +4408,7 @@
       "label": "Usage",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L31",
+      "source_location": "L32",
       "id": "readme_usage",
       "community": 39,
       "norm_label": "usage"
@@ -3706,16 +4417,43 @@
       "label": "Configuration",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "id": "readme_configuration",
       "community": 39,
       "norm_label": "configuration"
     },
     {
+      "label": "Using Ozy as an MCP server",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L123",
+      "id": "readme_using_ozy_as_an_mcp_server",
+      "community": 39,
+      "norm_label": "using ozy as an mcp server"
+    },
+    {
+      "label": "Minimal opencode configuration",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L130",
+      "id": "readme_minimal_opencode_configuration",
+      "community": 39,
+      "norm_label": "minimal opencode configuration"
+    },
+    {
+      "label": "Quick start",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L154",
+      "id": "readme_quick_start",
+      "community": 39,
+      "norm_label": "quick start"
+    },
+    {
       "label": "Agent interface",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L122",
+      "source_location": "L173",
       "id": "readme_agent_interface",
       "community": 39,
       "norm_label": "agent interface"
@@ -4805,7 +5543,7 @@
       "file_type": "document",
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
       "source_location": "L1",
-      "id": "mcp_adapter_spec_added_requirements",
+      "id": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
       "community": 33,
       "norm_label": "added requirements"
     },
@@ -5807,6 +6545,312 @@
       "id": "downstream_discovery_tasks_7_verification",
       "community": 37,
       "norm_label": "7. verification"
+    },
+    {
+      "label": "design.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L1",
+      "id": "mcp_findtool_live_discovery_design",
+      "community": 58,
+      "norm_label": "design.md"
+    },
+    {
+      "label": "Context",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L1",
+      "id": "mcp_findtool_live_discovery_design_context",
+      "community": 58,
+      "norm_label": "context"
+    },
+    {
+      "label": "Goals / Non-Goals",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L19",
+      "id": "mcp_findtool_live_discovery_design_goals_non_goals",
+      "community": 58,
+      "norm_label": "goals / non-goals"
+    },
+    {
+      "label": "Decisions",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L39",
+      "id": "mcp_findtool_live_discovery_design_decisions",
+      "community": 58,
+      "norm_label": "decisions"
+    },
+    {
+      "label": "Route through the broker seam",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L41",
+      "id": "mcp_findtool_live_discovery_design_route_through_the_broker_seam",
+      "community": 58,
+      "norm_label": "route through the broker seam"
+    },
+    {
+      "label": "Live discovery, not catalog lookup",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L53",
+      "id": "mcp_findtool_live_discovery_design_live_discovery_not_catalog_lookup",
+      "community": 58,
+      "norm_label": "live discovery, not catalog lookup"
+    },
+    {
+      "label": "Return candidates, not a selected match",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L63",
+      "id": "mcp_findtool_live_discovery_design_return_candidates_not_a_selected_match",
+      "community": 58,
+      "norm_label": "return candidates, not a selected match"
+    },
+    {
+      "label": "Partial failure is visible",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L76",
+      "id": "mcp_findtool_live_discovery_design_partial_failure_is_visible",
+      "community": 58,
+      "norm_label": "partial failure is visible"
+    },
+    {
+      "label": "Risks / Trade-offs",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L89",
+      "id": "mcp_findtool_live_discovery_design_risks_trade_offs",
+      "community": 58,
+      "norm_label": "risks / trade-offs"
+    },
+    {
+      "label": "proposal.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L1",
+      "id": "mcp_findtool_live_discovery_proposal",
+      "community": 59,
+      "norm_label": "proposal.md"
+    },
+    {
+      "label": "Why",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L1",
+      "id": "mcp_findtool_live_discovery_proposal_why",
+      "community": 59,
+      "norm_label": "why"
+    },
+    {
+      "label": "What Changes",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L9",
+      "id": "mcp_findtool_live_discovery_proposal_what_changes",
+      "community": 59,
+      "norm_label": "what changes"
+    },
+    {
+      "label": "Capabilities",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L23",
+      "id": "mcp_findtool_live_discovery_proposal_capabilities",
+      "community": 59,
+      "norm_label": "capabilities"
+    },
+    {
+      "label": "New Capabilities",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L25",
+      "id": "mcp_findtool_live_discovery_proposal_new_capabilities",
+      "community": 59,
+      "norm_label": "new capabilities"
+    },
+    {
+      "label": "Modified Capabilities",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L29",
+      "id": "mcp_findtool_live_discovery_proposal_modified_capabilities",
+      "community": 59,
+      "norm_label": "modified capabilities"
+    },
+    {
+      "label": "Impact",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L34",
+      "id": "mcp_findtool_live_discovery_proposal_impact",
+      "community": 59,
+      "norm_label": "impact"
+    },
+    {
+      "label": "spec.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L1",
+      "id": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec",
+      "community": 57,
+      "norm_label": "spec.md"
+    },
+    {
+      "label": "ADDED Requirements",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L1",
+      "id": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "community": 57,
+      "norm_label": "added requirements"
+    },
+    {
+      "label": "Requirement: MCP findTool performs live downstream discovery",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L3",
+      "id": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "community": 57,
+      "norm_label": "requirement: mcp findtool performs live downstream discovery"
+    },
+    {
+      "label": "Scenario: Harness sees findTool on Ozy MCP",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L9",
+      "id": "mcp_adapter_spec_scenario_harness_sees_findtool_on_ozy_mcp",
+      "community": 57,
+      "norm_label": "scenario: harness sees findtool on ozy mcp"
+    },
+    {
+      "label": "Scenario: findTool returns all live-discovered tools",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L15",
+      "id": "mcp_adapter_spec_scenario_findtool_returns_all_live_discovered_tools",
+      "community": 57,
+      "norm_label": "scenario: findtool returns all live-discovered tools"
+    },
+    {
+      "label": "Scenario: findTool keeps downstream tools as data",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L25",
+      "id": "mcp_adapter_spec_scenario_findtool_keeps_downstream_tools_as_data",
+      "community": 57,
+      "norm_label": "scenario: findtool keeps downstream tools as data"
+    },
+    {
+      "label": "Scenario: findTool reports empty live discovery",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L32",
+      "id": "mcp_adapter_spec_scenario_findtool_reports_empty_live_discovery",
+      "community": 57,
+      "norm_label": "scenario: findtool reports empty live discovery"
+    },
+    {
+      "label": "Scenario: findTool reports partial downstream failures",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L40",
+      "id": "mcp_adapter_spec_scenario_findtool_reports_partial_downstream_failures",
+      "community": 57,
+      "norm_label": "scenario: findtool reports partial downstream failures"
+    },
+    {
+      "label": "Scenario: findTool reports total downstream failure",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L49",
+      "id": "mcp_adapter_spec_scenario_findtool_reports_total_downstream_failure",
+      "community": 57,
+      "norm_label": "scenario: findtool reports total downstream failure"
+    },
+    {
+      "label": "MODIFIED Requirements",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L57",
+      "id": "mcp_adapter_spec_modified_requirements",
+      "community": 57,
+      "norm_label": "modified requirements"
+    },
+    {
+      "label": "Requirement: Instructional placeholder responses conform to contracts",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L59",
+      "id": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts",
+      "community": 57,
+      "norm_label": "requirement: instructional placeholder responses conform to contracts"
+    },
+    {
+      "label": "Scenario: findTool returns a live discovery result",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L69",
+      "id": "mcp_adapter_spec_scenario_findtool_returns_a_live_discovery_result",
+      "community": 57,
+      "norm_label": "scenario: findtool returns a live discovery result"
+    },
+    {
+      "label": "Scenario: callTool returns a contract-shaped failure",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L75",
+      "id": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_scenario_calltool_returns_a_contract_shaped_failure",
+      "community": 57,
+      "norm_label": "scenario: calltool returns a contract-shaped failure"
+    },
+    {
+      "label": "tasks.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L1",
+      "id": "mcp_findtool_live_discovery_tasks",
+      "community": 61,
+      "norm_label": "tasks.md"
+    },
+    {
+      "label": "1. Contract and Test Coverage",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L1",
+      "id": "mcp_findtool_live_discovery_tasks_1_contract_and_test_coverage",
+      "community": 61,
+      "norm_label": "1. contract and test coverage"
+    },
+    {
+      "label": "2. Live Discovery Implementation",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L8",
+      "id": "mcp_findtool_live_discovery_tasks_2_live_discovery_implementation",
+      "community": 61,
+      "norm_label": "2. live discovery implementation"
+    },
+    {
+      "label": "3. Runtime Wiring",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L15",
+      "id": "mcp_findtool_live_discovery_tasks_3_runtime_wiring",
+      "community": 61,
+      "norm_label": "3. runtime wiring"
+    },
+    {
+      "label": "4. Acceptance and Documentation",
+      "file_type": "document",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L21",
+      "id": "mcp_findtool_live_discovery_tasks_4_acceptance_and_documentation",
+      "community": 61,
+      "norm_label": "4. acceptance and documentation"
     },
     {
       "label": "design.md",
@@ -6916,11 +7960,83 @@
       "norm_label": "scenario: continuous integration runs build, test, and lint"
     },
     {
+      "label": "FindResult",
+      "file_type": "code",
+      "source_file": "internal/broker/skeleton.go",
+      "source_location": "L39",
+      "community": 7,
+      "norm_label": "findresult",
+      "id": "findresult"
+    },
+    {
+      "label": "DescribeResult",
+      "file_type": "code",
+      "source_file": "internal/broker/skeleton.go",
+      "source_location": "L61",
+      "community": 7,
+      "norm_label": "describeresult",
+      "id": "describeresult"
+    },
+    {
+      "label": "CallResult",
+      "file_type": "code",
+      "source_file": "internal/broker/skeleton.go",
+      "source_location": "L90",
+      "community": 7,
+      "norm_label": "callresult",
+      "id": "callresult"
+    },
+    {
+      "label": "ListResult",
+      "file_type": "code",
+      "source_file": "internal/broker/skeleton.go",
+      "source_location": "L112",
+      "community": 7,
+      "norm_label": "listresult",
+      "id": "listresult"
+    },
+    {
+      "label": "Session",
+      "file_type": "code",
+      "source_file": "internal/index/index.go",
+      "source_location": "L160",
+      "community": 9,
+      "norm_label": "session",
+      "id": "session"
+    },
+    {
+      "label": "ListToolsParams",
+      "file_type": "code",
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L31",
+      "community": 0,
+      "norm_label": "listtoolsparams",
+      "id": "listtoolsparams"
+    },
+    {
+      "label": "ListToolsResult",
+      "file_type": "code",
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L31",
+      "community": 0,
+      "norm_label": "listtoolsresult",
+      "id": "listtoolsresult"
+    },
+    {
+      "label": "ADDED Requirements",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
+      "source_location": "L1",
+      "community": 33,
+      "norm_label": "added requirements",
+      "id": "mcp_adapter_spec_added_requirements"
+    },
+    {
       "label": "ConfigHome()",
       "file_type": "code",
       "source_file": "internal/config/config.go",
       "source_location": "L172",
-      "community": 25,
+      "community": 2,
       "norm_label": "confighome()",
       "id": "config_config_confighome"
     },
@@ -6956,6 +8072,66 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z",
+      "target": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sessionid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z",
+      "target": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z",
+      "target": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_updatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources",
+      "target": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources_background_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources_background_task",
+      "target": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_background_task_state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".omo/run-continuation/ses_142c43b83ffeInQEYoxSAKty2Z.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_sources_background_task",
+      "target": "run_continuation_ses_142c43b83ffeinqeyoxsakty2z_background_task_updatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "cmd/ozy/main.go",
       "source_location": "L12",
       "weight": 1.0,
@@ -6983,6 +8159,1285 @@
       "source": "broker_broker",
       "target": "broker_broker",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "field",
+      "source": "broker_live",
+      "target": "broker_connector",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_calltool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L201",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_candidaterefs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_describetool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_findtool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L152",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_list",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_listsessiontools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_newlive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L177",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_normalizecandidate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L189",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_normalizeinputschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L156",
+      "weight": 1.0,
+      "source": "broker_live",
+      "target": "broker_live_serverconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "field",
+      "source": "broker_live",
+      "target": "internal_broker_live_go_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "field",
+      "source": "broker_live",
+      "target": "skeleton",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_newlive",
+      "target": "broker_connector",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_newlive",
+      "target": "internal_broker_live_go_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_newlive",
+      "target": "internal_broker_live_go_broker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_newlive",
+      "target": "internal_broker_live_go_store",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "broker_live_test_newlivebroker",
+      "target": "broker_live_newlive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/daemon/daemon.go",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "daemon_daemon_newwithstore",
+      "target": "broker_live_newlive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L132",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_connectlive",
+      "target": "broker_live_newlive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "target": "broker_live_newlive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L257",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "target": "broker_live_newlive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "broker_live_findtool",
+      "target": "broker_live_candidaterefs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "broker_live_findtool",
+      "target": "broker_live_listsessiontools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "broker_live_findtool",
+      "target": "broker_live_normalizecandidate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "broker_live_findtool",
+      "target": "broker_live_serverconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_findtool",
+      "target": "internal_broker_live_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_findtool",
+      "target": "internal_broker_live_go_findresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L148",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_calltool",
+      "target": "internal_broker_live_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L144",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_describetool",
+      "target": "internal_broker_live_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L152",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_list",
+      "target": "internal_broker_live_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_listsessiontools",
+      "target": "internal_broker_live_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L144",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_describetool",
+      "target": "internal_broker_live_go_describeresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L148",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_calltool",
+      "target": "internal_broker_live_go_callresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L152",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_list",
+      "target": "internal_broker_live_go_listresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L156",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_serverconfig",
+      "target": "internal_broker_live_go_serverconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_listsessiontools",
+      "target": "internal_broker_live_go_serverconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_listsessiontools",
+      "target": "internal_broker_live_go_error",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_listsessiontools",
+      "target": "internal_broker_live_go_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L163",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_listsessiontools",
+      "target": "internal_broker_live_go_tool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L177",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_normalizecandidate",
+      "target": "internal_broker_live_go_tool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "broker_live_normalizecandidate",
+      "target": "broker_live_normalizeinputschema",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L177",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_normalizecandidate",
+      "target": "candidate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live.go",
+      "source_location": "L201",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_candidaterefs",
+      "target": "candidate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_failingsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_fakeconnector",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_fakesession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L313",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_contains",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L317",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_searchsubstring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L249",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_disabledserversareskipped",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_livediscoveryreturnschoosefromcandidates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L120",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_livediscoveryzerotools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L236",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_noconfiguredservers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_partialserverfailure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L267",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_sessionlisttoolsfails",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L193",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testfindtool_totaldownstreamfailure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L291",
+      "weight": 1.0,
+      "source": "broker_live_test",
+      "target": "broker_live_test_testlivebroker_preservesdescribecallplaceholders",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "broker_fakeconnector",
+      "target": "broker_fakeconnector_connectall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L17",
+      "weight": 1.0,
+      "context": "field",
+      "source": "broker_fakeconnector",
+      "target": "internal_broker_live_test_go_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_fakeconnector_connectall",
+      "target": "internal_broker_live_test_go_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_fakeconnector_connectall",
+      "target": "internal_broker_live_test_go_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_fakeconnector_connectall",
+      "target": "internal_broker_live_test_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L37",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_failingsession_listtools",
+      "target": "internal_broker_live_test_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_fakesession_listtools",
+      "target": "internal_broker_live_test_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "broker_fakesession",
+      "target": "broker_fakesession_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "broker_fakesession",
+      "target": "broker_fakesession_listtools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "field",
+      "source": "broker_fakesession",
+      "target": "internal_broker_live_test_go_tool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_fakesession_listtools",
+      "target": "internal_broker_live_test_go_listtoolsparams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L29",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_fakesession_listtools",
+      "target": "internal_broker_live_test_go_listtoolsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L37",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_failingsession_listtools",
+      "target": "internal_broker_live_test_go_listtoolsparams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L37",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_failingsession_listtools",
+      "target": "internal_broker_live_test_go_listtoolsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "broker_failingsession",
+      "target": "broker_failingsession_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "broker_failingsession",
+      "target": "broker_failingsession_listtools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "broker_live_test_newlivebroker",
+      "target": "catalog_memory_newmemory"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_newlivebroker",
+      "target": "connector",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_live_test_newlivebroker",
+      "target": "internal_broker_live_test_go_broker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L43",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_newlivebroker",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L251",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_disabledserversareskipped",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_livediscoveryreturnschoosefromcandidates",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L122",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_livediscoveryzerotools",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L238",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_noconfiguredservers",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L146",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_partialserverfailure",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L269",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_sessionlisttoolsfails",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_totaldownstreamfailure",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L293",
+      "weight": 1.0,
+      "source": "broker_live_test_testlivebroker_preservesdescribecallplaceholders",
+      "target": "broker_live_test_newlivebroker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L249",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_disabledserversareskipped",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L48",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_livediscoveryreturnschoosefromcandidates",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L120",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_livediscoveryzerotools",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L236",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_noconfiguredservers",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L144",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_partialserverfailure",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L267",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_sessionlisttoolsfails",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L193",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testfindtool_totaldownstreamfailure",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L291",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "broker_live_test_testlivebroker_preservesdescribecallplaceholders",
+      "target": "internal_broker_live_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "broker_live_test_testfindtool_partialserverfailure",
+      "target": "broker_live_test_contains",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/live_test.go",
+      "source_location": "L314",
+      "weight": 1.0,
+      "source": "broker_live_test_contains",
+      "target": "broker_live_test_searchsubstring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/catalog/file_test.go",
+      "source_location": "L143",
+      "weight": 1.0,
+      "source": "catalog_file_test_testfile_persistedcatalogcontainsnoconfigsecrets",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/cli/cli_test.go",
+      "source_location": "L436",
+      "weight": 1.0,
+      "source": "cli_cli_test_testdoctordoesnotleaksecret",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/cli/cli_test.go",
+      "source_location": "L465",
+      "weight": 1.0,
+      "source": "cli_cli_test_testdoctorreportsmissingenv",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/cli/cli_test.go",
+      "source_location": "L420",
+      "weight": 1.0,
+      "source": "cli_cli_test_testdoctorreportsserverhealthandredactssecrets",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/cli/cli_test.go",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "cli_cli_test_testhelplistsallcommands",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/cli/cli_test.go",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "cli_cli_test_testversionflag",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "config_config_test_testload_missingfile",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L274",
+      "weight": 1.0,
+      "source": "config_config_test_testload_opencodemcpsectioncompatibility",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L137",
+      "weight": 1.0,
+      "source": "config_config_test_testload_validationerrorsnameserverandfield",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L158",
+      "weight": 1.0,
+      "source": "config_config_test_testredacted_hidesresolvedsecretsandshowsenvrefs",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L318",
+      "weight": 1.0,
+      "source": "config_config_test_testwritestarter",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/redact.go",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "config_redact_redactvalue",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/daemon/daemon_test.go",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "daemon_daemon_test_testrun_reportsreadyandstopsoncancel",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/downstream/connector.go",
+      "source_location": "L239",
+      "weight": 1.0,
+      "source": "downstream_connector_isoauthauthfailure",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/downstream/connector.go",
+      "source_location": "L247",
+      "weight": 1.0,
+      "source": "downstream_connector_scrub",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/downstream/connector_test.go",
+      "source_location": "L161",
+      "weight": 1.0,
+      "source": "downstream_connector_test_testconnector_connectionerrorexcludessecretvalues",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/downstream/connector_test.go",
+      "source_location": "L241",
+      "weight": 1.0,
+      "source": "downstream_connector_test_testconnector_oauthconnectionfailureisauthunavailableandredacted",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/downstream/connector_test.go",
+      "source_location": "L223",
+      "weight": 1.0,
+      "source": "downstream_connector_test_testconnector_perservertimeoutcancelsconnect",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/index/index.go",
+      "source_location": "L204",
+      "weight": 1.0,
+      "source": "index_index_scrub",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L199",
+      "weight": 1.0,
+      "source": "index_index_test_testindexer_listtoolserrorredactsconfiguredsecrets",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L169",
+      "weight": 1.0,
+      "source": "index_index_test_testindexer_perservertimeoutcancelslisttools",
+      "target": "broker_live_test_contains"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/render/render_test.go",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "render_render_test_testoutput_humanusesrender",
+      "target": "broker_live_test_contains"
     },
     {
       "relation": "contains",
@@ -7223,6 +9678,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/broker/skeleton.go",
+      "source_location": "L39",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_skeleton_findtool",
+      "target": "internal_broker_skeleton_go_findresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/skeleton.go",
       "source_location": "L61",
       "weight": 1.0,
       "context": "return_type",
@@ -7234,12 +9700,45 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/broker/skeleton.go",
+      "source_location": "L61",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_skeleton_describetool",
+      "target": "internal_broker_skeleton_go_describeresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/skeleton.go",
       "source_location": "L90",
       "weight": 1.0,
       "context": "return_type",
       "confidence_score": 1.0,
       "source": "broker_skeleton_calltool",
       "target": "callresult"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/skeleton.go",
+      "source_location": "L90",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_skeleton_calltool",
+      "target": "internal_broker_skeleton_go_callresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/broker/skeleton.go",
+      "source_location": "L112",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "broker_skeleton_list",
+      "target": "internal_broker_skeleton_go_listresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8382,6 +10881,39 @@
       "source_location": "L20",
       "weight": 1.0,
       "source": "mcp_adapter_test_connect",
+      "target": "catalog_memory_newmemory"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L132",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_connectlive",
+      "target": "catalog_memory_newmemory"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "target": "catalog_memory_newmemory"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L257",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
       "target": "catalog_memory_newmemory"
     },
     {
@@ -10940,6 +13472,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "internal/contract/results.go",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "contract_results",
+      "target": "contract_candidate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/contract/results.go",
       "source_location": "L20",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11174,6 +13716,17 @@
       "target": "contract_alternative"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/contract/results.go",
+      "source_location": "L84",
+      "weight": 1.0,
+      "context": "field",
+      "source": "contract_findresult",
+      "target": "contract_candidate",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "internal/contract/results.go",
@@ -11182,6 +13735,17 @@
       "confidence_score": 1.0,
       "source": "contract_findresult",
       "target": "contract_findresult_render"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/contract/results.go",
+      "source_location": "L85",
+      "weight": 1.0,
+      "context": "field",
+      "source": "contract_findresult",
+      "target": "internal_contract_results_go_error",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -11325,7 +13889,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "internal/daemon/daemon.go",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "source": "daemon_daemon",
       "target": "daemon_daemon",
@@ -12008,6 +14572,17 @@
       "source_location": "L201",
       "weight": 1.0,
       "source": "downstream_connector_test_testconnector_perservertimeoutcancelsconnect",
+      "target": "downstream_connector_withtransportfactory"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L250",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
       "target": "downstream_connector_withtransportfactory"
     },
     {
@@ -13181,6 +15756,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/index/index.go",
+      "source_location": "L160",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "index_indexer_indexsession",
+      "target": "internal_index_index_go_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/index/index.go",
       "source_location": "L152",
       "weight": 1.0,
       "context": "parameter_type",
@@ -13434,6 +16020,28 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/index/index_test.go",
+      "source_location": "L31",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "index_fakesession_listtools",
+      "target": "internal_index_index_test_go_listtoolsparams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L31",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "index_fakesession_listtools",
+      "target": "internal_index_index_test_go_listtoolsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/index/index_test.go",
       "source_location": "L29",
       "weight": 1.0,
       "context": "parameter_type",
@@ -13459,9 +16067,9 @@
       "source_location": "L39",
       "weight": 1.0,
       "context": "parameter_type",
-      "confidence_score": 1.0,
       "source": "index_blockingsession_listtools",
-      "target": "listtoolsparams"
+      "target": "internal_index_index_test_go_listtoolsparams",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -13470,9 +16078,9 @@
       "source_location": "L39",
       "weight": 1.0,
       "context": "return_type",
-      "confidence_score": 1.0,
       "source": "index_blockingsession_listtools",
-      "target": "listtoolsresult"
+      "target": "internal_index_index_test_go_listtoolsresult",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -13493,6 +16101,28 @@
       "confidence_score": 1.0,
       "source": "index_blockingsession",
       "target": "index_blockingsession_listtools"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L39",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "index_blockingsession_listtools",
+      "target": "listtoolsparams"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/index/index_test.go",
+      "source_location": "L39",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "index_blockingsession_listtools",
+      "target": "listtoolsresult"
     },
     {
       "relation": "references",
@@ -13948,6 +16578,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "mcp_adapter_test",
+      "target": "mcp_adapter_test_connectlive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L49",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -13968,6 +16608,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L183",
+      "weight": 1.0,
+      "source": "mcp_adapter_test",
+      "target": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L70",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -13978,11 +16628,51 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "mcp_adapter_test",
+      "target": "mcp_adapter_test_testadapter_findtoolreturnslivediscoveredtools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L222",
+      "weight": 1.0,
+      "source": "mcp_adapter_test",
+      "target": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L33",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "mcp_adapter_test",
       "target": "mcp_adapter_test_textpayload"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "mcp_adapter_test",
+      "target": "mcp_fakeliveconnector",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "mcp_adapter_test",
+      "target": "mcp_fakelivesession",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -14005,6 +16695,17 @@
       "confidence_score": 1.0,
       "source": "mcp_adapter_test_connect",
       "target": "internal_mcp_adapter_test_go_t"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_connect",
+      "target": "mcp_fakelivesession_close",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -14043,6 +16744,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L109",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_adapter_test_connectlive",
+      "target": "internal_mcp_adapter_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L49",
       "weight": 1.0,
       "context": "parameter_type",
@@ -14065,6 +16777,17 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L183",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "target": "internal_mcp_adapter_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L70",
       "weight": 1.0,
       "context": "parameter_type",
@@ -14076,12 +16799,45 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_adapter_test_testadapter_findtoolreturnslivediscoveredtools",
+      "target": "internal_mcp_adapter_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L222",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "target": "internal_mcp_adapter_test_go_t",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L33",
       "weight": 1.0,
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "mcp_adapter_test_textpayload",
       "target": "internal_mcp_adapter_test_go_t"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L109",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "mcp_adapter_test_connectlive",
+      "target": "clientsession",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -14099,11 +16855,44 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L213",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "target": "mcp_adapter_test_textpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
       "source_location": "L79",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "mcp_adapter_test_testadapter_findtoolreturnscatalogemptyshape",
       "target": "mcp_adapter_test_textpayload"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_findtoolreturnslivediscoveredtools",
+      "target": "mcp_adapter_test_textpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L298",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "target": "mcp_adapter_test_textpayload",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -14115,6 +16904,190 @@
       "confidence_score": 1.0,
       "source": "mcp_adapter_test_textpayload",
       "target": "internal_mcp_adapter_test_go_calltoolresult"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_advertisesexactlythreetools",
+      "target": "mcp_fakelivesession_listtools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L91",
+      "weight": 1.0,
+      "context": "field",
+      "source": "mcp_fakeliveconnector",
+      "target": "internal_mcp_adapter_test_go_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "mcp_fakeliveconnector",
+      "target": "mcp_fakeliveconnector_connectall",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "mcp_fakeliveconnector_connectall",
+      "target": "internal_mcp_adapter_test_go_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_fakeliveconnector_connectall",
+      "target": "internal_mcp_adapter_test_go_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L94",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_fakeliveconnector_connectall",
+      "target": "internal_mcp_adapter_test_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_fakelivesession_listtools",
+      "target": "internal_mcp_adapter_test_go_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L99",
+      "weight": 1.0,
+      "context": "field",
+      "source": "mcp_fakelivesession",
+      "target": "internal_mcp_adapter_test_go_tool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "mcp_fakelivesession",
+      "target": "mcp_fakelivesession_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "mcp_fakelivesession",
+      "target": "mcp_fakelivesession_listtools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L276",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "target": "mcp_fakelivesession_listtools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "source": "mcp_fakelivesession_listtools",
+      "target": "internal_mcp_adapter_test_go_listtoolsparams",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L103",
+      "weight": 1.0,
+      "context": "return_type",
+      "source": "mcp_fakelivesession_listtools",
+      "target": "internal_mcp_adapter_test_go_listtoolsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_connectlive",
+      "target": "mcp_fakelivesession_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L204",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_findtoolreportsemptylivediscovery",
+      "target": "mcp_fakelivesession_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L273",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_integrationwithfixturedownstreamserver",
+      "target": "mcp_fakelivesession_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/mcp/adapter_test.go",
+      "source_location": "L146",
+      "weight": 1.0,
+      "source": "mcp_adapter_test_testadapter_findtoolreturnslivediscoveredtools",
+      "target": "mcp_adapter_test_connectlive",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -14562,6 +17535,36 @@
       "confidence_score": 1.0,
       "source": "readme_ozy",
       "target": "readme_usage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L123",
+      "weight": 1.0,
+      "source": "readme_ozy",
+      "target": "readme_using_ozy_as_an_mcp_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "readme_using_ozy_as_an_mcp_server",
+      "target": "readme_minimal_opencode_configuration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "readme_using_ozy_as_an_mcp_server",
+      "target": "readme_quick_start",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -15807,11 +18810,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec",
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
       "source_location": "L3",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mcp_adapter_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_agent_facing_tool_registration"
+      "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_agent_facing_tool_registration",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -15819,9 +18832,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mcp_adapter_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts"
+      "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -15829,9 +18842,19 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
       "source_location": "L31",
       "weight": 1.0,
+      "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_mcp_adapter_shares_the_broker_seam",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
+      "source_location": "L3",
+      "weight": 1.0,
       "confidence_score": 1.0,
       "source": "mcp_adapter_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_mcp_adapter_shares_the_broker_seam"
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_agent_facing_tool_registration"
     },
     {
       "relation": "contains",
@@ -15857,6 +18880,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mcp_adapter_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
       "source_location": "L26",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -15872,6 +18905,16 @@
       "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts",
       "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_scenario_findtool_returns_a_contract_shaped_result"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mcp_adapter_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_mcp_adapter_shares_the_broker_seam"
     },
     {
       "relation": "contains",
@@ -16872,6 +19915,306 @@
       "confidence_score": 1.0,
       "source": "downstream_discovery_tasks",
       "target": "downstream_discovery_tasks_7_verification"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design",
+      "target": "mcp_findtool_live_discovery_design_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design",
+      "target": "mcp_findtool_live_discovery_design_decisions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design",
+      "target": "mcp_findtool_live_discovery_design_goals_non_goals",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design",
+      "target": "mcp_findtool_live_discovery_design_risks_trade_offs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design_decisions",
+      "target": "mcp_findtool_live_discovery_design_live_discovery_not_catalog_lookup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design_decisions",
+      "target": "mcp_findtool_live_discovery_design_partial_failure_is_visible",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design_decisions",
+      "target": "mcp_findtool_live_discovery_design_return_candidates_not_a_selected_match",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/design.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_design_decisions",
+      "target": "mcp_findtool_live_discovery_design_route_through_the_broker_seam",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_proposal",
+      "target": "mcp_findtool_live_discovery_proposal_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_proposal",
+      "target": "mcp_findtool_live_discovery_proposal_impact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_proposal",
+      "target": "mcp_findtool_live_discovery_proposal_what_changes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_proposal",
+      "target": "mcp_findtool_live_discovery_proposal_why",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_proposal_capabilities",
+      "target": "mcp_findtool_live_discovery_proposal_modified_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/proposal.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_proposal_capabilities",
+      "target": "mcp_findtool_live_discovery_proposal_new_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec",
+      "target": "mcp_adapter_spec_modified_requirements",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec",
+      "target": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_added_requirements",
+      "target": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "target": "mcp_adapter_spec_scenario_findtool_keeps_downstream_tools_as_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "target": "mcp_adapter_spec_scenario_findtool_reports_empty_live_discovery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "target": "mcp_adapter_spec_scenario_findtool_reports_partial_downstream_failures",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "target": "mcp_adapter_spec_scenario_findtool_reports_total_downstream_failure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "target": "mcp_adapter_spec_scenario_findtool_returns_all_live_discovered_tools",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_requirement_mcp_findtool_performs_live_downstream_discovery",
+      "target": "mcp_adapter_spec_scenario_harness_sees_findtool_on_ozy_mcp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "mcp_adapter_spec_modified_requirements",
+      "target": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts",
+      "target": "mcp_adapter_spec_scenario_findtool_returns_a_live_discovery_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/specs/mcp-adapter/spec.md",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_requirement_instructional_placeholder_responses_conform_to_contracts",
+      "target": "openspec_changes_mcp_findtool_live_discovery_specs_mcp_adapter_spec_md_mcp_adapter_spec_scenario_calltool_returns_a_contract_shaped_failure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_tasks",
+      "target": "mcp_findtool_live_discovery_tasks_1_contract_and_test_coverage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_tasks",
+      "target": "mcp_findtool_live_discovery_tasks_2_live_discovery_implementation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_tasks",
+      "target": "mcp_findtool_live_discovery_tasks_3_runtime_wiring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/mcp-findtool-live-discovery/tasks.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "mcp_findtool_live_discovery_tasks",
+      "target": "mcp_findtool_live_discovery_tasks_4_acceptance_and_documentation",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -18005,5 +21348,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "4866e1e0f6ee8b4f5c7bf30cea74eb304152fa42"
+  "built_at_commit": "0d55269e80ded84f1c27e326201336ba3e0f9357"
 }

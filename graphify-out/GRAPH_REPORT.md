@@ -1,16 +1,16 @@
 # Graph Report - ozy  (2026-06-12)
 
 ## Corpus Check
-- 59 files · ~34,710 words
+- 66 files · ~39,307 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 772 nodes · 1061 edges · 56 communities (53 shown, 3 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 53 edges (avg confidence: 0.8)
+- 896 nodes · 1271 edges · 62 communities (59 shown, 3 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 85 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4866e1e0`
+- Built from commit: `0d55269e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -71,39 +71,45 @@
 - [[_COMMUNITY_Community 53|Community 53]]
 - [[_COMMUNITY_Community 54|Community 54]]
 - [[_COMMUNITY_Community 55|Community 55]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 57|Community 57]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
+- [[_COMMUNITY_Community 60|Community 60]]
+- [[_COMMUNITY_Community 61|Community 61]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Config` - 31 edges
-2. `SPEC.md — Ozy Living Specification` - 25 edges
-3. `Connector` - 20 edges
-4. `File` - 15 edges
-5. `run()` - 15 edges
-6. `T` - 14 edges
-7. `Adapter` - 14 edges
-8. `NewMemory()` - 13 edges
-9. `newBroker()` - 12 edges
-10. `Memory` - 12 edges
+2. `contains()` - 25 edges
+3. `SPEC.md — Ozy Living Specification` - 25 edges
+4. `Connector` - 20 edges
+5. `NewMemory()` - 17 edges
+6. `live` - 15 edges
+7. `File` - 15 edges
+8. `run()` - 15 edges
+9. `newLiveBroker()` - 14 edges
+10. `T` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `Execute()`  [INFERRED]
   cmd/ozy/main.go → internal/cli/cli.go
-- `newBroker()` --calls--> `NewSkeleton()`  [INFERRED]
-  internal/broker/skeleton_test.go → internal/broker/skeleton.go
-- `NewWithStore()` --calls--> `NewSkeleton()`  [INFERRED]
-  internal/daemon/daemon.go → internal/broker/skeleton.go
-- `newBroker()` --calls--> `NewMemory()`  [INFERRED]
-  internal/broker/skeleton_test.go → internal/catalog/memory.go
-- `TestDoctorReportsServerHealthAndRedactsSecrets()` --calls--> `NewFile()`  [INFERRED]
-  internal/cli/cli_test.go → internal/catalog/file.go
+- `newLiveBroker()` --calls--> `NewLive()`  [INFERRED]
+  internal/broker/live_test.go → internal/broker/live.go
+- `NewWithStore()` --calls--> `NewLive()`  [INFERRED]
+  internal/daemon/daemon.go → internal/broker/live.go
+- `connectLive()` --calls--> `NewLive()`  [INFERRED]
+  internal/mcp/adapter_test.go → internal/broker/live.go
+- `TestAdapter_FindToolReportsEmptyLiveDiscovery()` --calls--> `NewLive()`  [INFERRED]
+  internal/mcp/adapter_test.go → internal/broker/live.go
 
 ## Import Cycles
 - None detected.
 
-## Communities (56 total, 3 thin omitted)
+## Communities (62 total, 3 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (32): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_StatsCountFreshness(), Daemon, New(), NewWithStore(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore() (+24 more)
+Cohesion: 0.07
+Nodes (41): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_StatsCountFreshness(), ClientSession, blockingSession, fakeConnector, fakeSession, TestIndexer_ListToolsErrorRedactsConfiguredSecrets() (+33 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.13
@@ -111,15 +117,15 @@ Nodes (14): Execute(), Daemon, app, Command, Error, Writer, Writer, T (+6 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.07
-Nodes (37): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, cloneConfig(), cloneServerConfig(), cloneStringMap() (+29 more)
+Nodes (43): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, cloneConfig(), cloneServerConfig(), cloneStringMap() (+35 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.07
 Nodes (27): computedHash, skillPath, source, sourceType, computedHash, skillPath, source, sourceType (+19 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.12
-Nodes (19): Alternative, CallNextAction, CallResult, CatalogStats, DescribeResult, DoctorCheck, DoctorResult, Example (+11 more)
+Cohesion: 0.11
+Nodes (21): Alternative, CallNextAction, CallResult, Candidate, CatalogStats, DescribeResult, DoctorCheck, DoctorResult (+13 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.16
@@ -130,16 +136,16 @@ Cohesion: 0.16
 Nodes (20): Client, Connector, configError(), connectionError(), isOAuthAuthFailure(), scrub(), secretValues(), WithMaxConcurrency() (+12 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.14
-Nodes (18): skeleton, NewSkeleton(), CallResult, CatalogStats, ClientSession, DescribeResult, FindResult, Broker (+10 more)
+Cohesion: 0.11
+Nodes (24): skeleton, NewSkeleton(), newBroker(), TestCallTool_KnownToolReturnsNotImplemented(), TestCallTool_UnknownToolReturnsToolNotFound(), TestDescribeTool_UnknownReturnsToolNotFound(), TestFindTool_EmptyCatalogReturnsCatalogEmpty(), TestFindTool_NonEmptyCatalogReturnsNoGoodMatch() (+16 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.14
 Nodes (24): Cmd, Connection, blockingTransport, hasEnv(), inMemoryFactory(), resultsByID(), TestConnector_ConnectionErrorExcludesSecretValues(), TestConnector_ConnectsInMemoryServerAndListsTools() (+16 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.16
-Nodes (19): Connector, New(), normalizeSchema(), normalizeTool(), scrub(), secretValues(), WithClock(), Indexer (+11 more)
+Cohesion: 0.15
+Nodes (20): Connector, New(), normalizeSchema(), normalizeTool(), scrub(), secretValues(), WithClock(), Indexer (+12 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.18
@@ -202,8 +208,8 @@ Cohesion: 0.21
 Nodes (12): ADDED Requirements, ADDED Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Output formats, Requirement: Structured handling of unimplemented operations, Scenario: All MVP commands are registered, Scenario: CLI routes through the shared broker (+4 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.26
-Nodes (16): ConfigHome(), configHomeFor(), DefaultPath(), Home(), TestConfigHomeFallbacks(), TestDefaultPathPrecedence(), TestLoad_ExampleMCPFixture(), TestLoad_MissingEnvVarIsDiagnostic() (+8 more)
+Cohesion: 0.13
+Nodes (22): failingSession, fakeConnector, fakeSession, newLiveBroker(), searchSubstring(), TestFindTool_DisabledServersAreSkipped(), TestFindTool_LiveDiscoveryReturnsChooseFromCandidates(), TestFindTool_LiveDiscoveryZeroTools() (+14 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.17
@@ -226,16 +232,16 @@ Cohesion: 0.18
 Nodes (10): 10. Verification, 1. Module and scaffold, 2. Configuration, 3. Catalog store, 4. Broker seam and contract models, 5. CLI interface, 6. MCP adapter, 7. Daemon runtime (+2 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.40
-Nodes (10): newBroker(), TestCallTool_KnownToolReturnsNotImplemented(), TestCallTool_UnknownToolReturnsToolNotFound(), TestDescribeTool_UnknownReturnsToolNotFound(), TestFindTool_EmptyCatalogReturnsCatalogEmpty(), TestFindTool_NonEmptyCatalogReturnsNoGoodMatch(), TestList_EmptyCatalogIsInstructional(), Broker (+2 more)
+Cohesion: 0.12
+Nodes (19): Connector, live, candidateRefs(), NewLive(), normalizeInputSchema(), Candidate, Broker, CallResult (+11 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.20
 Nodes (9): ADDED Requirements, Requirement: Catalog storage holds no secrets, Requirement: Catalog survives restarts, Requirement: Durable catalog store, Requirement: Offline catalog reads, Scenario: A new process sees previously indexed tools, Scenario: Describe works while the server is offline, Scenario: Indexed tools are written to durable storage (+1 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.20
-Nodes (9): ADDED Requirements, Requirement: Agent-facing tool registration, Requirement: Instructional placeholder responses conform to contracts, Requirement: MCP adapter shares the broker seam, Scenario: Adapter advertises the three stable tools, Scenario: Adapter delegates to the shared broker, Scenario: Adapter starts over the MCP transport, Scenario: callTool returns a contract-shaped failure (+1 more)
+Cohesion: 0.24
+Nodes (10): ADDED Requirements, ADDED Requirements, Requirement: Agent-facing tool registration, Requirement: Instructional placeholder responses conform to contracts, Requirement: MCP adapter shares the broker seam, Scenario: Adapter advertises the three stable tools, Scenario: Adapter delegates to the shared broker, Scenario: Adapter starts over the MCP transport (+2 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.20
@@ -258,8 +264,8 @@ Cohesion: 0.29
 Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 39 - "Community 39"
-Cohesion: 0.33
-Nodes (5): Agent interface, Build, Configuration, ozy, Usage
+Cohesion: 0.22
+Nodes (8): Agent interface, Build, Configuration, Minimal opencode configuration, ozy, Quick start, Usage, Using Ozy as an MCP server
 
 ### Community 40 - "Community 40"
 Cohesion: 0.33
@@ -294,8 +300,8 @@ Cohesion: 0.08
 Nodes (23): Requirement: Configuration initialization writes to user config home, Requirement: Opencode MCP section compatibility, Scenario: Default timeout is applied, Scenario: Enabled defaults to true, Scenario: Enabled false disables server, Scenario: Example fixture loads successfully, Scenario: Init honors explicit config override, Scenario: Init refuses to overwrite config (+15 more)
 
 ### Community 51 - "Community 51"
-Cohesion: 0.28
-Nodes (19): run(), runTestMCPServer(), TestCallStructuredFailureExitsNonZero(), TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(), TestDoctorDoesNotLeakSecret(), TestDoctorReportsMissingEnv(), TestDoctorReportsServerHealthAndRedactsSecrets(), TestEvalReturnsNotImplemented() (+11 more)
+Cohesion: 0.18
+Nodes (30): contains(), run(), runTestMCPServer(), TestCallStructuredFailureExitsNonZero(), TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(), TestDoctorDoesNotLeakSecret(), TestDoctorReportsMissingEnv(), TestDoctorReportsServerHealthAndRedactsSecrets() (+22 more)
 
 ### Community 52 - "Community 52"
 Cohesion: 0.18
@@ -313,25 +319,49 @@ Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What C
 Cohesion: 0.33
 Nodes (5): 1. Config Home Resolution, 2. Init And Opencode MCP Compatibility, 3. Downstream Timeout Handling, 4. CLI Tool Resolution From Config, 5. Documentation And Verification
 
+### Community 56 - "Community 56"
+Cohesion: 0.19
+Nodes (13): Daemon, New(), NewWithStore(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore(), TestRun_ReportsReadyAndStopsOnCancel(), TestRun_StartsWithSemanticDisabled(), Broker (+5 more)
+
+### Community 57 - "Community 57"
+Cohesion: 0.15
+Nodes (12): MODIFIED Requirements, Requirement: MCP findTool performs live downstream discovery, Scenario: findTool keeps downstream tools as data, Scenario: findTool reports empty live discovery, Scenario: findTool reports partial downstream failures, Scenario: findTool reports total downstream failure, Scenario: findTool returns a live discovery result, Scenario: findTool returns all live-discovered tools (+4 more)
+
+### Community 58 - "Community 58"
+Cohesion: 0.22
+Nodes (8): Context, Decisions, Goals / Non-Goals, Live discovery, not catalog lookup, Partial failure is visible, Return candidates, not a selected match, Risks / Trade-offs, Route through the broker seam
+
+### Community 59 - "Community 59"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 60 - "Community 60"
+Cohesion: 0.29
+Nodes (6): state, updatedAt, sessionID, sources, background-task, updatedAt
+
+### Community 61 - "Community 61"
+Cohesion: 0.40
+Nodes (4): 1. Contract and Test Coverage, 2. Live Discovery Implementation, 3. Runtime Wiring, 4. Acceptance and Documentation
+
 ## Knowledge Gaps
-- **324 isolated node(s):** `Broker`, `CatalogStats`, `FindResult`, `DescribeResult`, `CallResult` (+319 more)
+- **376 isolated node(s):** `sessionID`, `updatedAt`, `state`, `updatedAt`, `skeleton` (+371 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `NewFile()` connect `Community 10` to `Community 0`, `Community 51`, `Community 14`?**
-  _High betweenness centrality (0.110) - this node is a cross-community bridge._
-- **Why does `NewErrorEnvelope()` connect `Community 5` to `Community 1`?**
-  _High betweenness centrality (0.105) - this node is a cross-community bridge._
-- **Why does `run()` connect `Community 51` to `Community 1`?**
-  _High betweenness centrality (0.100) - this node is a cross-community bridge._
-- **What connects `Broker`, `CatalogStats`, `FindResult` to the rest of the system?**
-  _324 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `contains()` connect `Community 51` to `Community 0`, `Community 1`, `Community 2`, `Community 6`, `Community 8`, `Community 9`, `Community 10`, `Community 56`, `Community 25`?**
+  _High betweenness centrality (0.134) - this node is a cross-community bridge._
+- **Why does `NewMemory()` connect `Community 0` to `Community 56`, `Community 25`, `Community 23`, `Community 7`?**
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+- **Why does `NewWithStore()` connect `Community 56` to `Community 7`, `Community 31`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+- **Are the 22 inferred relationships involving `contains()` (e.g. with `TestFile_PersistedCatalogContainsNoConfigSecrets()` and `TestDoctorDoesNotLeakSecret()`) actually correct?**
+  _`contains()` has 22 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 16 inferred relationships involving `NewMemory()` (e.g. with `newLiveBroker()` and `newBroker()`) actually correct?**
+  _`NewMemory()` has 16 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `sessionID`, `updatedAt`, `state` to the rest of the system?**
+  _376 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07575757575757576 - nodes in this community are weakly interconnected._
-- **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.12987012987012986 - nodes in this community are weakly interconnected._
-- **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.07200929152148665 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07315233785822021 - nodes in this community are weakly interconnected._

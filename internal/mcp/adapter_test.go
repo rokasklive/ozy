@@ -9,6 +9,8 @@ import (
 
 	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/downstream"
 )
 
 func connect(t *testing.T) *mcpsdk.ClientSession {
@@ -82,6 +84,238 @@ func TestAdapter_FindToolReturnsCatalogEmptyShape(t *testing.T) {
 	}
 	if payload["agentInstruction"] == "" || payload["agentInstruction"] == nil {
 		t.Error("findTool response must include an agentInstruction")
+	}
+}
+
+type fakeLiveConnector struct {
+	results []downstream.Result
+}
+
+func (f fakeLiveConnector) ConnectAll(context.Context, *config.Config) []downstream.Result {
+	return f.results
+}
+
+type fakeLiveSession struct {
+	tools []*mcpsdk.Tool
+	err   error
+}
+
+func (f fakeLiveSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
+	return &mcpsdk.ListToolsResult{Tools: f.tools}, f.err
+}
+
+func (fakeLiveSession) Close() error { return nil }
+
+func connectLive(t *testing.T) *mcpsdk.ClientSession {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	liveConnector := fakeLiveConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeLiveSession{tools: []*mcpsdk.Tool{
+				{
+					Name:        "confluence_search",
+					Title:       "Confluence Search",
+					Description: "Search Confluence wiki",
+					InputSchema: map[string]any{
+						"type":       "object",
+						"properties": map[string]any{"query": map[string]any{"type": "string"}},
+					},
+				},
+			}},
+		},
+	}}
+
+	serverT, clientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, liveConnector), "test")
+
+	go func() { _ = adapter.Server().Run(ctx, serverT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, clientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+	return cs
+}
+
+func TestAdapter_FindToolReturnsLiveDiscoveredTools(t *testing.T) {
+	cs := connectLive(t)
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name:      "findTool",
+		Arguments: map[string]any{"query": "search"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(findTool): %v", err)
+	}
+	payload := textPayload(t, res)
+	if payload["decision"] != "choose_from_candidates" {
+		t.Errorf("decision = %v, want choose_from_candidates", payload["decision"])
+	}
+	candidates, ok := payload["candidates"].([]any)
+	if !ok {
+		t.Fatalf("candidates = %v (%T), want array", payload["candidates"], payload["candidates"])
+	}
+	if len(candidates) != 1 {
+		t.Fatalf("candidates len = %d, want 1", len(candidates))
+	}
+	c, ok := candidates[0].(map[string]any)
+	if !ok {
+		t.Fatalf("candidate[0] = %T, want object", candidates[0])
+	}
+	if c["toolRef"] != "atlassian.confluence_search" {
+		t.Errorf("toolRef = %v, want atlassian.confluence_search", c["toolRef"])
+	}
+	if c["serverId"] != "atlassian" {
+		t.Errorf("serverId = %v, want atlassian", c["serverId"])
+	}
+	if c["name"] != "confluence_search" {
+		t.Errorf("name = %v, want confluence_search", c["name"])
+	}
+	if payload["agentInstruction"] == "" || payload["agentInstruction"] == nil {
+		t.Error("findTool response must include an agentInstruction")
+	}
+}
+
+func TestAdapter_FindToolReportsEmptyLiveDiscovery(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	emptyConnector := fakeLiveConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session:  fakeLiveSession{}, // zero tools
+		},
+	}}
+
+	serverT, clientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector), "test")
+
+	go func() { _ = adapter.Server().Run(ctx, serverT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, clientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name:      "findTool",
+		Arguments: map[string]any{"query": "search"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(findTool): %v", err)
+	}
+	payload := textPayload(t, res)
+	if payload["decision"] != "no_good_match" {
+		t.Errorf("decision = %v, want no_good_match", payload["decision"])
+	}
+	if payload["agentInstruction"] == "" || payload["agentInstruction"] == nil {
+		t.Error("zero-tools response must include an agentInstruction")
+	}
+}
+
+func TestAdapter_IntegrationWithFixtureDownstreamServer(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	// Create a fixture downstream MCP server with real tools.
+	dsServer := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "fixture-downstream", Version: "0"}, nil)
+	mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+		Name:        "fixture_search",
+		Title:       "Fixture Search",
+		Description: "Search fixture data",
+		InputSchema: map[string]any{
+			"type":       "object",
+			"properties": map[string]any{"query": map[string]any{"type": "string"}},
+		},
+	}, func(context.Context, *mcpsdk.CallToolRequest, map[string]any) (*mcpsdk.CallToolResult, any, error) {
+		return &mcpsdk.CallToolResult{}, nil, nil
+	})
+	mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+		Name:        "fixture_read",
+		Title:       "Fixture Read",
+		Description: "Read fixture data",
+	}, func(context.Context, *mcpsdk.CallToolRequest, map[string]any) (*mcpsdk.CallToolResult, any, error) {
+		return &mcpsdk.CallToolResult{}, nil, nil
+	})
+	dsServerT, dsClientT := mcpsdk.NewInMemoryTransports()
+	go func() { _ = dsServer.Run(ctx, dsServerT) }()
+
+	// Build a Connector that routes to the fixture server.
+	connector := downstream.New(downstream.WithTransportFactory(
+		func(_ string, _ config.ServerConfig) (mcpsdk.Transport, error) {
+			return dsClientT, nil
+		},
+	))
+
+	// Create the live broker backed by the fixture connector.
+	liveBroker := broker.NewLive(catalog.NewMemory(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"fixture": {Type: "local", Enabled: true},
+		},
+	}, connector)
+
+	// Wire the MCP adapter.
+	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(liveBroker, "test")
+	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, ozyClientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	// Verify Ozy advertises exactly its three tools.
+	list, err := cs.ListTools(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("ListTools: %v", err)
+	}
+	got := make(map[string]bool)
+	for _, tool := range list.Tools {
+		got[tool.Name] = true
+	}
+	for _, name := range []string{"findTool", "describeTool", "callTool"} {
+		if !got[name] {
+			t.Errorf("missing Ozy tool %q", name)
+		}
+	}
+
+	// Call findTool and verify live-discovered fixture tools are returned.
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name:      "findTool",
+		Arguments: map[string]any{"query": "search"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(findTool): %v", err)
+	}
+	payload := textPayload(t, res)
+	if payload["decision"] != "choose_from_candidates" {
+		t.Fatalf("decision = %v, want choose_from_candidates", payload["decision"])
+	}
+	candidates, ok := payload["candidates"].([]any)
+	if !ok || len(candidates) != 2 {
+		t.Fatalf("candidates = %v (len=%d), want 2 tools", payload["candidates"], len(candidates))
+	}
+	candidateNames := make(map[string]bool)
+	for _, c := range candidates {
+		cm, ok := c.(map[string]any)
+		if !ok {
+			t.Fatalf("candidate is %T, want object", c)
+		}
+		candidateNames[cm["toolRef"].(string)] = true
+	}
+	if !candidateNames["fixture.fixture_search"] {
+		t.Error("missing fixture.fixture_search candidate")
+	}
+	if !candidateNames["fixture.fixture_read"] {
+		t.Error("missing fixture.fixture_read candidate")
 	}
 }
 

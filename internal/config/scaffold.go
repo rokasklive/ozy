@@ -12,6 +12,10 @@ import (
 const starterConfig = `{
   "$schema": "https://ozy.dev/config.json",
 
+  // By default, ozy init writes this file to ~/.config/ozy/ozy.jsonc
+  // (or the Windows user config equivalent, e.g. %AppData%\ozy\ozy.jsonc).
+  // Use --config or OZY_CONFIG for an explicit project-local file.
+
   "mcp": {
     // Example remote downstream MCP server. Replace with your own.
     // "atlassian": {
@@ -20,17 +24,21 @@ const starterConfig = `{
     //   "headers": {
     //     "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
     //   },
-    //   "enabled": true
+    //   "oauth": false,
+    //   "enabled": true,
+    //   "timeout": 5000
     // },
 
     // Example local downstream MCP server.
     // "filesystem": {
     //   "type": "local",
     //   "command": ["filesystem-mcp", "--root", "."],
+    //   "cwd": "/path/to/workspace",
     //   "environment": {
     //     "OZY_ROOT": "{env:OZY_ROOT}"
     //   },
-    //   "enabled": true
+    //   "enabled": true,
+    //   "timeout": 5000
     // }
   },
 

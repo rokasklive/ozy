@@ -1,0 +1,33 @@
+{
+  "mcp": {
+    "searxng": {
+      "command": ["npx", "-y", "mcp-searxng"],
+      "enabled": true,
+      "type": "local",
+      "environment": {
+        "SEARXNG_URL": "https://search.home",
+      },
+    },
+    "javadoc": {
+      "type": "local",
+      "command": ["/home/moritz/Development/Work/javadoc-go-mcp/javadoc-mcp"],
+      "enabled": true,
+      "timeout": 180000,
+      "environment": {
+        "JAVADOC_ROOT_URL": "https://docs.oracle.com/en/java/javase/25/docs/api/index.html",
+      },
+    },
+    "opengrok": {
+      "command": [
+        "go",
+        "run",
+        "github.com/rokasklive/opengrok-go-mcp/cmd/opengrok-go-mcp@v0.4.0",
+      ],
+      "enabled": true,
+      "environment": {
+        "OPENGROK_MCP_BASE_URL": "https://opengrok.home/api/v1/",
+      },
+      "type": "local",
+    },
+  },
+}

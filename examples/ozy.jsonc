@@ -5,10 +5,12 @@
     "filesystem": {
       "type": "local",
       "command": ["filesystem-mcp", "--root", "."],
+      "cwd": "/path/to/workspace",
       "environment": {
         "OZY_ROOT": "{env:OZY_ROOT}"
       },
-      "enabled": true
+      "enabled": true,
+      "timeout": 5000
     },
     "atlassian": {
       "type": "remote",
@@ -16,6 +18,7 @@
       "headers": {
         "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
       },
+      "oauth": false,
       "enabled": true
     }
   },

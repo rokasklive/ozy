@@ -48,13 +48,22 @@ Ozy reads a single JSONC/JSON config using the opencode `mcp` shape. Path
 precedence is:
 
 1. `--config <path>` or `OZY_CONFIG`
-2. `./ozy.jsonc`
-3. `./ozy.json`
-4. `$XDG_CONFIG_HOME/ozy/ozy.jsonc` (or the OS user-config equivalent)
+2. `$XDG_CONFIG_HOME/ozy/ozy.jsonc`, or `~/.config/ozy/ozy.jsonc` when
+   `XDG_CONFIG_HOME` is unset
+3. the OS user-config equivalent on Windows, for example
+   `%AppData%\ozy\ozy.jsonc`
 
-Run `ozy init` to scaffold a commented `ozy.jsonc`. Downstream servers are
-declared under `mcp`; Ozy's own `search`, `embedding`, and `budgets` sections are
-top-level siblings:
+Run `ozy init` to scaffold a commented `ozy.jsonc` at the default user config
+path. Project-local configs are still supported explicitly, e.g.
+`ozy --config ./ozy.jsonc index`.
+
+Downstream servers are declared under `mcp`; Ozy supports opencode-compatible
+`mcp` entries only, so common MCP snippets can be copied into Ozy config without
+reshaping. Local servers support `type`, `command`, `cwd`, `environment`,
+`enabled`, and `timeout`. Remote servers support `type`, `url`, `headers`,
+`oauth`, `enabled`, and `timeout`. Omitted `enabled` means enabled; `timeout` is
+milliseconds and defaults to `5000`. Ozy's own `search`, `embedding`, and
+`budgets` sections are top-level siblings:
 
 ```jsonc
 {
@@ -62,10 +71,12 @@ top-level siblings:
     "filesystem": {
       "type": "local",
       "command": ["filesystem-mcp", "--root", "."],
+      "cwd": "/path/to/workspace",
       "environment": {
         "OZY_ROOT": "{env:OZY_ROOT}"
       },
-      "enabled": true
+      "enabled": true,
+      "timeout": 5000
     },
     "atlassian": {
       "type": "remote",
@@ -73,6 +84,7 @@ top-level siblings:
       "headers": {
         "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
       },
+      "oauth": false,
       "enabled": true
     }
   },
@@ -96,6 +108,13 @@ resolved secret values.
 The discovered catalog is stored at `$XDG_STATE_HOME/ozy/catalog.json` by
 default, falling back to `~/.local/state/ozy/catalog.json`. Override it with
 `OZY_CATALOG` for tests or isolated runs.
+
+To verify the checked-in real MCP examples against your local environment,
+ensure the commands in `examples/test_mcp_examples.jsonc` are available and run:
+
+```bash
+OZY_RUN_REAL_MCP_EXAMPLES=1 make check-real-mcp-examples
+```
 
 ## Agent interface
 

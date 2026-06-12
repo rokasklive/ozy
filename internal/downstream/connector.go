@@ -103,7 +103,7 @@ func (c *Connector) ConnectAll(ctx context.Context, cfg *config.Config) []Result
 	for i, id := range ids {
 		server := cfg.MCP[id]
 		results[i] = Result{ServerID: id}
-		if !server.Enabled {
+		if !server.IsEnabled() {
 			results[i].Skipped = true
 			continue
 		}
@@ -118,7 +118,9 @@ func (c *Connector) ConnectAll(ctx context.Context, cfg *config.Config) []Result
 				results[i].Error = connectionError(id, server, ctx.Err())
 				return
 			}
-			results[i] = c.Connect(ctx, id, server)
+			serverCtx, cancel := context.WithTimeout(ctx, server.DiscoveryTimeout())
+			defer cancel()
+			results[i] = c.Connect(serverCtx, id, server)
 		}(i, id, server)
 	}
 	wg.Wait()
@@ -154,6 +156,7 @@ func (c *Connector) defaultTransport(_ string, server config.ServerConfig) (mcps
 		}
 		// #nosec G204 -- local MCP commands are explicitly user-configured.
 		cmd := exec.Command(server.Command[0], server.Command[1:]...)
+		cmd.Dir = server.CWD
 		if len(server.Environment) > 0 {
 			cmd.Env = os.Environ()
 			keys := make([]string, 0, len(server.Environment))
@@ -210,6 +213,15 @@ func configError(serverID string, server config.ServerConfig, err error) *contra
 }
 
 func connectionError(serverID string, server config.ServerConfig, err error) *contract.Error {
+	if isOAuthAuthFailure(server, err) {
+		return &contract.Error{
+			Type:             contract.ErrTypeAuthUnavailable,
+			ServerID:         serverID,
+			Retryable:        false,
+			Message:          fmt.Sprintf("oauth authentication is required for server %q but Ozy does not implement the OAuth flow in this build: %s", serverID, scrub(err.Error(), server)),
+			AgentInstruction: "Do not retry blindly. Ask the user to configure a non-OAuth credential path, disable this server, or wait for Ozy OAuth support.",
+		}
+	}
 	return &contract.Error{
 		Type:             contract.ErrTypeDownstreamServerOffline,
 		ServerID:         serverID,
@@ -217,6 +229,17 @@ func connectionError(serverID string, server config.ServerConfig, err error) *co
 		Message:          fmt.Sprintf("could not connect to server %q: %s", serverID, scrub(err.Error(), server)),
 		AgentInstruction: "Keep using other reachable servers. Check this server's command, URL, credentials, and network reachability before retrying.",
 	}
+}
+
+func isOAuthAuthFailure(server config.ServerConfig, err error) bool {
+	if len(server.OAuth) == 0 || strings.TrimSpace(string(server.OAuth)) == "false" || err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "401") ||
+		strings.Contains(msg, "unauthorized") ||
+		strings.Contains(msg, "oauth") ||
+		strings.Contains(msg, "auth")
 }
 
 func scrub(msg string, server config.ServerConfig) string {

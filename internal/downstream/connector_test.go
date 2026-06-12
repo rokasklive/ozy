@@ -2,6 +2,7 @@ package downstream
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -22,6 +24,13 @@ type fakeTransport struct {
 
 func (f fakeTransport) Connect(context.Context) (mcpsdk.Connection, error) {
 	return nil, f.err
+}
+
+type blockingTransport struct{}
+
+func (blockingTransport) Connect(ctx context.Context) (mcpsdk.Connection, error) {
+	<-ctx.Done()
+	return nil, ctx.Err()
 }
 
 func testServerWithTool(name string) *mcpsdk.Server {
@@ -164,6 +173,7 @@ func TestConnector_LocalTransportUsesCommandAndEnvironment(t *testing.T) {
 	transport, err := connector.transportForServer("filesystem", config.ServerConfig{
 		Type:        "local",
 		Command:     []string{"filesystem-mcp", "--root", "."},
+		CWD:         "/tmp/workspace",
 		Environment: map[string]string{"OZY_ROOT": "/tmp/ozy"},
 		Enabled:     true,
 	})
@@ -178,8 +188,61 @@ func TestConnector_LocalTransportUsesCommandAndEnvironment(t *testing.T) {
 	if cmd.Path != "filesystem-mcp" || strings.Join(cmd.Args, " ") != "filesystem-mcp --root ." {
 		t.Fatalf("command = %v %v, want filesystem-mcp --root .", cmd.Path, cmd.Args)
 	}
+	if cmd.Dir != "/tmp/workspace" {
+		t.Fatalf("command dir = %q, want /tmp/workspace", cmd.Dir)
+	}
 	if !hasEnv(cmd, "OZY_ROOT=/tmp/ozy") {
 		t.Fatalf("command env missing OZY_ROOT: %v", cmd.Env)
+	}
+}
+
+func TestConnector_PerServerTimeoutCancelsConnect(t *testing.T) {
+	t.Parallel()
+	connector := New(WithTransportFactory(func(string, config.ServerConfig) (mcpsdk.Transport, error) {
+		return blockingTransport{}, nil
+	}))
+
+	results := connector.ConnectAll(context.Background(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"slow": {
+				Type:    "remote",
+				URL:     "memory",
+				Enabled: true,
+				Timeout: 1,
+			},
+		},
+	})
+
+	if len(results) != 1 {
+		t.Fatalf("ConnectAll() results len = %d, want 1", len(results))
+	}
+	got := results[0].Error
+	if got == nil || got.Type != contract.ErrTypeDownstreamServerOffline {
+		t.Fatalf("ConnectAll() error = %+v, want timeout as DOWNSTREAM_SERVER_OFFLINE", got)
+	}
+	if !strings.Contains(got.Message, context.DeadlineExceeded.Error()) {
+		t.Fatalf("timeout message = %q, want deadline exceeded", got.Message)
+	}
+}
+
+func TestConnector_OAuthConnectionFailureIsAuthUnavailableAndRedacted(t *testing.T) {
+	t.Parallel()
+	const secret = "supersecretvalue"
+	err := connectionError("sentry", config.ServerConfig{
+		Type:    "remote",
+		URL:     "https://mcp.example.com",
+		Headers: map[string]string{"Authorization": "Bearer " + secret},
+		OAuth:   json.RawMessage(`{"clientId":"{env:CLIENT_ID}"}`),
+	}, errors.New("401 unauthorized with Bearer "+secret))
+
+	if err.Type != contract.ErrTypeAuthUnavailable {
+		t.Fatalf("connectionError() type = %q, want AUTH_UNAVAILABLE", err.Type)
+	}
+	if strings.Contains(err.Message, secret) {
+		t.Fatalf("auth error leaked secret: %+v", err)
+	}
+	if err.Retryable {
+		t.Fatal("auth unavailable should not be blindly retryable")
 	}
 }
 
@@ -226,6 +289,16 @@ func resultsByID(results []Result) map[string]Result {
 		out[r.ServerID] = r
 	}
 	return out
+}
+
+func TestServerConfigDiscoveryTimeoutDuration(t *testing.T) {
+	t.Parallel()
+	if got := (config.ServerConfig{}).DiscoveryTimeout(); got != 5*time.Second {
+		t.Fatalf("zero timeout duration = %v, want 5s default", got)
+	}
+	if got := (config.ServerConfig{Timeout: 180000}).DiscoveryTimeout(); got != 180*time.Second {
+		t.Fatalf("configured timeout duration = %v, want 180s", got)
+	}
 }
 
 func hasEnv(cmd *exec.Cmd, entry string) bool {

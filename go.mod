@@ -1,4 +1,4 @@
-module github.com/rokask/ozy
+module github.com/rokasklive/ozy
 
 go 1.26.4
 

@@ -7,8 +7,8 @@ import (
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/rokask/ozy/internal/broker"
-	"github.com/rokask/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/broker"
+	"github.com/rokasklive/ozy/internal/catalog"
 )
 
 func connect(t *testing.T) *mcpsdk.ClientSession {

@@ -1,16 +1,16 @@
 # Graph Report - ozy  (2026-06-12)
 
 ## Corpus Check
-- 58 files · ~34,671 words
+- 59 files · ~34,710 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 771 nodes · 1056 edges · 56 communities (53 shown, 3 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 51 edges (avg confidence: 0.8)
+- 772 nodes · 1061 edges · 56 communities (53 shown, 3 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 53 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6c6eea50`
+- Built from commit: `4866e1e0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -73,7 +73,7 @@
 - [[_COMMUNITY_Community 55|Community 55]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Config` - 30 edges
+1. `Config` - 31 edges
 2. `SPEC.md — Ozy Living Specification` - 25 edges
 3. `Connector` - 20 edges
 4. `File` - 15 edges
@@ -202,8 +202,8 @@ Cohesion: 0.21
 Nodes (12): ADDED Requirements, ADDED Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Output formats, Requirement: Structured handling of unimplemented operations, Scenario: All MVP commands are registered, Scenario: CLI routes through the shared broker (+4 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.27
-Nodes (15): ConfigHome(), configHomeFor(), DefaultPath(), TestConfigHomeFallbacks(), TestDefaultPathPrecedence(), TestLoad_ExampleMCPFixture(), TestLoad_MissingEnvVarIsDiagnostic(), TestLoad_MissingFile() (+7 more)
+Cohesion: 0.26
+Nodes (16): ConfigHome(), configHomeFor(), DefaultPath(), Home(), TestConfigHomeFallbacks(), TestDefaultPathPrecedence(), TestLoad_ExampleMCPFixture(), TestLoad_MissingEnvVarIsDiagnostic() (+8 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.17
@@ -322,7 +322,7 @@ Nodes (5): 1. Config Home Resolution, 2. Init And Opencode MCP Compatibility, 3.
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `NewFile()` connect `Community 10` to `Community 0`, `Community 51`, `Community 14`?**
-  _High betweenness centrality (0.109) - this node is a cross-community bridge._
+  _High betweenness centrality (0.110) - this node is a cross-community bridge._
 - **Why does `NewErrorEnvelope()` connect `Community 5` to `Community 1`?**
   _High betweenness centrality (0.105) - this node is a cross-community bridge._
 - **Why does `run()` connect `Community 51` to `Community 1`?**

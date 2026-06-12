@@ -13,7 +13,7 @@ import (
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/rokask/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/catalog"
 )
 
 const cfgWithSecret = `{

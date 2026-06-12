@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+echo "pre-push: running make lint"
+if ! make lint; then
+	echo "pre-push: lint failed; push aborted" >&2
+	exit 1
+fi

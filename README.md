@@ -18,12 +18,15 @@ full product specification.
 ## Build
 
 ```bash
-make build      # produces ./ozy
-make test       # go test ./...
-make lint       # go vet + gofmt check
+make build          # produces ./ozy
+make test           # go test ./...
+make tools          # install the pinned golangci-lint
+make lint           # go vet + gofmt check
+make install-hooks  # run make lint before git push
 ```
 
-Requires a recent Go toolchain (see `go.mod`).
+Requires a recent Go toolchain (see `go.mod`). Run `make install-hooks` once per
+clone to enable the tracked pre-push hook.
 
 ## Usage
 

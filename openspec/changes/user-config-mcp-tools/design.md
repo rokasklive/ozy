@@ -54,11 +54,11 @@ downstream tools.
 
 Add a small path API around the existing default path logic:
 
-- `ConfigHome()` returns the Ozy config directory.
-- `DefaultPath()` returns `ConfigHome()/ozy.jsonc` unless `OZY_CONFIG` is set.
+- `Home()` returns the Ozy config directory.
+- `DefaultPath()` returns `Home()/ozy.jsonc` unless `OZY_CONFIG` is set.
 - The CLI `--config` default uses `DefaultPath()`.
 
-On Unix-like systems, `ConfigHome()` uses `$XDG_CONFIG_HOME/ozy` when set and
+On Unix-like systems, `Home()` uses `$XDG_CONFIG_HOME/ozy` when set and
 `$HOME/.config/ozy` otherwise. On Windows, it uses `os.UserConfigDir()` and
 appends `ozy`, yielding the roaming user config location in normal Go builds.
 

@@ -11,10 +11,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/rokask/ozy/internal/config"
-	"github.com/rokask/ozy/internal/contract"
-	ozyindex "github.com/rokask/ozy/internal/index"
-	ozymcp "github.com/rokask/ozy/internal/mcp"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
+	ozyindex "github.com/rokasklive/ozy/internal/index"
+	ozymcp "github.com/rokasklive/ozy/internal/mcp"
 )
 
 func (a *app) initCmd() *cobra.Command {

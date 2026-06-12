@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/rokask/ozy/internal/broker"
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/broker"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
 )
 
 // Daemon holds the runtime wiring shared by the CLI and MCP adapter.

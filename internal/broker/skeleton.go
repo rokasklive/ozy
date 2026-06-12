@@ -3,8 +3,8 @@ package broker
 import (
 	"context"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 // skeleton is the placeholder broker. It performs no ranking or downstream

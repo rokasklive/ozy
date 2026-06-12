@@ -1426,13 +1426,13 @@
       "norm_label": "loaded"
     },
     {
-      "label": "ConfigHome()",
+      "label": "Home()",
       "file_type": "code",
       "source_file": "internal/config/config.go",
       "source_location": "L172",
-      "id": "config_config_confighome",
+      "id": "config_config_home",
       "community": 25,
-      "norm_label": "confighome()"
+      "norm_label": "home()"
     },
     {
       "label": "configHomeFor()",
@@ -2815,7 +2815,7 @@
       "label": ".recordServer()",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L146",
+      "source_location": "L147",
       "id": "index_indexer_recordserver",
       "community": 9,
       "norm_label": ".recordserver()"
@@ -2824,7 +2824,7 @@
       "label": "ServerStatus",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L146",
+      "source_location": "L147",
       "id": "serverstatus",
       "community": 9,
       "norm_label": "serverstatus"
@@ -2833,7 +2833,7 @@
       "label": ".indexSession()",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L159",
+      "source_location": "L160",
       "id": "index_indexer_indexsession",
       "community": 9,
       "norm_label": ".indexsession()"
@@ -2842,7 +2842,7 @@
       "label": "ServerConfig",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L159",
+      "source_location": "L160",
       "id": "internal_index_index_go_serverconfig",
       "community": 9,
       "norm_label": "serverconfig"
@@ -2851,7 +2851,7 @@
       "label": "Session",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L159",
+      "source_location": "L160",
       "id": "session",
       "community": 9,
       "norm_label": "session"
@@ -2860,7 +2860,7 @@
       "label": "scrub()",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L201",
+      "source_location": "L202",
       "id": "index_index_scrub",
       "community": 9,
       "norm_label": "scrub()"
@@ -2869,7 +2869,7 @@
       "label": "secretValues()",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L211",
+      "source_location": "L212",
       "id": "index_index_secretvalues",
       "community": 9,
       "norm_label": "secretvalues()"
@@ -2878,7 +2878,7 @@
       "label": "normalizeTool()",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L222",
+      "source_location": "L223",
       "id": "index_index_normalizetool",
       "community": 9,
       "norm_label": "normalizetool()"
@@ -2887,7 +2887,7 @@
       "label": "Tool",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L222",
+      "source_location": "L223",
       "id": "internal_index_index_go_tool",
       "community": 9,
       "norm_label": "tool"
@@ -2896,7 +2896,7 @@
       "label": "normalizeSchema()",
       "file_type": "code",
       "source_file": "internal/index/index.go",
-      "source_location": "L243",
+      "source_location": "L244",
       "id": "index_index_normalizeschema",
       "community": 9,
       "norm_label": "normalizeschema()"
@@ -3697,7 +3697,7 @@
       "label": "Usage",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L28",
+      "source_location": "L31",
       "id": "readme_usage",
       "community": 39,
       "norm_label": "usage"
@@ -3706,7 +3706,7 @@
       "label": "Configuration",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L45",
+      "source_location": "L48",
       "id": "readme_configuration",
       "community": 39,
       "norm_label": "configuration"
@@ -3715,7 +3715,7 @@
       "label": "Agent interface",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L119",
+      "source_location": "L122",
       "id": "readme_agent_interface",
       "community": 39,
       "norm_label": "agent interface"
@@ -6916,6 +6916,15 @@
       "norm_label": "scenario: continuous integration runs build, test, and lint"
     },
     {
+      "label": "ConfigHome()",
+      "file_type": "code",
+      "source_file": "internal/config/config.go",
+      "source_location": "L172",
+      "community": 25,
+      "norm_label": "confighome()",
+      "id": "config_config_confighome"
+    },
+    {
       "label": "ADDED Requirements",
       "file_type": "document",
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md",
@@ -8702,9 +8711,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test",
-      "target": "cli_cli_test_runtestmcpserver",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_runtestmcpserver"
     },
     {
       "relation": "contains",
@@ -8722,9 +8731,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L308",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test",
-      "target": "cli_cli_test_testcliindexesandexposestoolsfromexplicitmcpconfig",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_testcliindexesandexposestoolsfromexplicitmcpconfig"
     },
     {
       "relation": "contains",
@@ -8792,9 +8801,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L282",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test",
-      "target": "cli_cli_test_testinitwritesdefaultuserconfigfile",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_testinitwritesdefaultuserconfigfile"
     },
     {
       "relation": "contains",
@@ -8822,9 +8831,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test",
-      "target": "cli_cli_test_testmain",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_testmain"
     },
     {
       "relation": "contains",
@@ -8863,9 +8872,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testmain",
-      "target": "cli_cli_test_runtestmcpserver",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_runtestmcpserver"
     },
     {
       "relation": "references",
@@ -8874,9 +8883,9 @@
       "source_location": "L37",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testmain",
-      "target": "m",
-      "confidence_score": 1.0
+      "target": "m"
     },
     {
       "relation": "calls",
@@ -8896,9 +8905,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L322",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testcliindexesandexposestoolsfromexplicitmcpconfig",
-      "target": "cli_cli_test_run",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_run"
     },
     {
       "relation": "calls",
@@ -8973,9 +8982,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L291",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testinitwritesdefaultuserconfigfile",
-      "target": "cli_cli_test_run",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_run"
     },
     {
       "relation": "calls",
@@ -9039,9 +9048,9 @@
       "source_file": "internal/cli/cli_test.go",
       "source_location": "L311",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testcliindexesandexposestoolsfromexplicitmcpconfig",
-      "target": "cli_cli_test_writecfg",
-      "confidence_score": 1.0
+      "target": "cli_cli_test_writecfg"
     },
     {
       "relation": "calls",
@@ -9138,9 +9147,9 @@
       "source_location": "L308",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testcliindexesandexposestoolsfromexplicitmcpconfig",
-      "target": "internal_cli_cli_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_cli_cli_test_go_t"
     },
     {
       "relation": "references",
@@ -9215,9 +9224,9 @@
       "source_location": "L282",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "cli_cli_test_testinitwritesdefaultuserconfigfile",
-      "target": "internal_cli_cli_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_cli_cli_test_go_t"
     },
     {
       "relation": "references",
@@ -9713,9 +9722,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L352",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config",
-      "target": "config_config_clonestringmap",
-      "confidence_score": 1.0
+      "target": "config_config_clonestringmap"
     },
     {
       "relation": "contains",
@@ -9733,9 +9742,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L172",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config",
-      "target": "config_config_confighome",
-      "confidence_score": 1.0
+      "target": "config_config_confighome"
     },
     {
       "relation": "contains",
@@ -9743,9 +9752,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L188",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config",
-      "target": "config_config_confighomefor",
-      "confidence_score": 1.0
+      "target": "config_config_confighomefor"
     },
     {
       "relation": "contains",
@@ -9756,6 +9765,16 @@
       "confidence_score": 1.0,
       "source": "config_config",
       "target": "config_config_defaultpath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/config/config.go",
+      "source_location": "L172",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "config_config",
+      "target": "config_config_home"
     },
     {
       "relation": "contains",
@@ -9895,9 +9914,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config",
-      "target": "config_serverconfigjson",
-      "confidence_score": 1.0
+      "target": "config_serverconfigjson"
     },
     {
       "relation": "references",
@@ -9960,9 +9979,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L98",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_serverconfig",
-      "target": "config_serverconfig_discoverytimeout",
-      "confidence_score": 1.0
+      "target": "config_serverconfig_discoverytimeout"
     },
     {
       "relation": "method",
@@ -9970,9 +9989,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_serverconfig",
-      "target": "config_serverconfig_isenabled",
-      "confidence_score": 1.0
+      "target": "config_serverconfig_isenabled"
     },
     {
       "relation": "method",
@@ -9980,9 +9999,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_serverconfig",
-      "target": "config_serverconfig_unmarshaljson",
-      "confidence_score": 1.0
+      "target": "config_serverconfig_unmarshaljson"
     },
     {
       "relation": "references",
@@ -9991,9 +10010,9 @@
       "source_location": "L46",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "config_serverconfig",
-      "target": "rawmessage",
-      "confidence_score": 1.0
+      "target": "rawmessage"
     },
     {
       "relation": "calls",
@@ -10002,9 +10021,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L348",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_cloneserverconfig",
-      "target": "rawmessage",
-      "confidence_score": 1.0
+      "target": "rawmessage"
     },
     {
       "relation": "calls",
@@ -10013,9 +10032,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_serverconfig_unmarshaljson",
-      "target": "rawmessage",
-      "confidence_score": 1.0
+      "target": "rawmessage"
     },
     {
       "relation": "references",
@@ -10024,9 +10043,9 @@
       "source_location": "L58",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "config_serverconfigjson",
-      "target": "rawmessage",
-      "confidence_score": 1.0
+      "target": "rawmessage"
     },
     {
       "relation": "calls",
@@ -10046,9 +10065,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_serverconfig_unmarshaljson",
-      "target": "config_config_clonestringmap",
-      "confidence_score": 1.0
+      "target": "config_config_clonestringmap"
     },
     {
       "relation": "calls",
@@ -10057,9 +10076,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L264",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_validate",
-      "target": "config_serverconfig_isenabled",
-      "confidence_score": 1.0
+      "target": "config_serverconfig_isenabled"
     },
     {
       "relation": "references",
@@ -10068,9 +10087,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L98",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_serverconfig_discoverytimeout",
-      "target": "duration",
-      "confidence_score": 1.0
+      "target": "duration"
     },
     {
       "relation": "references",
@@ -10176,22 +10195,22 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "internal/config/config.go",
-      "source_location": "L175",
+      "source_location": "L204",
       "weight": 1.0,
-      "source": "config_config_confighome",
-      "target": "config_config_confighomefor",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "config_config_defaultpath",
+      "target": "config_config_home"
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "internal/config/config.go",
-      "source_location": "L204",
+      "source_location": "L175",
       "weight": 1.0,
-      "source": "config_config_defaultpath",
-      "target": "config_config_confighome",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "config_config_home",
+      "target": "config_config_confighomefor"
     },
     {
       "relation": "calls",
@@ -10202,7 +10221,7 @@
       "source_location": "L204",
       "weight": 1.0,
       "source": "config_config_test_testconfighomefallbacks",
-      "target": "config_config_confighome"
+      "target": "config_config_home"
     },
     {
       "relation": "calls",
@@ -10213,7 +10232,18 @@
       "source_location": "L171",
       "weight": 1.0,
       "source": "config_config_test_testdefaultpathprecedence",
-      "target": "config_config_confighome"
+      "target": "config_config_home"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/config/config.go",
+      "source_location": "L175",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "config_config_confighome",
+      "target": "config_config_confighomefor"
     },
     {
       "relation": "calls",
@@ -10225,6 +10255,17 @@
       "weight": 1.0,
       "source": "config_config_test_testconfighomefallbacks",
       "target": "config_config_confighomefor"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "internal/config/config.go",
+      "source_location": "L204",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "config_config_defaultpath",
+      "target": "config_config_confighome"
     },
     {
       "relation": "calls",
@@ -10354,9 +10395,9 @@
       "source_file": "internal/config/config.go",
       "source_location": "L346",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_cloneserverconfig",
-      "target": "config_config_clonestringmap",
-      "confidence_score": 1.0
+      "target": "config_config_clonestringmap"
     },
     {
       "relation": "contains",
@@ -10364,9 +10405,9 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L198",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_test",
-      "target": "config_config_test_testconfighomefallbacks",
-      "confidence_score": 1.0
+      "target": "config_config_test_testconfighomefallbacks"
     },
     {
       "relation": "contains",
@@ -10384,9 +10425,9 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L290",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_test",
-      "target": "config_config_test_testload_examplemcpfixture",
-      "confidence_score": 1.0
+      "target": "config_config_test_testload_examplemcpfixture"
     },
     {
       "relation": "contains",
@@ -10414,9 +10455,9 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L212",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_test",
-      "target": "config_config_test_testload_opencodemcpsectioncompatibility",
-      "confidence_score": 1.0
+      "target": "config_config_test_testload_opencodemcpsectioncompatibility"
     },
     {
       "relation": "contains",
@@ -10486,9 +10527,9 @@
       "source_file": "internal/config/config_test.go",
       "source_location": "L213",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_config_test_testload_opencodemcpsectioncompatibility",
-      "target": "config_config_test_writetemp",
-      "confidence_score": 1.0
+      "target": "config_config_test_writetemp"
     },
     {
       "relation": "calls",
@@ -10541,9 +10582,9 @@
       "source_location": "L198",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "config_config_test_testconfighomefallbacks",
-      "target": "internal_config_config_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_config_config_test_go_t"
     },
     {
       "relation": "references",
@@ -10563,9 +10604,9 @@
       "source_location": "L290",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "config_config_test_testload_examplemcpfixture",
-      "target": "internal_config_config_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_config_config_test_go_t"
     },
     {
       "relation": "references",
@@ -10596,9 +10637,9 @@
       "source_location": "L212",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "config_config_test_testload_opencodemcpsectioncompatibility",
-      "target": "internal_config_config_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_config_config_test_go_t"
     },
     {
       "relation": "references",
@@ -10643,6 +10684,28 @@
       "confidence_score": 1.0,
       "source": "config_config_test_testwritestarter",
       "target": "internal_config_config_test_go_t"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "config_config_test_testdefaultpathprecedence",
+      "target": "config_config_confighome"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "internal/config/config_test.go",
+      "source_location": "L204",
+      "weight": 1.0,
+      "source": "config_config_test_testconfighomefallbacks",
+      "target": "config_config_confighome"
     },
     {
       "relation": "calls",
@@ -11677,9 +11740,9 @@
       "source_file": "internal/downstream/connector.go",
       "source_location": "L234",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_connector",
-      "target": "downstream_connector_isoauthauthfailure",
-      "confidence_score": 1.0
+      "target": "downstream_connector_isoauthauthfailure"
     },
     {
       "relation": "references",
@@ -12097,9 +12160,9 @@
       "source_location": "L234",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "downstream_connector_isoauthauthfailure",
-      "target": "internal_downstream_connector_go_serverconfig",
-      "confidence_score": 1.0
+      "target": "internal_downstream_connector_go_serverconfig"
     },
     {
       "relation": "references",
@@ -12217,9 +12280,9 @@
       "source_file": "internal/downstream/connector.go",
       "source_location": "L216",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_connector_connectionerror",
-      "target": "downstream_connector_isoauthauthfailure",
-      "confidence_score": 1.0
+      "target": "downstream_connector_isoauthauthfailure"
     },
     {
       "relation": "calls",
@@ -12260,9 +12323,9 @@
       "source_file": "internal/downstream/connector_test.go",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_connector_test",
-      "target": "downstream_blockingtransport",
-      "confidence_score": 1.0
+      "target": "downstream_blockingtransport"
     },
     {
       "relation": "contains",
@@ -12340,9 +12403,9 @@
       "source_file": "internal/downstream/connector_test.go",
       "source_location": "L228",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_connector_test",
-      "target": "downstream_connector_test_testconnector_oauthconnectionfailureisauthunavailableandredacted",
-      "confidence_score": 1.0
+      "target": "downstream_connector_test_testconnector_oauthconnectionfailureisauthunavailableandredacted"
     },
     {
       "relation": "contains",
@@ -12360,9 +12423,9 @@
       "source_file": "internal/downstream/connector_test.go",
       "source_location": "L199",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_connector_test",
-      "target": "downstream_connector_test_testconnector_perservertimeoutcancelsconnect",
-      "confidence_score": 1.0
+      "target": "downstream_connector_test_testconnector_perservertimeoutcancelsconnect"
     },
     {
       "relation": "contains",
@@ -12380,9 +12443,9 @@
       "source_file": "internal/downstream/connector_test.go",
       "source_location": "L294",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_connector_test",
-      "target": "downstream_connector_test_testserverconfigdiscoverytimeoutduration",
-      "confidence_score": 1.0
+      "target": "downstream_connector_test_testserverconfigdiscoverytimeoutduration"
     },
     {
       "relation": "contains",
@@ -12443,9 +12506,9 @@
       "source_location": "L31",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "downstream_blockingtransport_connect",
-      "target": "internal_downstream_connector_test_go_context",
-      "confidence_score": 1.0
+      "target": "internal_downstream_connector_test_go_context"
     },
     {
       "relation": "references",
@@ -12454,9 +12517,9 @@
       "source_location": "L31",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "downstream_blockingtransport_connect",
-      "target": "connection",
-      "confidence_score": 1.0
+      "target": "connection"
     },
     {
       "relation": "method",
@@ -12464,9 +12527,9 @@
       "source_file": "internal/downstream/connector_test.go",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "downstream_blockingtransport",
-      "target": "downstream_blockingtransport_connect",
-      "confidence_score": 1.0
+      "target": "downstream_blockingtransport_connect"
     },
     {
       "relation": "calls",
@@ -12607,9 +12670,9 @@
       "source_location": "L228",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "downstream_connector_test_testconnector_oauthconnectionfailureisauthunavailableandredacted",
-      "target": "internal_downstream_connector_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_downstream_connector_test_go_t"
     },
     {
       "relation": "references",
@@ -12629,9 +12692,9 @@
       "source_location": "L199",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "downstream_connector_test_testconnector_perservertimeoutcancelsconnect",
-      "target": "internal_downstream_connector_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_downstream_connector_test_go_t"
     },
     {
       "relation": "references",
@@ -12651,9 +12714,9 @@
       "source_location": "L294",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "downstream_connector_test_testserverconfigdiscoverytimeoutduration",
-      "target": "internal_downstream_connector_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_downstream_connector_test_go_t"
     },
     {
       "relation": "calls",
@@ -12756,9 +12819,9 @@
       "source_file": "internal/index/index.go",
       "source_location": "L201",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_index",
-      "target": "index_index_scrub",
-      "confidence_score": 1.0
+      "target": "index_index_scrub"
     },
     {
       "relation": "contains",
@@ -12766,9 +12829,9 @@
       "source_file": "internal/index/index.go",
       "source_location": "L211",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_index",
-      "target": "index_index_secretvalues",
-      "confidence_score": 1.0
+      "target": "index_index_secretvalues"
     },
     {
       "relation": "contains",
@@ -13099,9 +13162,9 @@
       "source_file": "internal/index/index.go",
       "source_location": "L169",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_indexer_indexsession",
-      "target": "index_index_scrub",
-      "confidence_score": 1.0
+      "target": "index_index_scrub"
     },
     {
       "relation": "references",
@@ -13110,9 +13173,9 @@
       "source_location": "L159",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_indexer_indexsession",
-      "target": "internal_index_index_go_serverconfig",
-      "confidence_score": 1.0
+      "target": "internal_index_index_go_serverconfig"
     },
     {
       "relation": "references",
@@ -13132,9 +13195,9 @@
       "source_location": "L201",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_index_scrub",
-      "target": "internal_index_index_go_serverconfig",
-      "confidence_score": 1.0
+      "target": "internal_index_index_go_serverconfig"
     },
     {
       "relation": "references",
@@ -13143,9 +13206,9 @@
       "source_location": "L211",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_index_secretvalues",
-      "target": "internal_index_index_go_serverconfig",
-      "confidence_score": 1.0
+      "target": "internal_index_index_go_serverconfig"
     },
     {
       "relation": "calls",
@@ -13154,9 +13217,9 @@
       "source_file": "internal/index/index.go",
       "source_location": "L202",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_index_scrub",
-      "target": "index_index_secretvalues",
-      "confidence_score": 1.0
+      "target": "index_index_secretvalues"
     },
     {
       "relation": "calls",
@@ -13186,9 +13249,9 @@
       "source_file": "internal/index/index_test.go",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_index_test",
-      "target": "index_blockingsession",
-      "confidence_score": 1.0
+      "target": "index_blockingsession"
     },
     {
       "relation": "contains",
@@ -13216,9 +13279,9 @@
       "source_file": "internal/index/index_test.go",
       "source_location": "L174",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_index_test",
-      "target": "index_index_test_testindexer_listtoolserrorredactsconfiguredsecrets",
-      "confidence_score": 1.0
+      "target": "index_index_test_testindexer_listtoolserrorredactsconfiguredsecrets"
     },
     {
       "relation": "contains",
@@ -13256,9 +13319,9 @@
       "source_file": "internal/index/index_test.go",
       "source_location": "L148",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_index_test",
-      "target": "index_index_test_testindexer_perservertimeoutcancelslisttools",
-      "confidence_score": 1.0
+      "target": "index_index_test_testindexer_perservertimeoutcancelslisttools"
     },
     {
       "relation": "method",
@@ -13321,9 +13384,9 @@
       "source_location": "L39",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_blockingsession_listtools",
-      "target": "internal_index_index_test_go_context",
-      "confidence_score": 1.0
+      "target": "internal_index_index_test_go_context"
     },
     {
       "relation": "references",
@@ -13396,9 +13459,9 @@
       "source_location": "L39",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_blockingsession_listtools",
-      "target": "listtoolsparams",
-      "confidence_score": 1.0
+      "target": "listtoolsparams"
     },
     {
       "relation": "references",
@@ -13407,9 +13470,9 @@
       "source_location": "L39",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "index_blockingsession_listtools",
-      "target": "listtoolsresult",
-      "confidence_score": 1.0
+      "target": "listtoolsresult"
     },
     {
       "relation": "method",
@@ -13417,9 +13480,9 @@
       "source_file": "internal/index/index_test.go",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_blockingsession",
-      "target": "index_blockingsession_close",
-      "confidence_score": 1.0
+      "target": "index_blockingsession_close"
     },
     {
       "relation": "method",
@@ -13427,9 +13490,9 @@
       "source_file": "internal/index/index_test.go",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "index_blockingsession",
-      "target": "index_blockingsession_listtools",
-      "confidence_score": 1.0
+      "target": "index_blockingsession_listtools"
     },
     {
       "relation": "references",
@@ -13449,9 +13512,9 @@
       "source_location": "L174",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_index_test_testindexer_listtoolserrorredactsconfiguredsecrets",
-      "target": "internal_index_index_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_index_index_test_go_t"
     },
     {
       "relation": "references",
@@ -13482,9 +13545,9 @@
       "source_location": "L148",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "index_index_test_testindexer_perservertimeoutcancelslisttools",
-      "target": "internal_index_index_test_go_t",
-      "confidence_score": 1.0
+      "target": "internal_index_index_test_go_t"
     },
     {
       "relation": "references",
@@ -15296,9 +15359,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_added_requirements"
     },
     {
       "relation": "contains",
@@ -15306,9 +15369,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_cli_command_surface",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_cli_command_surface"
     },
     {
       "relation": "contains",
@@ -15316,9 +15379,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_cli_mirrors_broker_operations",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_cli_mirrors_broker_operations"
     },
     {
       "relation": "contains",
@@ -15326,9 +15389,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_output_formats",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_output_formats"
     },
     {
       "relation": "contains",
@@ -15336,9 +15399,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_structured_handling_of_unimplemented_operations",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_cli_interface_spec_md_cli_interface_spec_requirement_structured_handling_of_unimplemented_operations"
     },
     {
       "relation": "contains",
@@ -15456,9 +15519,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/configuration/spec.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_added_requirements"
     },
     {
       "relation": "contains",
@@ -15466,9 +15529,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/configuration/spec.md",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading"
     },
     {
       "relation": "contains",
@@ -15476,9 +15539,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/configuration/spec.md",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_configuration_validation",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_configuration_validation"
     },
     {
       "relation": "contains",
@@ -15486,9 +15549,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/configuration/spec.md",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_environment_reference_resolution",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_environment_reference_resolution"
     },
     {
       "relation": "contains",
@@ -15496,9 +15559,9 @@
       "source_file": "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/configuration/spec.md",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_redaction_in_diagnostics",
-      "confidence_score": 1.0
+      "target": "openspec_changes_archive_2026_06_12_init_project_skeleton_specs_configuration_spec_md_configuration_spec_requirement_redaction_in_diagnostics"
     },
     {
       "relation": "contains",
@@ -16316,9 +16379,9 @@
       "source_file": "openspec/changes/downstream-discovery/specs/configuration/spec.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec",
-      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "confidence_score": 1.0
+      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_modified_requirements"
     },
     {
       "relation": "contains",
@@ -16326,9 +16389,9 @@
       "source_file": "openspec/changes/downstream-discovery/specs/configuration/spec.md",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "confidence_score": 1.0
+      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading"
     },
     {
       "relation": "contains",
@@ -16336,9 +16399,9 @@
       "source_file": "openspec/changes/downstream-discovery/specs/configuration/spec.md",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_configuration_validation",
-      "confidence_score": 1.0
+      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_configuration_validation"
     },
     {
       "relation": "contains",
@@ -16346,9 +16409,9 @@
       "source_file": "openspec/changes/downstream-discovery/specs/configuration/spec.md",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_environment_reference_resolution",
-      "confidence_score": 1.0
+      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_environment_reference_resolution"
     },
     {
       "relation": "contains",
@@ -16356,9 +16419,9 @@
       "source_file": "openspec/changes/downstream-discovery/specs/configuration/spec.md",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_redaction_in_diagnostics",
-      "confidence_score": 1.0
+      "target": "openspec_changes_downstream_discovery_specs_configuration_spec_md_configuration_spec_requirement_redaction_in_diagnostics"
     },
     {
       "relation": "contains",
@@ -16816,9 +16879,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design",
-      "target": "user_config_mcp_tools_design_context",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_context"
     },
     {
       "relation": "contains",
@@ -16826,9 +16889,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design",
-      "target": "user_config_mcp_tools_design_decisions",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_decisions"
     },
     {
       "relation": "contains",
@@ -16836,9 +16899,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design",
-      "target": "user_config_mcp_tools_design_goals_non_goals",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_goals_non_goals"
     },
     {
       "relation": "contains",
@@ -16846,9 +16909,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design",
-      "target": "user_config_mcp_tools_design_migration_plan",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_migration_plan"
     },
     {
       "relation": "contains",
@@ -16856,9 +16919,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L164",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design",
-      "target": "user_config_mcp_tools_design_open_questions",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_open_questions"
     },
     {
       "relation": "contains",
@@ -16866,9 +16929,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L129",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design",
-      "target": "user_config_mcp_tools_design_risks_trade_offs",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_risks_trade_offs"
     },
     {
       "relation": "contains",
@@ -16876,9 +16939,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design_decisions",
-      "target": "user_config_mcp_tools_design_d1_make_config_home_resolution_explicit_in_internal_config",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_d1_make_config_home_resolution_explicit_in_internal_config"
     },
     {
       "relation": "contains",
@@ -16886,9 +16949,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design_decisions",
-      "target": "user_config_mcp_tools_design_d2_ozy_init_writes_only_to_the_resolved_config_path",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_d2_ozy_init_writes_only_to_the_resolved_config_path"
     },
     {
       "relation": "contains",
@@ -16896,9 +16959,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L80",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design_decisions",
-      "target": "user_config_mcp_tools_design_d3_match_opencode_mcp_section_shape_not_full_opencode_config",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_d3_match_opencode_mcp_section_shape_not_full_opencode_config"
     },
     {
       "relation": "contains",
@@ -16906,9 +16969,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/design.md",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_design_decisions",
-      "target": "user_config_mcp_tools_design_d4_add_deterministic_cli_acceptance_coverage_plus_opt_in_real_server_check",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_design_d4_add_deterministic_cli_acceptance_coverage_plus_opt_in_real_server_check"
     },
     {
       "relation": "contains",
@@ -16916,9 +16979,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/proposal.md",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_proposal",
-      "target": "user_config_mcp_tools_proposal_capabilities",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_proposal_capabilities"
     },
     {
       "relation": "contains",
@@ -16926,9 +16989,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/proposal.md",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_proposal",
-      "target": "user_config_mcp_tools_proposal_impact",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_proposal_impact"
     },
     {
       "relation": "contains",
@@ -16936,9 +16999,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/proposal.md",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_proposal",
-      "target": "user_config_mcp_tools_proposal_what_changes",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_proposal_what_changes"
     },
     {
       "relation": "contains",
@@ -16946,9 +17009,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/proposal.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_proposal",
-      "target": "user_config_mcp_tools_proposal_why",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_proposal_why"
     },
     {
       "relation": "contains",
@@ -16956,9 +17019,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/proposal.md",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_proposal_capabilities",
-      "target": "user_config_mcp_tools_proposal_modified_capabilities",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_proposal_modified_capabilities"
     },
     {
       "relation": "contains",
@@ -16966,9 +17029,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/proposal.md",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_proposal_capabilities",
-      "target": "user_config_mcp_tools_proposal_new_capabilities",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_proposal_new_capabilities"
     },
     {
       "relation": "contains",
@@ -16976,9 +17039,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/cli-interface/spec.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_cli_interface_spec_md_cli_interface_spec",
-      "target": "openspec_changes_user_config_mcp_tools_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "confidence_score": 1.0
+      "target": "openspec_changes_user_config_mcp_tools_specs_cli_interface_spec_md_cli_interface_spec_added_requirements"
     },
     {
       "relation": "contains",
@@ -16986,9 +17049,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/cli-interface/spec.md",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_cli_interface_spec_md_cli_interface_spec_added_requirements",
-      "target": "cli_interface_spec_requirement_cli_exposes_tools_from_explicit_mcp_configuration",
-      "confidence_score": 1.0
+      "target": "cli_interface_spec_requirement_cli_exposes_tools_from_explicit_mcp_configuration"
     },
     {
       "relation": "contains",
@@ -16996,9 +17059,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/cli-interface/spec.md",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_interface_spec_requirement_cli_exposes_tools_from_explicit_mcp_configuration",
-      "target": "cli_interface_spec_scenario_describing_an_indexed_tool_from_the_cli",
-      "confidence_score": 1.0
+      "target": "cli_interface_spec_scenario_describing_an_indexed_tool_from_the_cli"
     },
     {
       "relation": "contains",
@@ -17006,9 +17069,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/cli-interface/spec.md",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_interface_spec_requirement_cli_exposes_tools_from_explicit_mcp_configuration",
-      "target": "cli_interface_spec_scenario_indexing_tools_from_the_example_config",
-      "confidence_score": 1.0
+      "target": "cli_interface_spec_scenario_indexing_tools_from_the_example_config"
     },
     {
       "relation": "contains",
@@ -17016,9 +17079,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/cli-interface/spec.md",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_interface_spec_requirement_cli_exposes_tools_from_explicit_mcp_configuration",
-      "target": "cli_interface_spec_scenario_listing_indexed_tools_from_the_cli",
-      "confidence_score": 1.0
+      "target": "cli_interface_spec_scenario_listing_indexed_tools_from_the_cli"
     },
     {
       "relation": "contains",
@@ -17026,9 +17089,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/cli-interface/spec.md",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cli_interface_spec_requirement_cli_exposes_tools_from_explicit_mcp_configuration",
-      "target": "cli_interface_spec_scenario_search_uses_the_populated_catalog",
-      "confidence_score": 1.0
+      "target": "cli_interface_spec_scenario_search_uses_the_populated_catalog"
     },
     {
       "relation": "contains",
@@ -17036,9 +17099,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec",
-      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "confidence_score": 1.0
+      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_added_requirements"
     },
     {
       "relation": "contains",
@@ -17046,9 +17109,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec",
-      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "confidence_score": 1.0
+      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_modified_requirements"
     },
     {
       "relation": "contains",
@@ -17056,9 +17119,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "target": "configuration_spec_requirement_configuration_initialization_writes_to_user_config_home",
-      "confidence_score": 1.0
+      "target": "configuration_spec_requirement_configuration_initialization_writes_to_user_config_home"
     },
     {
       "relation": "contains",
@@ -17066,9 +17129,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_added_requirements",
-      "target": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "confidence_score": 1.0
+      "target": "configuration_spec_requirement_opencode_mcp_section_compatibility"
     },
     {
       "relation": "contains",
@@ -17076,9 +17139,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_configuration_initialization_writes_to_user_config_home",
-      "target": "configuration_spec_scenario_init_honors_explicit_config_override",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_init_honors_explicit_config_override"
     },
     {
       "relation": "contains",
@@ -17086,9 +17149,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_configuration_initialization_writes_to_user_config_home",
-      "target": "configuration_spec_scenario_init_refuses_to_overwrite_config",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_init_refuses_to_overwrite_config"
     },
     {
       "relation": "contains",
@@ -17096,9 +17159,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_configuration_initialization_writes_to_user_config_home",
-      "target": "configuration_spec_scenario_init_writes_to_default_user_config_file",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_init_writes_to_default_user_config_file"
     },
     {
       "relation": "contains",
@@ -17106,9 +17169,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_default_timeout_is_applied",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_default_timeout_is_applied"
     },
     {
       "relation": "contains",
@@ -17116,9 +17179,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L63",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_enabled_defaults_to_true",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_enabled_defaults_to_true"
     },
     {
       "relation": "contains",
@@ -17126,9 +17189,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L67",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_enabled_false_disables_server",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_enabled_false_disables_server"
     },
     {
       "relation": "contains",
@@ -17136,9 +17199,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_example_fixture_loads_successfully",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_example_fixture_loads_successfully"
     },
     {
       "relation": "contains",
@@ -17146,9 +17209,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_local_command_entries_are_preserved",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_local_command_entries_are_preserved"
     },
     {
       "relation": "contains",
@@ -17156,9 +17219,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_local_cwd_is_preserved",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_local_cwd_is_preserved"
     },
     {
       "relation": "contains",
@@ -17166,9 +17229,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L81",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_non_mcp_opencode_sections_are_out_of_scope",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_non_mcp_opencode_sections_are_out_of_scope"
     },
     {
       "relation": "contains",
@@ -17176,9 +17239,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_oauth_config_is_preserved",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_oauth_config_is_preserved"
     },
     {
       "relation": "contains",
@@ -17186,9 +17249,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_oauth_runtime_is_unavailable",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_oauth_runtime_is_unavailable"
     },
     {
       "relation": "contains",
@@ -17196,9 +17259,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_remote_headers_are_preserved",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_remote_headers_are_preserved"
     },
     {
       "relation": "contains",
@@ -17206,9 +17269,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L71",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "configuration_spec_requirement_opencode_mcp_section_compatibility",
-      "target": "configuration_spec_scenario_timeout_is_preserved",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_timeout_is_preserved"
     },
     {
       "relation": "contains",
@@ -17216,9 +17279,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L88",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_modified_requirements",
-      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "confidence_score": 1.0
+      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading"
     },
     {
       "relation": "contains",
@@ -17226,9 +17289,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "target": "configuration_spec_scenario_loading_a_valid_default_user_configuration_file",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_loading_a_valid_default_user_configuration_file"
     },
     {
       "relation": "contains",
@@ -17236,9 +17299,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "target": "configuration_spec_scenario_project_local_config_is_not_discovered_implicitly",
-      "confidence_score": 1.0
+      "target": "configuration_spec_scenario_project_local_config_is_not_discovered_implicitly"
     },
     {
       "relation": "contains",
@@ -17246,9 +17309,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_scenario_explicit_config_path_override",
-      "confidence_score": 1.0
+      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_scenario_explicit_config_path_override"
     },
     {
       "relation": "contains",
@@ -17256,9 +17319,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/specs/configuration/spec.md",
       "source_location": "L111",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_requirement_configuration_discovery_and_loading",
-      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_scenario_missing_configuration_file",
-      "confidence_score": 1.0
+      "target": "openspec_changes_user_config_mcp_tools_specs_configuration_spec_md_configuration_spec_scenario_missing_configuration_file"
     },
     {
       "relation": "contains",
@@ -17266,9 +17329,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/tasks.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_tasks",
-      "target": "user_config_mcp_tools_tasks_1_config_home_resolution",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_tasks_1_config_home_resolution"
     },
     {
       "relation": "contains",
@@ -17276,9 +17339,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/tasks.md",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_tasks",
-      "target": "user_config_mcp_tools_tasks_2_init_and_opencode_mcp_compatibility",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_tasks_2_init_and_opencode_mcp_compatibility"
     },
     {
       "relation": "contains",
@@ -17286,9 +17349,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/tasks.md",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_tasks",
-      "target": "user_config_mcp_tools_tasks_3_downstream_timeout_handling",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_tasks_3_downstream_timeout_handling"
     },
     {
       "relation": "contains",
@@ -17296,9 +17359,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/tasks.md",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_tasks",
-      "target": "user_config_mcp_tools_tasks_4_cli_tool_resolution_from_config",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_tasks_4_cli_tool_resolution_from_config"
     },
     {
       "relation": "contains",
@@ -17306,9 +17369,9 @@
       "source_file": "openspec/changes/user-config-mcp-tools/tasks.md",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "user_config_mcp_tools_tasks",
-      "target": "user_config_mcp_tools_tasks_5_documentation_and_verification",
-      "confidence_score": 1.0
+      "target": "user_config_mcp_tools_tasks_5_documentation_and_verification"
     },
     {
       "relation": "contains",
@@ -17942,5 +18005,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6c6eea505766790baff262ad2f2772aa1f457760"
+  "built_at_commit": "4866e1e0f6ee8b4f5c7bf30cea74eb304152fa42"
 }

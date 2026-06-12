@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 const validJSONC = `{
@@ -168,8 +168,8 @@ func TestDefaultPathPrecedence(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", xdg)
 
 	wantDefault := filepath.Join(xdg, "ozy", "ozy.jsonc")
-	if got := ConfigHome(); got != filepath.Join(xdg, "ozy") {
-		t.Fatalf("ConfigHome() = %q, want %q", got, filepath.Join(xdg, "ozy"))
+	if got := Home(); got != filepath.Join(xdg, "ozy") {
+		t.Fatalf("Home() = %q, want %q", got, filepath.Join(xdg, "ozy"))
 	}
 	if got := DefaultPath(); got != wantDefault {
 		t.Fatalf("DefaultPath() = %q, want user config path %q", got, wantDefault)
@@ -201,8 +201,8 @@ func TestConfigHomeFallbacks(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 
-	if got, want := ConfigHome(), filepath.Join(home, ".config", "ozy"); got != want {
-		t.Fatalf("ConfigHome() = %q, want %q", got, want)
+	if got, want := Home(), filepath.Join(home, ".config", "ozy"); got != want {
+		t.Fatalf("Home() = %q, want %q", got, want)
 	}
 	if got := configHomeFor("windows", "", "C:\\Users\\Ada\\AppData\\Roaming"); got != filepath.Join("C:\\Users\\Ada\\AppData\\Roaming", "ozy") {
 		t.Fatalf("windows configHomeFor() = %q, want roaming config dir plus ozy", got)
@@ -297,7 +297,7 @@ func TestLoad_ExampleMCPFixture(t *testing.T) {
 		if server.Type != "local" || !server.IsEnabled() || len(server.Command) == 0 {
 			t.Fatalf("server %s = %+v, want enabled local server with command", id, server)
 		}
-		if server.Environment == nil || len(server.Environment) == 0 {
+		if len(server.Environment) == 0 {
 			t.Fatalf("server %s environment = %+v, want preserved environment map", id, server.Environment)
 		}
 	}

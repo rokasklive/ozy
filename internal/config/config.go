@@ -17,7 +17,7 @@ import (
 
 	"github.com/tailscale/hujson"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 // DefaultDiscoveryTimeoutMillis matches opencode's default MCP tool discovery
@@ -168,8 +168,8 @@ type Loaded struct {
 
 var envRefPattern = regexp.MustCompile(`\{env:([A-Za-z_][A-Za-z0-9_]*)\}`)
 
-// ConfigHome returns Ozy's user config directory.
-func ConfigHome() string {
+// Home returns Ozy's user config directory.
+func Home() string {
 	if runtime.GOOS != "windows" {
 		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
 			return configHomeFor(runtime.GOOS, xdg, "")
@@ -201,7 +201,7 @@ func DefaultPath() string {
 	if p := os.Getenv("OZY_CONFIG"); p != "" {
 		return p
 	}
-	return filepath.Join(ConfigHome(), "ozy.jsonc")
+	return filepath.Join(Home(), "ozy.jsonc")
 }
 
 // Load reads, parses, validates, and resolves configuration at path. A missing

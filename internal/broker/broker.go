@@ -10,7 +10,7 @@ package broker
 import (
 	"context"
 
-	"github.com/rokask/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/contract"
 )
 
 // Broker is the capability-brokerage seam. FindTool encodes its outcome in the

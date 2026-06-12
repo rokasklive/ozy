@@ -13,10 +13,10 @@ import (
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/rokask/ozy/internal/catalog"
-	"github.com/rokask/ozy/internal/config"
-	"github.com/rokask/ozy/internal/contract"
-	"github.com/rokask/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/downstream"
 )
 
 // Connector is the downstream dependency used by the indexer.
@@ -131,13 +131,14 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 		i.indexSession(ctx, summary, result.ServerID, server, result.Session)
 		_ = result.Session.Close()
 	}
-	if summary.ServersReached == 0 {
+	switch {
+	case summary.ServersReached == 0:
 		summary.OK = false
 		summary.AgentInstruction = "No configured downstream server was reachable. Review the per-server errors, run `ozy doctor`, then retry `ozy index` after repairing configuration or connectivity."
-	} else if summary.ToolsIndexed == 0 && len(summary.Errors) > 0 {
+	case summary.ToolsIndexed == 0 && len(summary.Errors) > 0:
 		summary.OK = false
 		summary.AgentInstruction = "No downstream tools were indexed. Review the per-server errors, run `ozy doctor`, then retry `ozy index` after repairing configuration or connectivity."
-	} else if len(summary.Errors) > 0 {
+	case len(summary.Errors) > 0:
 		summary.AgentInstruction = "Some servers failed, but reachable servers were indexed. Use `ozy list` or `ozy describe` for indexed tools and repair failed servers separately."
 	}
 	return summary

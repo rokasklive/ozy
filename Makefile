@@ -26,11 +26,19 @@ check-real-mcp-examples: ## Opt-in check against examples/test_mcp_examples.json
 
 .PHONY: lint
 lint: ## Run golangci-lint (vet, staticcheck, gosec, formatting, ...)
-	$(GOLANGCI_LINT) run
+	@if [ ! -x "$(GOLANGCI_LINT)" ]; then \
+		echo "golangci-lint not found; run 'make tools'"; \
+		exit 1; \
+	fi
+	$(GOLANGCI_LINT) run ./...
 
 .PHONY: fmt
 fmt: ## Apply formatters (gofmt, goimports)
 	$(GOLANGCI_LINT) fmt
+
+.PHONY: install-hooks
+install-hooks: ## Use the tracked Git hooks in .githooks
+	git config core.hooksPath .githooks
 
 .PHONY: tools
 tools: ## Install the pinned golangci-lint

@@ -93,5 +93,15 @@ func (a *app) load() (*daemon.Daemon, bool) {
 		a.emitError(cerr)
 		return nil, false
 	}
-	return daemon.New(cfg), true
+	d, err := daemon.New(cfg)
+	if err != nil {
+		a.emitError(&contract.Error{
+			Type:             contract.ErrTypeConfigError,
+			Retryable:        true,
+			Message:          err.Error(),
+			AgentInstruction: "Check catalog storage permissions, then retry.",
+		})
+		return nil, false
+	}
+	return d, true
 }

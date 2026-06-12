@@ -1,0 +1,292 @@
+{
+  "cmd/ozy/main.go": {
+    "mtime": 1781256251.4015439,
+    "ast_hash": "906d165fb85af1a32477e2aa940fa08b",
+    "semantic_hash": ""
+  },
+  "internal/broker/broker.go": {
+    "mtime": 1781255848.3115826,
+    "ast_hash": "527e1e569a066d6b1820e19eac3f23eb",
+    "semantic_hash": ""
+  },
+  "internal/broker/skeleton.go": {
+    "mtime": 1781255870.9294715,
+    "ast_hash": "f16aa7713d6d0afeb7c3c377eee54f3c",
+    "semantic_hash": ""
+  },
+  "internal/broker/skeleton_test.go": {
+    "mtime": 1781259917.3280723,
+    "ast_hash": "667ea2e4cdefefd6a38fecb9532c198e",
+    "semantic_hash": ""
+  },
+  "internal/catalog/catalog.go": {
+    "mtime": 1781259869.5289328,
+    "ast_hash": "df8e89c5ffd5f1b54f56d595bc516628",
+    "semantic_hash": ""
+  },
+  "internal/catalog/file.go": {
+    "mtime": 1781261071.682328,
+    "ast_hash": "a4153f2c09373a2f5e0da29a6baf2197",
+    "semantic_hash": ""
+  },
+  "internal/catalog/file_test.go": {
+    "mtime": 1781259852.2183285,
+    "ast_hash": "c11178e09ab04c55edebcaa9d5e4d140",
+    "semantic_hash": ""
+  },
+  "internal/catalog/memory.go": {
+    "mtime": 1781259876.9771795,
+    "ast_hash": "0cdefed208badabf512c3ac3df007ca5",
+    "semantic_hash": ""
+  },
+  "internal/catalog/memory_test.go": {
+    "mtime": 1781259825.5594895,
+    "ast_hash": "d6a67f955c22b34eb71b4381a778ef33",
+    "semantic_hash": ""
+  },
+  "internal/cli/cli.go": {
+    "mtime": 1781259966.3118908,
+    "ast_hash": "3b85801d1f9317b78fa606657b0365cd",
+    "semantic_hash": ""
+  },
+  "internal/cli/cli_test.go": {
+    "mtime": 1781260491.9175866,
+    "ast_hash": "3c9355be8f8ed1540912fff4b949cdfa",
+    "semantic_hash": ""
+  },
+  "internal/cli/commands.go": {
+    "mtime": 1781260351.2883952,
+    "ast_hash": "82b59bdcf007ba565f3cf8d011990a5f",
+    "semantic_hash": ""
+  },
+  "internal/cli/doctor.go": {
+    "mtime": 1781260510.464998,
+    "ast_hash": "dcfb32f397b724a4a1f10f29f90df99c",
+    "semantic_hash": ""
+  },
+  "internal/config/config.go": {
+    "mtime": 1781259699.7092583,
+    "ast_hash": "a087045775123c77f4a9d30d7cb2f0b1",
+    "semantic_hash": ""
+  },
+  "internal/config/config_test.go": {
+    "mtime": 1781260605.4289374,
+    "ast_hash": "fa1466753908d841a6f14fb5424c0c8c",
+    "semantic_hash": ""
+  },
+  "internal/config/redact.go": {
+    "mtime": 1781259710.624191,
+    "ast_hash": "2c7668cbb2fca585594ce9884186122b",
+    "semantic_hash": ""
+  },
+  "internal/config/scaffold.go": {
+    "mtime": 1781259728.830079,
+    "ast_hash": "77f0c0aaa26a7ac8c83893976e3bda7c",
+    "semantic_hash": ""
+  },
+  "internal/contract/errors.go": {
+    "mtime": 1781255750.0920591,
+    "ast_hash": "b3712414a8d5d25c87d036729a3fa77d",
+    "semantic_hash": ""
+  },
+  "internal/contract/format.go": {
+    "mtime": 1781255763.4689949,
+    "ast_hash": "efd48d054ceb39c25c26577cca8c6760",
+    "semantic_hash": ""
+  },
+  "internal/contract/results.go": {
+    "mtime": 1781255799.6828198,
+    "ast_hash": "eaf468da0cfb370f30e6db3ce286062d",
+    "semantic_hash": ""
+  },
+  "internal/daemon/daemon.go": {
+    "mtime": 1781259960.9816775,
+    "ast_hash": "5fcd65c9296a46c69dc9a4fec5be4993",
+    "semantic_hash": ""
+  },
+  "internal/daemon/daemon_test.go": {
+    "mtime": 1781259945.604769,
+    "ast_hash": "959690dc22a000679903baa6ea08e0dc",
+    "semantic_hash": ""
+  },
+  "internal/downstream/connector.go": {
+    "mtime": 1781261075.8833103,
+    "ast_hash": "63c7d45d30bdd6b7d8acdc173c59f038",
+    "semantic_hash": ""
+  },
+  "internal/downstream/connector_test.go": {
+    "mtime": 1781260173.3094273,
+    "ast_hash": "b032cf33a01e1626db99e97257996510",
+    "semantic_hash": ""
+  },
+  "internal/index/index.go": {
+    "mtime": 1781260605.4299376,
+    "ast_hash": "70b76edb61ef1af9e830b68c68df2831",
+    "semantic_hash": ""
+  },
+  "internal/index/index_test.go": {
+    "mtime": 1781260605.4299376,
+    "ast_hash": "513a8a5252e5622211c823b0f9bd9fbb",
+    "semantic_hash": ""
+  },
+  "internal/mcp/adapter.go": {
+    "mtime": 1781256045.6585982,
+    "ast_hash": "a5cbb6fff513c430f705f9f558bbfc76",
+    "semantic_hash": ""
+  },
+  "internal/mcp/adapter_test.go": {
+    "mtime": 1781256095.501345,
+    "ast_hash": "5b73621f58fe66896d0e5b27a9a13411",
+    "semantic_hash": ""
+  },
+  "internal/render/render.go": {
+    "mtime": 1781255905.868299,
+    "ast_hash": "498c77f3703fe1432300a800c3954738",
+    "semantic_hash": ""
+  },
+  "internal/render/render_test.go": {
+    "mtime": 1781255917.5882409,
+    "ast_hash": "3275efd3a6e42f98f3347b773782eaa8",
+    "semantic_hash": ""
+  },
+  "skills-lock.json": {
+    "mtime": 1781259270.8374214,
+    "ast_hash": "7c3030960ee38a39bcde5f0300809ea8",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1781256874.958255,
+    "ast_hash": "91658a3e99406c0e9f0ad4ccfccebb80",
+    "semantic_hash": ""
+  },
+  ".golangci.yml": {
+    "mtime": 1781256782.9417458,
+    "ast_hash": "b9512c78af1e74b670053882d44a494a",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1781260561.2901895,
+    "ast_hash": "17dc10d5b0cb86a925070babb55c68f9",
+    "semantic_hash": ""
+  },
+  "SPEC.md": {
+    "mtime": 1781254683.0245697,
+    "ast_hash": "e04fed7c170b355843d8cbdcd720baf0",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/.openspec.yaml": {
+    "mtime": 1781254989.4031026,
+    "ast_hash": "50ed703e1935093bc941105e882d3d86",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/design.md": {
+    "mtime": 1781255186.4824789,
+    "ast_hash": "182401efa6e667caf5b74ffa11caacad",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/proposal.md": {
+    "mtime": 1781255050.456928,
+    "ast_hash": "943526daafa7b7edfa336d057d1bbb30",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/cli-interface/spec.md": {
+    "mtime": 1781256482.0733392,
+    "ast_hash": "e27ccb2e46e84aebf97d6f3e1965d65f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/configuration/spec.md": {
+    "mtime": 1781255088.8368092,
+    "ast_hash": "e9bd172e4705f6c74ddcfaf78df3c578",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/daemon-runtime/spec.md": {
+    "mtime": 1781255110.4857392,
+    "ast_hash": "72813406f5a8ef9383346498e694535c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/mcp-adapter/spec.md": {
+    "mtime": 1781255120.6547058,
+    "ast_hash": "1a35ebbc7d63a2214f66b20acc4d9a20",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/specs/project-scaffold/spec.md": {
+    "mtime": 1781255077.5618448,
+    "ast_hash": "0a22390c11c5d0d5f60ba50a4ce6d094",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-06-12-init-project-skeleton/tasks.md": {
+    "mtime": 1781256498.4155672,
+    "ast_hash": "1ebf93018a84754700bf37897fdd6276",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/.openspec.yaml": {
+    "mtime": 1781258990.917329,
+    "ast_hash": "50ed703e1935093bc941105e882d3d86",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/design.md": {
+    "mtime": 1781258990.9184487,
+    "ast_hash": "7d7b7b57a021526befc94c9890af63e7",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/proposal.md": {
+    "mtime": 1781260582.6040678,
+    "ast_hash": "b8bdf06d6a5daf37bdbf9a9489f9923f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/specs/catalog-persistence/spec.md": {
+    "mtime": 1781258990.9185493,
+    "ast_hash": "896519857fe42058294555e585320a76",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/specs/configuration/spec.md": {
+    "mtime": 1781258990.9185493,
+    "ast_hash": "a7d6bf0b383d2296ccf64f0a0df86468",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/specs/downstream-connection/spec.md": {
+    "mtime": 1781258990.9185493,
+    "ast_hash": "d346453596f53d910440190643cabeef",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/specs/tool-discovery/spec.md": {
+    "mtime": 1781258990.9185493,
+    "ast_hash": "7a0ce9818d357b3d319e786de3048c99",
+    "semantic_hash": ""
+  },
+  "openspec/changes/downstream-discovery/tasks.md": {
+    "mtime": 1781261146.9570043,
+    "ast_hash": "992a251b104836a7f7af8847f99dbd23",
+    "semantic_hash": ""
+  },
+  "openspec/config.yaml": {
+    "mtime": 1781252821.517208,
+    "ast_hash": "9e3e7672b387a282583011181ab35f9a",
+    "semantic_hash": ""
+  },
+  "openspec/specs/cli-interface/spec.md": {
+    "mtime": 1781257089.984329,
+    "ast_hash": "c1b4695d1efc51ee7570c15b5493fb07",
+    "semantic_hash": ""
+  },
+  "openspec/specs/configuration/spec.md": {
+    "mtime": 1781257077.253379,
+    "ast_hash": "88207720a3e6f049232ebdbdc26d4f6a",
+    "semantic_hash": ""
+  },
+  "openspec/specs/daemon-runtime/spec.md": {
+    "mtime": 1781257102.9832776,
+    "ast_hash": "a000e9b53fc1eb2463bda21e347d341f",
+    "semantic_hash": ""
+  },
+  "openspec/specs/mcp-adapter/spec.md": {
+    "mtime": 1781257116.5352237,
+    "ast_hash": "8bb50730b74bb17467f99d3d72293e72",
+    "semantic_hash": ""
+  },
+  "openspec/specs/project-scaffold/spec.md": {
+    "mtime": 1781257065.0694265,
+    "ast_hash": "d8b87e8f6fe6a22fbc0e8e6880654fe1",
+    "semantic_hash": ""
+  }
+}

@@ -37,7 +37,9 @@ func TestFindTool_EmptyCatalogReturnsCatalogEmpty(t *testing.T) {
 func TestFindTool_NonEmptyCatalogReturnsNoGoodMatch(t *testing.T) {
 	t.Parallel()
 	b, store := newBroker(t)
-	store.PutTool(catalog.Tool{ToolRef: "atlassian.search", ServerID: "atlassian", Freshness: catalog.FreshnessFresh})
+	if err := store.PutTool(context.Background(), catalog.Tool{ToolRef: "atlassian.search", ServerID: "atlassian", Freshness: catalog.FreshnessFresh}); err != nil {
+		t.Fatalf("PutTool() error = %v", err)
+	}
 
 	res, err := b.FindTool(context.Background(), "anything")
 	if err != nil {
@@ -71,7 +73,9 @@ func TestDescribeTool_UnknownReturnsToolNotFound(t *testing.T) {
 func TestCallTool_KnownToolReturnsNotImplemented(t *testing.T) {
 	t.Parallel()
 	b, store := newBroker(t)
-	store.PutTool(catalog.Tool{ToolRef: "atlassian.search", ServerID: "atlassian"})
+	if err := store.PutTool(context.Background(), catalog.Tool{ToolRef: "atlassian.search", ServerID: "atlassian"}); err != nil {
+		t.Fatalf("PutTool() error = %v", err)
+	}
 
 	_, err := b.CallTool(context.Background(), "atlassian.search", map[string]any{"q": "x"})
 	var ce *contract.Error

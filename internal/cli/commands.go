@@ -13,6 +13,7 @@ import (
 
 	"github.com/rokask/ozy/internal/config"
 	"github.com/rokask/ozy/internal/contract"
+	ozyindex "github.com/rokask/ozy/internal/index"
 	ozymcp "github.com/rokask/ozy/internal/mcp"
 )
 
@@ -78,7 +79,15 @@ func (a *app) indexCmd() *cobra.Command {
 		Use:   "index",
 		Short: "Refresh and index downstream tool catalogs",
 		RunE: func(*cobra.Command, []string) error {
-			a.emitError(contract.NotImplemented("ozy index"))
+			d, ok := a.load()
+			if !ok {
+				return nil
+			}
+			summary := ozyindex.New(d.Store(), nil).Run(context.Background(), d.Config().Resolved)
+			a.emit(summary)
+			if !summary.OK {
+				a.exitCode = 1
+			}
 			return nil
 		},
 	}

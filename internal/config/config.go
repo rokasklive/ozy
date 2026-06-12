@@ -1,95 +1,91 @@
 // Package config loads, validates, and redacts Ozy's single configuration file
-// (SPEC.md §11). Configuration is explicit and inspectable: secrets are supplied
-// through ${ENV} references rather than literals, unresolved references are
-// reported as diagnostics, and a redacted view is available for `ozy doctor`.
+// (SPEC.md §11). Configuration is explicit and inspectable: downstream servers
+// are declared under the opencode-shaped `mcp` key, secrets are supplied through
+// {env:NAME} references rather than literals, unresolved references are reported
+// as diagnostics, and a redacted view is available for `ozy doctor`.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 
-	"gopkg.in/yaml.v3"
+	"github.com/tailscale/hujson"
 
 	"github.com/rokask/ozy/internal/contract"
 )
 
-// Config is the typed configuration model mirroring SPEC.md §11.
+// Config is the typed JSONC configuration model. Downstream MCP servers live in
+// MCP, while Ozy-owned sections remain top-level siblings.
 type Config struct {
-	Version   int                     `yaml:"version" json:"version"`
-	Servers   map[string]ServerConfig `yaml:"servers" json:"servers"`
-	Embedding EmbeddingConfig         `yaml:"embedding" json:"embedding"`
-	Search    SearchConfig            `yaml:"search" json:"search"`
-	Budgets   BudgetsConfig           `yaml:"budgets" json:"budgets"`
+	Schema    string                  `json:"$schema,omitempty"`
+	Version   int                     `json:"version,omitempty"`
+	MCP       map[string]ServerConfig `json:"mcp,omitempty"`
+	Embedding EmbeddingConfig         `json:"embedding,omitempty"`
+	Search    SearchConfig            `json:"search,omitempty"`
+	Budgets   BudgetsConfig           `json:"budgets,omitempty"`
 }
 
-// ServerConfig describes one downstream MCP server.
+// ServerConfig describes one downstream MCP server using the opencode shape.
 type ServerConfig struct {
-	Enabled   bool              `yaml:"enabled" json:"enabled"`
-	Transport string            `yaml:"transport" json:"transport"`
-	URL       string            `yaml:"url,omitempty" json:"url,omitempty"`
-	Command   string            `yaml:"command,omitempty" json:"command,omitempty"`
-	Args      []string          `yaml:"args,omitempty" json:"args,omitempty"`
-	Env       map[string]string `yaml:"env,omitempty" json:"env,omitempty"`
-	Auth      *AuthConfig       `yaml:"auth,omitempty" json:"auth,omitempty"`
-}
-
-// AuthConfig describes how to authenticate to a downstream server.
-type AuthConfig struct {
-	Type   string `yaml:"type" json:"type"`
-	Header string `yaml:"header,omitempty" json:"header,omitempty"`
-	Value  string `yaml:"value,omitempty" json:"value,omitempty"`
+	Type        string            `json:"type"`
+	Command     []string          `json:"command,omitempty"`
+	Environment map[string]string `json:"environment,omitempty"`
+	URL         string            `json:"url,omitempty"`
+	Headers     map[string]string `json:"headers,omitempty"`
+	Enabled     bool              `json:"enabled"`
 }
 
 // EmbeddingConfig configures the optional embedding worker.
 type EmbeddingConfig struct {
-	Provider string `yaml:"provider,omitempty" json:"provider,omitempty"`
-	Required bool   `yaml:"required" json:"required"`
+	Provider string `json:"provider,omitempty"`
+	Required bool   `json:"required"`
 }
 
 // SearchConfig configures the lexical baseline and optional semantic search.
 type SearchConfig struct {
-	Lexical  LexicalSearch  `yaml:"lexical" json:"lexical"`
-	Semantic SemanticSearch `yaml:"semantic" json:"semantic"`
+	Lexical  LexicalSearch  `json:"lexical,omitempty"`
+	Semantic SemanticSearch `json:"semantic,omitempty"`
 }
 
 // LexicalSearch toggles the mandatory lexical baseline.
 type LexicalSearch struct {
-	Enabled bool `yaml:"enabled" json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 // SemanticSearch toggles optional semantic search and whether it is required.
 type SemanticSearch struct {
-	Enabled  bool `yaml:"enabled" json:"enabled"`
-	Required bool `yaml:"required" json:"required"`
+	Enabled  bool `json:"enabled"`
+	Required bool `json:"required"`
 }
 
 // BudgetsConfig holds per-tool response budgets (SPEC.md §13).
 type BudgetsConfig struct {
-	FindTool     FindToolBudget     `yaml:"findTool" json:"findTool"`
-	DescribeTool DescribeToolBudget `yaml:"describeTool" json:"describeTool"`
-	CallTool     CallToolBudget     `yaml:"callTool" json:"callTool"`
+	FindTool     FindToolBudget     `json:"findTool,omitempty"`
+	DescribeTool DescribeToolBudget `json:"describeTool,omitempty"`
+	CallTool     CallToolBudget     `json:"callTool,omitempty"`
 }
 
 // FindToolBudget bounds findTool responses.
 type FindToolBudget struct {
-	MaxResults         int  `yaml:"maxResults" json:"maxResults"`
-	IncludeFullSchemas bool `yaml:"includeFullSchemas" json:"includeFullSchemas"`
+	MaxResults         int  `json:"maxResults"`
+	IncludeFullSchemas bool `json:"includeFullSchemas"`
 }
 
 // DescribeToolBudget bounds describeTool responses.
 type DescribeToolBudget struct {
-	IncludeExamples bool `yaml:"includeExamples" json:"includeExamples"`
+	IncludeExamples bool `json:"includeExamples"`
 }
 
 // CallToolBudget bounds callTool result payloads.
 type CallToolBudget struct {
-	MaxResultBytes int `yaml:"maxResultBytes" json:"maxResultBytes"`
+	MaxResultBytes int `json:"maxResultBytes"`
 }
 
-// MissingRef records an unresolved ${ENV} reference found during loading.
+// MissingRef records an unresolved {env:NAME} reference found during loading.
 type MissingRef struct {
 	Var    string `json:"var"`
 	Server string `json:"server"`
@@ -106,19 +102,24 @@ type Loaded struct {
 	Missing  []MissingRef
 }
 
-var envRefPattern = regexp.MustCompile(`\$\{([A-Za-z_][A-Za-z0-9_]*)\}`)
+var envRefPattern = regexp.MustCompile(`\{env:([A-Za-z_][A-Za-z0-9_]*)\}`)
 
-// DefaultPath returns the default configuration location, honoring an OZY_CONFIG
-// override before falling back to the user config dir.
+// DefaultPath returns the default configuration location, honoring OZY_CONFIG
+// before project-local ozy.jsonc/ozy.json and then the user config dir.
 func DefaultPath() string {
 	if p := os.Getenv("OZY_CONFIG"); p != "" {
 		return p
 	}
+	for _, p := range []string{"ozy.jsonc", "ozy.json"} {
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
 	dir, err := os.UserConfigDir()
 	if err != nil {
-		return "ozy.yaml"
+		return "ozy.jsonc"
 	}
-	return filepath.Join(dir, "ozy", "config.yaml")
+	return filepath.Join(dir, "ozy", "ozy.jsonc")
 }
 
 // Load reads, parses, validates, and resolves configuration at path. A missing
@@ -144,12 +145,12 @@ func Load(path string) (*Loaded, *contract.Error) {
 	}
 
 	var raw Config
-	if err := yaml.Unmarshal(data, &raw); err != nil {
+	if err := unmarshalJSONC(data, &raw); err != nil {
 		return nil, &contract.Error{
 			Type:             contract.ErrTypeConfigError,
 			Retryable:        false,
-			Message:          fmt.Sprintf("Invalid YAML in %s: %v", path, err),
-			AgentInstruction: "Fix the YAML syntax reported above and retry.",
+			Message:          fmt.Sprintf("Invalid JSONC in %s: %v", path, err),
+			AgentInstruction: "Fix the JSONC syntax reported above and retry.",
 		}
 	}
 
@@ -157,64 +158,75 @@ func Load(path string) (*Loaded, *contract.Error) {
 		return nil, cerr
 	}
 
-	var resolved Config
-	_ = yaml.Unmarshal(data, &resolved)
+	resolved := cloneConfig(raw)
 	missing := resolveEnv(&resolved)
 
 	return &Loaded{Path: path, Raw: &raw, Resolved: &resolved, Missing: missing}, nil
 }
 
-// validate checks structural correctness and returns a CONFIG_ERROR naming the
-// first offending field.
-func validate(c *Config) *contract.Error {
-	if c.Version != 1 {
-		return configError(fmt.Sprintf("version must be 1, got %d", c.Version),
-			"Set `version: 1` at the top of the configuration file.")
+func unmarshalJSONC(data []byte, dst any) error {
+	standard, err := hujson.Standardize(data)
+	if err != nil {
+		return err
 	}
-	for id, s := range c.Servers {
-		switch s.Transport {
-		case "http":
-			if s.URL == "" {
-				return configError(fmt.Sprintf("server %q uses transport http but has no url", id),
-					fmt.Sprintf("Add a `url` to server %q or change its transport.", id))
+	if err := json.Unmarshal(standard, dst); err != nil {
+		return err
+	}
+	return nil
+}
+
+// validate checks structural correctness and returns a CONFIG_ERROR naming the
+// first offending server and field.
+func validate(c *Config) *contract.Error {
+	for id, s := range c.MCP {
+		switch s.Type {
+		case "local":
+			if len(s.Command) == 0 || s.Command[0] == "" {
+				return configError(id, "command",
+					fmt.Sprintf("server %q has type local but has no command", id),
+					fmt.Sprintf("Add a non-empty `command` array to server %q.", id))
 			}
-		case "stdio":
-			if s.Command == "" {
-				return configError(fmt.Sprintf("server %q uses transport stdio but has no command", id),
-					fmt.Sprintf("Add a `command` to server %q or change its transport.", id))
+		case "remote":
+			if s.URL == "" {
+				return configError(id, "url",
+					fmt.Sprintf("server %q has type remote but has no url", id),
+					fmt.Sprintf("Add a `url` to server %q.", id))
 			}
 		default:
-			return configError(fmt.Sprintf("server %q has unknown transport %q", id, s.Transport),
-				fmt.Sprintf("Set server %q transport to `http` or `stdio`.", id))
+			return configError(id, "type",
+				fmt.Sprintf("server %q has invalid type %q", id, s.Type),
+				fmt.Sprintf("Set server %q type to `local` or `remote`.", id))
 		}
 	}
 	return nil
 }
 
-func configError(msg, instruction string) *contract.Error {
+func configError(server, field, msg, instruction string) *contract.Error {
 	return &contract.Error{
 		Type:             contract.ErrTypeConfigError,
+		ServerID:         server,
 		Retryable:        false,
-		Message:          msg,
+		Message:          fmt.Sprintf("%s (field %s)", msg, field),
 		AgentInstruction: instruction,
 	}
 }
 
-// resolveEnv substitutes ${ENV} references in secret-bearing fields of c in place
-// and returns any references that could not be resolved.
+// resolveEnv substitutes {env:NAME} references in secret-bearing MCP fields of
+// c in place and returns any references that could not be resolved.
 func resolveEnv(c *Config) []MissingRef {
 	var missing []MissingRef
-	for id, s := range c.Servers {
-		if s.Auth != nil {
-			s.Auth.Value, missing = substitute(s.Auth.Value, id, "auth.value", missing)
-		}
-		s.URL, missing = substitute(s.URL, id, "url", missing)
-		for k, v := range s.Env {
+	for id, s := range c.MCP {
+		for k, v := range s.Headers {
 			var sub string
-			sub, missing = substitute(v, id, "env."+k, missing)
-			s.Env[k] = sub
+			sub, missing = substitute(v, id, "headers."+k, missing)
+			s.Headers[k] = sub
 		}
-		c.Servers[id] = s
+		for k, v := range s.Environment {
+			var sub string
+			sub, missing = substitute(v, id, "environment."+k, missing)
+			s.Environment[k] = sub
+		}
+		c.MCP[id] = s
 	}
 	return missing
 }
@@ -232,4 +244,31 @@ func substitute(value, server, field string, missing []MissingRef) (string, []Mi
 		return match
 	})
 	return result, missing
+}
+
+func cloneConfig(in Config) Config {
+	out := in
+	out.MCP = make(map[string]ServerConfig, len(in.MCP))
+	for id, s := range in.MCP {
+		out.MCP[id] = cloneServerConfig(s)
+	}
+	return out
+}
+
+func cloneServerConfig(in ServerConfig) ServerConfig {
+	out := in
+	out.Command = append([]string(nil), in.Command...)
+	if in.Environment != nil {
+		out.Environment = make(map[string]string, len(in.Environment))
+		for k, v := range in.Environment {
+			out.Environment[k] = v
+		}
+	}
+	if in.Headers != nil {
+		out.Headers = make(map[string]string, len(in.Headers))
+		for k, v := range in.Headers {
+			out.Headers[k] = v
+		}
+	}
+	return out
 }

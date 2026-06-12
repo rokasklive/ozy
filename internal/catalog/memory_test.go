@@ -43,9 +43,15 @@ func TestMemory_StatsCountFreshness(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	m := NewMemory()
-	m.PutServer(Server{ID: "atlassian", Status: ServerOnline})
-	m.PutTool(Tool{ToolRef: "atlassian.a", ServerID: "atlassian", Freshness: FreshnessFresh})
-	m.PutTool(Tool{ToolRef: "atlassian.b", ServerID: "atlassian", Freshness: FreshnessStale})
+	if err := m.PutServer(ctx, Server{ID: "atlassian", Status: ServerOnline}); err != nil {
+		t.Fatalf("PutServer() error = %v", err)
+	}
+	if err := m.PutTool(ctx, Tool{ToolRef: "atlassian.a", ServerID: "atlassian", Freshness: FreshnessFresh}); err != nil {
+		t.Fatalf("PutTool(a) error = %v", err)
+	}
+	if err := m.PutTool(ctx, Tool{ToolRef: "atlassian.b", ServerID: "atlassian", Freshness: FreshnessStale}); err != nil {
+		t.Fatalf("PutTool(b) error = %v", err)
+	}
 
 	stats, err := m.Stats(ctx)
 	if err != nil {

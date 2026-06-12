@@ -8,8 +8,20 @@
 *.so
 *.dylib
 
+# Compiled ozy binary
+/ozy
+
 # Test binary, built with `go test -c`
 *.test
+
+#agent dev artifacts
+.agents
+AGENTS.md
+.opencode
+.claude
+CLAUDE.md
+.codex
+.cursor
 
 # Code coverage profiles and other test artifacts
 *.out

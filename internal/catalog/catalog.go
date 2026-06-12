@@ -64,6 +64,10 @@ type Stats struct {
 // Store is the catalog persistence seam. Implementations must operate correctly
 // when empty so the broker can return the catalog_empty decision (SPEC.md §9.1).
 type Store interface {
+	// PutServer inserts or replaces a server.
+	PutServer(ctx context.Context, s Server) error
+	// PutTool inserts or replaces a tool keyed by its stable toolRef.
+	PutTool(ctx context.Context, t Tool) error
 	// Servers returns all configured/known servers.
 	Servers(ctx context.Context) ([]Server, error)
 	// Tools returns all indexed tools.

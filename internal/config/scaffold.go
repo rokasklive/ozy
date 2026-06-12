@@ -6,47 +6,62 @@ import (
 	"path/filepath"
 )
 
-// starterConfig is the template written by `ozy init`. It favors ${ENV}
-// references over literal secrets and shows both transport styles.
-const starterConfig = `version: 1
+// starterConfig is the template written by `ozy init`. It uses JSONC comments,
+// the opencode `mcp` shape, and {env:NAME} references instead of literal
+// secrets.
+const starterConfig = `{
+  "$schema": "https://ozy.dev/config.json",
 
-servers:
-  # Example HTTP downstream MCP server. Replace with your own.
-  # atlassian:
-  #   enabled: true
-  #   transport: http
-  #   url: https://mcp.example.com/v1/mcp
-  #   auth:
-  #     type: env
-  #     header: Authorization
-  #     value: "Bearer ${ATLASSIAN_MCP_TOKEN}"
+  "mcp": {
+    // Example remote downstream MCP server. Replace with your own.
+    // "atlassian": {
+    //   "type": "remote",
+    //   "url": "https://mcp.example.com/v1/mcp",
+    //   "headers": {
+    //     "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
+    //   },
+    //   "enabled": true
+    // },
 
-  # Example stdio downstream MCP server.
-  # filesystem:
-  #   enabled: true
-  #   transport: stdio
-  #   command: filesystem-mcp
-  #   args: []
+    // Example local downstream MCP server.
+    // "filesystem": {
+    //   "type": "local",
+    //   "command": ["filesystem-mcp", "--root", "."],
+    //   "environment": {
+    //     "OZY_ROOT": "{env:OZY_ROOT}"
+    //   },
+    //   "enabled": true
+    // }
+  },
 
-embedding:
-  provider: python-local
-  required: false
+  "embedding": {
+    "provider": "python-local",
+    "required": false
+  },
 
-search:
-  lexical:
-    enabled: true
-  semantic:
-    enabled: false
-    required: false
+  "search": {
+    "lexical": {
+      "enabled": true
+    },
+    "semantic": {
+      "enabled": false,
+      "required": false
+    }
+  },
 
-budgets:
-  findTool:
-    maxResults: 5
-    includeFullSchemas: false
-  describeTool:
-    includeExamples: true
-  callTool:
-    maxResultBytes: 65536
+  "budgets": {
+    "findTool": {
+      "maxResults": 5,
+      "includeFullSchemas": false
+    },
+    "describeTool": {
+      "includeExamples": true
+    },
+    "callTool": {
+      "maxResultBytes": 65536
+    }
+  }
+}
 `
 
 // WriteStarter writes the starter configuration to path, creating parent

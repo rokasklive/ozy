@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/spf13/cobra v1.10.2
-	gopkg.in/yaml.v3 v3.0.1
+	github.com/tailscale/hujson v0.0.0-20260302212456-ecc657c15afd
 )
 
 require (

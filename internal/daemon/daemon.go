@@ -22,10 +22,19 @@ type Daemon struct {
 }
 
 // New constructs the runtime from already-loaded configuration. It initializes
-// the catalog store and the broker. Configuration validation happens in
-// config.Load, so an invalid config never reaches this point.
-func New(cfg *config.Loaded) *Daemon {
-	store := catalog.NewMemory()
+// the persistent catalog store and the broker. Configuration validation happens
+// in config.Load, so an invalid config never reaches this point.
+func New(cfg *config.Loaded) (*Daemon, error) {
+	store, err := catalog.NewFile(catalog.DefaultPath())
+	if err != nil {
+		return nil, fmt.Errorf("open catalog store: %w", err)
+	}
+	return NewWithStore(cfg, store), nil
+}
+
+// NewWithStore constructs a daemon with an injected store. It keeps tests and
+// focused in-memory callers from touching the user's durable catalog.
+func NewWithStore(cfg *config.Loaded, store catalog.Store) *Daemon {
 	return &Daemon{
 		cfg:    cfg,
 		store:  store,

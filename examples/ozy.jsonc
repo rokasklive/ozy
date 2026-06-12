@@ -1,0 +1,50 @@
+{
+  "$schema": "https://ozy.dev/config.json",
+
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": ["filesystem-mcp", "--root", "."],
+      "environment": {
+        "OZY_ROOT": "{env:OZY_ROOT}"
+      },
+      "enabled": true
+    },
+    "atlassian": {
+      "type": "remote",
+      "url": "https://mcp.example.com/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
+      },
+      "enabled": true
+    }
+  },
+
+  "search": {
+    "lexical": {
+      "enabled": true
+    },
+    "semantic": {
+      "enabled": false,
+      "required": false
+    }
+  },
+
+  "embedding": {
+    "provider": "python-local",
+    "required": false
+  },
+
+  "budgets": {
+    "findTool": {
+      "maxResults": 5,
+      "includeFullSchemas": false
+    },
+    "describeTool": {
+      "includeExamples": true
+    },
+    "callTool": {
+      "maxResultBytes": 65536
+    }
+  }
+}

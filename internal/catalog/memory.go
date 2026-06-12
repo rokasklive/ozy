@@ -22,19 +22,26 @@ func NewMemory() *Memory {
 	}
 }
 
-// PutServer inserts or replaces a server. It exists so future indexing code (and
-// tests) can populate the placeholder store.
-func (m *Memory) PutServer(s Server) {
+// PutServer inserts or replaces a server.
+func (m *Memory) PutServer(ctx context.Context, s Server) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.servers[s.ID] = s
+	return nil
 }
 
 // PutTool inserts or replaces a tool keyed by its toolRef.
-func (m *Memory) PutTool(t Tool) {
+func (m *Memory) PutTool(ctx context.Context, t Tool) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.tools[t.ToolRef] = t
+	return nil
 }
 
 // Servers returns all known servers in stable order.

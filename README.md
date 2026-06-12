@@ -9,11 +9,11 @@ to discover, understand, and invoke the right downstream tool — without loadin
 the entire downstream tool universe into context. See [SPEC.md](SPEC.md) for the
 full product specification.
 
-> **Status:** project skeleton. The architectural seams (CLI, daemon, MCP
-> adapter, config, catalog, broker) are wired and the agent-facing contracts are
-> in place, but real search and downstream invocation are not yet implemented.
-> Commands whose behavior is pending return a structured `NOT_IMPLEMENTED`
-> response.
+> **Status:** early implementation. Ozy can load `ozy.jsonc`, connect to
+> configured downstream MCP servers, run `ozy index`, and persist discovered
+> tool metadata for offline `list` and `describe`. Search ranking and brokered
+> invocation are still pending; `search` returns `no_good_match` once the catalog
+> is non-empty and `call` remains live-gated.
 
 ## Build
 
@@ -29,7 +29,8 @@ Requires a recent Go toolchain (see `go.mod`).
 
 ```bash
 ozy init                       # scaffold a starter config
-ozy doctor                     # diagnose config, env, and adapter readiness
+ozy doctor                     # diagnose config, env, catalog, and server health
+ozy index                      # connect to configured MCP servers and persist tools
 ozy list                       # list indexed tools
 ozy search "search confluence wiki"
 ozy describe atlassian.confluence_search
@@ -43,14 +44,58 @@ Every command accepts a global `--format` flag with `human` (default), `json`
 
 ## Configuration
 
-By default Ozy reads its configuration from `$XDG_CONFIG_HOME/ozy/config.yaml`
-(or the OS user-config equivalent). Override the path with `--config <path>` or
-the `OZY_CONFIG` environment variable. Run `ozy init` to scaffold a starter
-file.
+Ozy reads a single JSONC/JSON config using the opencode `mcp` shape. Path
+precedence is:
 
-Secrets should be supplied through `${ENV_VAR}` references rather than literals;
-`ozy doctor` reports any unresolved references by name and never prints resolved
-secret values. See [SPEC.md §11](SPEC.md) for the full configuration model.
+1. `--config <path>` or `OZY_CONFIG`
+2. `./ozy.jsonc`
+3. `./ozy.json`
+4. `$XDG_CONFIG_HOME/ozy/ozy.jsonc` (or the OS user-config equivalent)
+
+Run `ozy init` to scaffold a commented `ozy.jsonc`. Downstream servers are
+declared under `mcp`; Ozy's own `search`, `embedding`, and `budgets` sections are
+top-level siblings:
+
+```jsonc
+{
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": ["filesystem-mcp", "--root", "."],
+      "environment": {
+        "OZY_ROOT": "{env:OZY_ROOT}"
+      },
+      "enabled": true
+    },
+    "atlassian": {
+      "type": "remote",
+      "url": "https://mcp.example.com/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
+      },
+      "enabled": true
+    }
+  },
+  "search": {
+    "lexical": {"enabled": true},
+    "semantic": {"enabled": false, "required": false}
+  },
+  "embedding": {"provider": "python-local", "required": false},
+  "budgets": {
+    "findTool": {"maxResults": 5, "includeFullSchemas": false},
+    "describeTool": {"includeExamples": true},
+    "callTool": {"maxResultBytes": 65536}
+  }
+}
+```
+
+Secrets should be supplied through `{env:NAME}` references rather than literals.
+`ozy doctor` reports unresolved references by variable name and never prints
+resolved secret values.
+
+The discovered catalog is stored at `$XDG_STATE_HOME/ozy/catalog.json` by
+default, falling back to `~/.local/state/ozy/catalog.json`. Override it with
+`OZY_CATALOG` for tests or isolated runs.
 
 ## Agent interface
 

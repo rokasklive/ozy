@@ -21,6 +21,7 @@ AGENTS.md
 .claude
 CLAUDE.md
 .codex
+.cursor
 
 # Code coverage profiles and other test artifacts
 *.out

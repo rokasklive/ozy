@@ -12,6 +12,7 @@ import (
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/search"
 )
 
 // Connector is the downstream seam used by the live broker. ConnectAll powers
@@ -22,127 +23,182 @@ type Connector interface {
 	Connect(ctx context.Context, serverID string, server config.ServerConfig) downstream.Result
 }
 
-// live is the broker that performs live downstream tool discovery for FindTool
-// and live brokered invocation for CallTool, while delegating describeTool and
-// List to the skeleton backed by the catalog store.
+// live is the broker that ranks cataloged tools for findTool via the search
+// engine and performs live brokered invocation for CallTool, while delegating
+// describeTool and List to the skeleton backed by the catalog store.
 type live struct {
 	skeleton  *skeleton
 	cfg       *config.Config
 	connector Connector
+	engine    *search.Engine
 }
 
-// NewLive returns a Broker that discovers tools live from configured downstream
-// MCP servers when FindTool is called and performs live brokered invocation
-// when CallTool is called. describeTool and List remain catalog-backed.
-func NewLive(store catalog.Store, cfg *config.Config, connector Connector) Broker {
+// NewLive returns a Broker that ranks cataloged tools via the search engine when
+// findTool is called and performs live brokered invocation when CallTool is
+// called. describeTool and List remain catalog-backed.
+func NewLive(store catalog.Store, cfg *config.Config, connector Connector, engine *search.Engine) Broker {
 	return &live{
 		skeleton:  &skeleton{store: store},
 		cfg:       cfg,
 		connector: connector,
+		engine:    engine,
 	}
 }
 
-func (l *live) FindTool(ctx context.Context, _ string) (*contract.FindResult, error) {
-	results := l.connector.ConnectAll(ctx, l.cfg)
+func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult, error) {
+	ranking, err := l.engine.Find(ctx, query)
+	if err != nil {
+		return nil, err
+	}
 
-	var (
-		candidates []contract.Candidate
-		errors     []contract.Error
-		anyReached bool
-		anyTools   bool
-		anySkipped bool
-		anyFailed  bool
-	)
+	decision := search.Decide(ranking)
+	stats, _ := l.stats(ctx)
 
-	for _, r := range results {
-		if r.Skipped {
-			anySkipped = true
-			continue
-		}
-		if r.Error != nil {
-			anyFailed = true
-			errors = append(errors, *r.Error)
-			continue
-		}
-		if r.Session == nil {
-			anyFailed = true
-			errors = append(errors, contract.Error{
-				Type:             contract.ErrTypeDownstreamServerOffline,
-				ServerID:         r.ServerID,
-				Retryable:        true,
-				Message:          "downstream connector returned no session",
-				AgentInstruction: "Retry after checking the server connection.",
-			})
-			continue
+	result := &contract.FindResult{
+		Query:        query,
+		Decision:     mapDecision(decision.Verdict),
+		CatalogStats: stats,
+	}
+
+	switch decision.Verdict {
+	case search.DecisionUse:
+		result.Confidence = decision.Confidence
+		if decision.Selected != nil {
+			result.SelectedToolRef = decision.Selected.Tool.ToolRef
+			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
+			result.Reason = decision.Selected.Reason
+			result.Alternatives = l.alternatives(decision.RunnerUp)
+			result.NextAction = &contract.NextAction{
+				Tool:      "describeTool",
+				ToolRef:   decision.Selected.Tool.ToolRef,
+				Arguments: map[string]any{"toolRef": decision.Selected.Tool.ToolRef},
+				Reason:    "Inspect exact schema before invoking through callTool.",
+			}
+			result.AgentInstruction = "Use describeTool to inspect the selected tool's full schema before invoking it through callTool."
 		}
 
-		anyReached = true
-		server := l.serverConfig(r.ServerID)
-		tools, err := l.listSessionTools(ctx, r.ServerID, server, r.Session)
-		_ = r.Session.Close()
-
-		if err != nil {
-			anyFailed = true
-			errors = append(errors, *err)
-			continue
+	case search.DecisionAmbiguous:
+		if decision.Selected != nil {
+			result.SelectedToolRef = decision.Selected.Tool.ToolRef
+			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
+			result.Alternatives = l.alternatives(decision.RunnerUp)
+			result.Reason = fmt.Sprintf("Multiple tools match %q — top two are too close to separate confidently.", query)
 		}
+		if decision.RunnerUp != nil {
+			result.Candidates = []contract.Candidate{
+				catalogToolToCandidate(decision.Selected),
+				catalogToolToCandidate(decision.RunnerUp),
+			}
+		}
+		result.AgentInstruction = "Two tools match closely. Use describeTool on both to inspect their schemas before choosing."
 
-		for _, tool := range tools {
-			candidates = append(candidates, l.normalizeCandidate(r.ServerID, tool))
-			anyTools = true
+	case search.DecisionNoGoodMatch:
+		if decision.Selected != nil {
+			result.Reason = fmt.Sprintf("No indexed tool strongly matches %q.", query)
+		}
+		result.AgentInstruction = fmt.Sprintf("Refine the query to be more specific, then retry findTool. If the tool should be available, run `ozy doctor` to check the catalog and then `ozy index` to refresh it. Do not infer that the capability is unavailable.")
+
+	case search.DecisionCatalogEmpty:
+		result.AgentInstruction = "The catalog has no indexed tools. Run `ozy index` to populate it, or check configuration with `ozy doctor`. Do not infer that capabilities are unavailable."
+	}
+
+	if ranking.SemanticDegraded {
+		note := "Semantic search was requested but is unavailable; results are lexical-only."
+		if result.AgentInstruction != "" {
+			result.AgentInstruction = note + " " + result.AgentInstruction
+		} else {
+			result.AgentInstruction = note
 		}
 	}
 
-	switch {
-	case !anyReached && !anyFailed:
-		if anySkipped {
-			return &contract.FindResult{
-				Decision:         contract.DecisionNoGoodMatch,
-				AgentInstruction: "No enabled downstream MCP servers were found. Enable at least one server in your Ozy config and retry.",
-			}, nil
+	return result, nil
+}
+
+func (l *live) stats(ctx context.Context) (*contract.CatalogStats, error) {
+	cs, err := l.skeleton.store.Stats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &contract.CatalogStats{
+		ConfiguredServers: cs.ConfiguredServers,
+		IndexedTools:      cs.IndexedTools,
+		FreshTools:        cs.FreshTools,
+		StaleTools:        cs.StaleTools,
+	}, nil
+}
+
+func (l *live) schemaPreview(schema map[string]any) *contract.SchemaPreview {
+	if schema == nil {
+		return nil
+	}
+	preview := &contract.SchemaPreview{}
+	if props, ok := schema["properties"].(map[string]any); ok {
+		for name := range props {
+			preview.Properties = append(preview.Properties, name)
 		}
-		return &contract.FindResult{
-			Decision:         contract.DecisionCatalogEmpty,
-			AgentInstruction: "No downstream MCP servers are configured. Add servers to your Ozy config and retry.",
-		}, nil
+	}
+	if req, ok := schema["required"].([]any); ok {
+		for _, r := range req {
+			if s, ok := r.(string); ok {
+				preview.Required = append(preview.Required, s)
+			}
+		}
+	}
+	if len(preview.Properties) == 0 && len(preview.Required) == 0 {
+		return nil
+	}
+	return preview
+}
 
-	case !anyReached && anyFailed:
-		return &contract.FindResult{
-			Decision:         contract.DecisionKnownButUnavailable,
-			Errors:           errors,
-			AgentInstruction: "All configured downstream servers failed to respond. Review the per-server errors below, check connectivity and credentials, then retry. Do not fabricate tool calls.",
-		}, nil
+func (l *live) alternatives(entry *search.RankedEntry) []contract.Alternative {
+	if entry == nil {
+		return nil
+	}
+	return []contract.Alternative{{
+		ToolRef: entry.Tool.ToolRef,
+		Reason:  entry.Reason,
+	}}
+}
 
-	case anyTools && anyFailed:
-		toolList := candidateRefs(candidates)
-		return &contract.FindResult{
-			Decision:         contract.DecisionChooseFromCandidates,
-			Candidates:       candidates,
-			Errors:           errors,
-			AgentInstruction: fmt.Sprintf("Some servers failed. The tool list below is partial — review errors before selecting. Available tools: %s", toolList),
-		}, nil
+func selectedToolFromEntry(entry *search.RankedEntry, preview *contract.SchemaPreview) *contract.SelectedTool {
+	if entry == nil {
+		return nil
+	}
+	return &contract.SelectedTool{
+		ToolRef:       entry.Tool.ToolRef,
+		Title:         entry.Tool.Title,
+		CallableNow:   entry.Tool.CallableNow,
+		ServerStatus:  string(entry.Tool.ServerStatus),
+		SchemaPreview: preview,
+	}
+}
 
-	case anyTools:
-		toolList := candidateRefs(candidates)
-		return &contract.FindResult{
-			Decision:         contract.DecisionChooseFromCandidates,
-			Candidates:       candidates,
-			AgentInstruction: fmt.Sprintf("All configured servers responded. Select the most relevant tool from below, then call describeTool for its full schema. Available tools: %s", toolList),
-		}, nil
+func catalogToolToCandidate(entry *search.RankedEntry) contract.Candidate {
+	if entry == nil {
+		return contract.Candidate{}
+	}
+	return contract.Candidate{
+		ToolRef:            entry.Tool.ToolRef,
+		ServerID:           entry.Tool.ServerID,
+		DownstreamToolName: entry.Tool.DownstreamToolName,
+		Title:              entry.Tool.Title,
+		Description:        entry.Tool.Description,
+		InputSchema:        entry.Tool.InputSchema,
+	}
+}
 
-	case !anyTools && anyFailed:
-		return &contract.FindResult{
-			Decision:         contract.DecisionKnownButUnavailable,
-			Errors:           errors,
-			AgentInstruction: "No downstream tools were discovered and some servers failed. Review the per-server errors below, check downstream server capabilities, then retry.",
-		}, nil
-
+func mapDecision(d string) string {
+	switch d {
+	case search.DecisionUse:
+		return contract.DecisionUse
+	case search.DecisionAmbiguous:
+		return contract.DecisionAmbiguous
+	case search.DecisionNoGoodMatch:
+		return contract.DecisionNoGoodMatch
+	case search.DecisionCatalogEmpty:
+		return contract.DecisionCatalogEmpty
 	default:
-		// Reached servers but zero tools returned.
-		return &contract.FindResult{
-			Decision:         contract.DecisionNoGoodMatch,
-			AgentInstruction: "All configured downstream servers were reachable but returned zero tools. Check that your downstream MCP servers expose tools via tools/list and that they are correctly configured. Do not invent tools.",
-		}, nil
+		return contract.DecisionNoGoodMatch
 	}
 }
 

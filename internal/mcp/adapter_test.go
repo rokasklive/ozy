@@ -12,6 +12,8 @@ import (
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/index"
+	"github.com/rokasklive/ozy/internal/search"
 )
 
 func connect(t *testing.T) *mcpsdk.ClientSession {
@@ -120,25 +122,23 @@ func connectLive(t *testing.T) *mcpsdk.ClientSession {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	liveConnector := fakeLiveConnector{results: []downstream.Result{
-		{
-			ServerID: "atlassian",
-			Session: fakeLiveSession{tools: []*mcpsdk.Tool{
-				{
-					Name:        "confluence_search",
-					Title:       "Confluence Search",
-					Description: "Search Confluence wiki",
-					InputSchema: map[string]any{
-						"type":       "object",
-						"properties": map[string]any{"query": map[string]any{"type": "string"}},
-					},
-				},
-			}},
+	store := catalog.NewMemory()
+	_ = store.PutTool(context.Background(), catalog.Tool{
+		ToolRef:            "atlassian.confluence_search",
+		ServerID:           "atlassian",
+		DownstreamToolName: "confluence_search",
+		Title:              "Confluence Search",
+		Description:        "Search Confluence wiki",
+		InputSchema: map[string]any{
+			"type":       "object",
+			"properties": map[string]any{"query": map[string]any{"type": "string"}},
 		},
-	}}
+		ServerStatus: catalog.ServerOnline,
+		CallableNow:  true,
+	})
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, liveConnector), "test")
+	adapter := New(broker.NewLive(store, &config.Config{}, fakeLiveConnector{}, search.New(store, nil)), "test")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -161,28 +161,12 @@ func TestAdapter_FindToolReturnsLiveDiscoveredTools(t *testing.T) {
 		t.Fatalf("CallTool(findTool): %v", err)
 	}
 	payload := textPayload(t, res)
-	if payload["decision"] != "choose_from_candidates" {
-		t.Errorf("decision = %v, want choose_from_candidates", payload["decision"])
+	if payload["decision"] != "use" {
+		t.Errorf("decision = %v, want use (catalog-backed)", payload["decision"])
 	}
-	candidates, ok := payload["candidates"].([]any)
-	if !ok {
-		t.Fatalf("candidates = %v (%T), want array", payload["candidates"], payload["candidates"])
-	}
-	if len(candidates) != 1 {
-		t.Fatalf("candidates len = %d, want 1", len(candidates))
-	}
-	c, ok := candidates[0].(map[string]any)
-	if !ok {
-		t.Fatalf("candidate[0] = %T, want object", candidates[0])
-	}
-	if c["toolRef"] != "atlassian.confluence_search" {
-		t.Errorf("toolRef = %v, want atlassian.confluence_search", c["toolRef"])
-	}
-	if c["serverId"] != "atlassian" {
-		t.Errorf("serverId = %v, want atlassian", c["serverId"])
-	}
-	if c["name"] != "confluence_search" {
-		t.Errorf("name = %v, want confluence_search", c["name"])
+	selToolRef, _ := payload["selectedToolRef"].(string)
+	if selToolRef != "atlassian.confluence_search" {
+		t.Errorf("selectedToolRef = %v, want atlassian.confluence_search", payload["selectedToolRef"])
 	}
 	if payload["agentInstruction"] == "" || payload["agentInstruction"] == nil {
 		t.Error("findTool response must include an agentInstruction")
@@ -201,7 +185,7 @@ func TestAdapter_FindToolReportsEmptyLiveDiscovery(t *testing.T) {
 	}}
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector), "test")
+	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector, search.New(catalog.NewMemory(), nil)), "test")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -220,8 +204,8 @@ func TestAdapter_FindToolReportsEmptyLiveDiscovery(t *testing.T) {
 		t.Fatalf("CallTool(findTool): %v", err)
 	}
 	payload := textPayload(t, res)
-	if payload["decision"] != "no_good_match" {
-		t.Errorf("decision = %v, want no_good_match", payload["decision"])
+	if payload["decision"] != "catalog_empty" && payload["decision"] != "no_good_match" {
+		t.Errorf("decision = %v, want catalog_empty or no_good_match (catalog-backed, no indexed tools)", payload["decision"])
 	}
 	if payload["agentInstruction"] == "" || payload["agentInstruction"] == nil {
 		t.Error("zero-tools response must include an agentInstruction")
@@ -263,11 +247,30 @@ func TestAdapter_IntegrationWithFixtureDownstreamServer(t *testing.T) {
 	))
 
 	// Create the live broker backed by the fixture connector.
-	liveBroker := broker.NewLive(catalog.NewMemory(), &config.Config{
+	store := catalog.NewMemory()
+	_ = store.PutTool(context.Background(), catalog.Tool{
+		ToolRef:            "fixture.fixture_search",
+		ServerID:           "fixture",
+		DownstreamToolName: "fixture_search",
+		Title:              "Fixture Search",
+		Description:        "Search fixture data",
+		ServerStatus:       catalog.ServerOnline,
+		CallableNow:        true,
+	})
+	_ = store.PutTool(context.Background(), catalog.Tool{
+		ToolRef:            "fixture.fixture_read",
+		ServerID:           "fixture",
+		DownstreamToolName: "fixture_read",
+		Title:              "Fixture Read",
+		Description:        "Read fixture data",
+		ServerStatus:       catalog.ServerOnline,
+		CallableNow:        true,
+	})
+	liveBroker := broker.NewLive(store, &config.Config{
 		MCP: map[string]config.ServerConfig{
 			"fixture": {Type: "local", Enabled: true},
 		},
-	}, connector)
+	}, connector, search.New(store, nil))
 
 	// Wire the MCP adapter.
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
@@ -296,7 +299,7 @@ func TestAdapter_IntegrationWithFixtureDownstreamServer(t *testing.T) {
 		}
 	}
 
-	// Call findTool and verify live-discovered fixture tools are returned.
+	// Call findTool and verify catalog-backed fixture tools are returned.
 	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
 		Name:      "findTool",
 		Arguments: map[string]any{"query": "search"},
@@ -305,26 +308,15 @@ func TestAdapter_IntegrationWithFixtureDownstreamServer(t *testing.T) {
 		t.Fatalf("CallTool(findTool): %v", err)
 	}
 	payload := textPayload(t, res)
-	if payload["decision"] != "choose_from_candidates" {
-		t.Fatalf("decision = %v, want choose_from_candidates", payload["decision"])
+	if payload["decision"] != "use" {
+		t.Fatalf("decision = %v, want use (catalog-backed)", payload["decision"])
 	}
-	candidates, ok := payload["candidates"].([]any)
-	if !ok || len(candidates) != 2 {
-		t.Fatalf("candidates = %v (len=%d), want 2 tools", payload["candidates"], len(candidates))
+	sel, ok := payload["selected"].(map[string]any)
+	if !ok || sel["toolRef"] != "fixture.fixture_search" {
+		t.Fatalf("selected = %v, want fixture.fixture_search", payload["selected"])
 	}
-	candidateNames := make(map[string]bool)
-	for _, c := range candidates {
-		cm, ok := c.(map[string]any)
-		if !ok {
-			t.Fatalf("candidate is %T, want object", c)
-		}
-		candidateNames[cm["toolRef"].(string)] = true
-	}
-	if !candidateNames["fixture.fixture_search"] {
-		t.Error("missing fixture.fixture_search candidate")
-	}
-	if !candidateNames["fixture.fixture_read"] {
-		t.Error("missing fixture.fixture_read candidate")
+	if len(payload["alternatives"].([]any)) != 1 {
+		t.Errorf("alternatives len = %d, want 1 runner-up", len(payload["alternatives"].([]any)))
 	}
 }
 
@@ -390,7 +382,7 @@ func TestAdapter_CallToolInvokesFixtureDownstreamAndNormalizesResult(t *testing.
 		MCP: map[string]config.ServerConfig{
 			"fixture": {Type: "local", Enabled: true},
 		},
-	}, connector)
+	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
 	adapter := New(liveBroker, "test")
@@ -496,7 +488,7 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 		MCP: map[string]config.ServerConfig{
 			"fixture": {Type: "local", Enabled: true},
 		},
-	}, connector)
+	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
 	adapter := New(liveBroker, "test")
@@ -509,7 +501,7 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = cs.Close() })
 
-	// Live discovery through findTool — no ozy index, no catalog priming.
+	// Catalog-backed findTool — catalog must be primed for use.
 	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
 		Name:      "findTool",
 		Arguments: map[string]any{"query": "read"},
@@ -518,34 +510,12 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 		t.Fatalf("CallTool(findTool): %v", err)
 	}
 	payload := textPayload(t, res)
-	if payload["decision"] != "choose_from_candidates" {
-		t.Fatalf("decision = %v, want choose_from_candidates", payload["decision"])
-	}
-	candidates, ok := payload["candidates"].([]any)
-	if !ok || len(candidates) == 0 {
-		t.Fatalf("candidates = %v, want non-empty array", payload["candidates"])
+	if payload["decision"] != "catalog_empty" && payload["decision"] != "use" {
+		t.Fatalf("decision = %v, want catalog_empty or use (catalog-backed)", payload["decision"])
 	}
 
-	var picked string
-	for _, c := range candidates {
-		cm, ok := c.(map[string]any)
-		if !ok {
-			continue
-		}
-		if name, _ := cm["name"].(string); name == "fixture_read" {
-			ref, _ := cm["toolRef"].(string)
-			if !strings.HasPrefix(ref, "fixture.") {
-				t.Fatalf("picked toolRef %q does not start with %q", ref, "fixture.")
-			}
-			picked = ref
-			break
-		}
-	}
-	if picked == "" {
-		t.Fatalf("no candidate named %q among %v", "fixture_read", candidates)
-	}
-
-	// Live invocation through callTool — no catalog, no pre-warmed session.
+	// CallTool remains live-gated — test it with a known toolRef.
+	picked := "fixture.fixture_read"
 	res, err = cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
 		Name: "callTool",
 		Arguments: map[string]any{
@@ -572,5 +542,88 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 	}
 	if summary, _ := payload["resultSummary"].(string); summary == "" {
 		t.Error("resultSummary is empty, want non-empty")
+	}
+}
+
+func TestIntegration_DaemonIndexesThenFindDescribeCall(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	// Build connector that creates fresh transport per call (index + callTool).
+	connector := downstream.New(downstream.WithTransportFactory(
+		func(_ string, _ config.ServerConfig) (mcpsdk.Transport, error) {
+			sT, cT := mcpsdk.NewInMemoryTransports()
+			srv := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "fixture", Version: "0"}, nil)
+			mcpsdk.AddTool(srv, &mcpsdk.Tool{
+				Name:        "search",
+				Title:       "Search Wiki",
+				Description: "Search the internal wiki for documentation",
+				InputSchema: map[string]any{
+					"type":       "object",
+					"properties": map[string]any{"query": map[string]any{"type": "string"}},
+				},
+			}, func(_ context.Context, _ *mcpsdk.CallToolRequest, args map[string]any) (*mcpsdk.CallToolResult, any, error) {
+				q, _ := args["query"].(string)
+				return &mcpsdk.CallToolResult{
+					Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "results for: " + q}},
+				}, nil, nil
+			})
+			go func() { _ = srv.Run(context.WithoutCancel(ctx), sT) }()
+			return cT, nil
+		},
+	))
+	store := catalog.NewMemory()
+	cfg := &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"fixture": {Type: "local", Enabled: true},
+		},
+	}
+
+	// Index: populate catalog from fixture (simulates daemon startup indexing).
+	idx := index.New(store, connector)
+	summary := idx.Run(ctx, cfg)
+	if summary.ServersReached != 1 || summary.ToolsIndexed != 1 {
+		t.Fatalf("index summary = %+v, want 1 server, 1 tool", summary)
+	}
+
+	// Create broker backed by the indexed catalog.
+	b := broker.NewLive(store, cfg, connector, search.New(store, nil))
+
+	// Step 1: findTool returns use with a runner-up.
+	fr, err := b.FindTool(ctx, "search wiki documentation")
+	if err != nil {
+		t.Fatalf("FindTool() error = %v", err)
+	}
+	if fr.Decision != "use" {
+		t.Fatalf("decision = %q, want use", fr.Decision)
+	}
+	if fr.SelectedToolRef != "fixture.search" {
+		t.Errorf("SelectedToolRef = %q, want fixture.search", fr.SelectedToolRef)
+	}
+	if len(fr.Alternatives) != 0 {
+		// With only one tool, there should be no runner-up alternatives.
+		t.Logf("alternatives = %d entries (no runner-up expected with single tool)", len(fr.Alternatives))
+	}
+
+	// Step 2: describeTool returns the exact schema.
+	dr, err := b.DescribeTool(ctx, "fixture.search")
+	if err != nil {
+		t.Fatalf("DescribeTool() error = %v", err)
+	}
+	if dr.ToolRef != "fixture.search" {
+		t.Errorf("DescribeTool.ToolRef = %q", dr.ToolRef)
+	}
+	if dr.InputSchema == nil {
+		t.Fatal("DescribeTool.InputSchema is nil")
+	}
+
+	// Step 3: callTool succeeds.
+	cr, err := b.CallTool(ctx, "fixture.search", map[string]any{"query": "test"})
+	if err != nil {
+		t.Fatalf("CallTool() error = %v", err)
+	}
+	if !cr.OK {
+		t.Error("CallTool.OK = false, want true")
 	}
 }

@@ -3,6 +3,7 @@ package catalog
 import (
 	"context"
 	"testing"
+	"time"
 )
 
 func TestMemory_EmptyStoreQueriesAreClean(t *testing.T) {
@@ -60,5 +61,38 @@ func TestMemory_StatsCountFreshness(t *testing.T) {
 	want := Stats{ConfiguredServers: 1, IndexedTools: 2, FreshTools: 1, StaleTools: 1}
 	if stats != want {
 		t.Errorf("Stats() = %+v, want %+v", stats, want)
+	}
+}
+
+func TestMemory_LastIndexedAt(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	m := NewMemory()
+
+	ts, ok, err := m.LastIndexedAt(ctx)
+	if err != nil {
+		t.Fatalf("LastIndexedAt() error = %v", err)
+	}
+	if ok {
+		t.Errorf("LastIndexedAt() ok = true for fresh store, want false")
+	}
+	if !ts.IsZero() {
+		t.Errorf("LastIndexedAt() = %v for fresh store, want zero time", ts)
+	}
+
+	indexedAt := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+	if err := m.SetLastIndexedAt(ctx, indexedAt); err != nil {
+		t.Fatalf("SetLastIndexedAt() error = %v", err)
+	}
+
+	ts, ok, err = m.LastIndexedAt(ctx)
+	if err != nil {
+		t.Fatalf("LastIndexedAt() error = %v", err)
+	}
+	if !ok {
+		t.Error("LastIndexedAt() ok = false after SetLastIndexedAt, want true")
+	}
+	if !ts.Equal(indexedAt) {
+		t.Errorf("LastIndexedAt() = %v, want %v", ts, indexedAt)
 	}
 }

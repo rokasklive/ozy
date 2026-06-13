@@ -11,14 +11,16 @@ full product specification.
 
 > **Status:** early implementation. Ozy can load `ozy.jsonc`, connect to
 > configured downstream MCP servers, run `ozy index`, and persist discovered
-> tool metadata for offline `list` and `describe`. `findTool` performs live
-> downstream tool discovery via `tools/list` on each call and returns all
-> discovered tools to the agent — no pre-indexing required. `callTool` (and
-> the CLI `call` command) now perform live brokered invocation: a `toolRef`
-> is resolved against config, the single target downstream server is
-> contacted, and the result is normalized to the §9.3 envelope. `describeTool`
-> live resolution is deliberately out of scope — the agent uses the schema and
-> description from each `findTool` candidate's payload.
+> tool metadata for offline `list` and `describe`. `findTool` now ranks the
+> **persistent catalog** with a hybrid (lexical + optional semantic) search
+> engine, returning the single best tool plus one runner-up with confidence
+> and a reason — no live discovery needed. The daemon indexes the catalog
+> **on startup** when it is stale (never indexed, or configured servers
+> changed), and serves the existing catalog gracefully even when downstream
+> servers are offline. `callTool` remains live-gated: invocation connects to
+> the target server at call time. `describeTool` returns the exact schema from
+> the catalog. Semantic search defaults to unavailable (lexical-only) and
+> degrades gracefully without failing.
 
 ## Build
 

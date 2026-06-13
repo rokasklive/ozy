@@ -4,14 +4,16 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 )
 
 // Memory is an in-memory Store placeholder. It is safe for concurrent use and is
 // empty by default, which exercises the catalog_empty path from a clean start.
 type Memory struct {
-	mu      sync.RWMutex
-	servers map[string]Server
-	tools   map[string]Tool
+	mu            sync.RWMutex
+	servers       map[string]Server
+	tools         map[string]Tool
+	lastIndexedAt time.Time
 }
 
 // NewMemory returns an empty in-memory catalog store.
@@ -89,4 +91,21 @@ func (m *Memory) Stats(context.Context) (Stats, error) {
 		}
 	}
 	return stats, nil
+}
+
+func (m *Memory) LastIndexedAt(ctx context.Context) (time.Time, bool, error) {
+	if err := ctx.Err(); err != nil {
+		return time.Time{}, false, err
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	ok := !m.lastIndexedAt.IsZero()
+	return m.lastIndexedAt, ok, nil
+}
+
+func (m *Memory) SetLastIndexedAt(_ context.Context, t time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.lastIndexedAt = t
+	return nil
 }

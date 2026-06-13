@@ -13,8 +13,12 @@ full product specification.
 > configured downstream MCP servers, run `ozy index`, and persist discovered
 > tool metadata for offline `list` and `describe`. `findTool` performs live
 > downstream tool discovery via `tools/list` on each call and returns all
-> discovered tools to the agent — no pre-indexing required. Search ranking
-> and brokered invocation are still pending; `call` remains live-gated.
+> discovered tools to the agent — no pre-indexing required. `callTool` (and
+> the CLI `call` command) now perform live brokered invocation: a `toolRef`
+> is resolved against config, the single target downstream server is
+> contacted, and the result is normalized to the §9.3 envelope. `describeTool`
+> live resolution is deliberately out of scope — the agent uses the schema and
+> description from each `findTool` candidate's payload.
 
 ## Build
 
@@ -148,8 +152,18 @@ Ozy reads its own downstream server list from `~/.config/ozy/ozy.jsonc` (or
 calls `findTool`, Ozy connects to every enabled downstream server, calls
 `tools/list`, and returns the complete live-discovered tool list as
 `choose_from_candidates` with stable `toolRef`s (e.g.
-`atlassian.confluence_search`). The agent can then call `describeTool` for
-a tool's full schema.
+`atlassian.confluence_search`), each carrying `title`, `description`, and
+`inputSchema`. The end-to-end flow is: the agent calls `findTool` first,
+picks a candidate's `toolRef`, and then calls `callTool` with that
+`toolRef` and the arguments described in the candidate's `inputSchema`.
+`callTool` resolves the `toolRef` against `ozy.jsonc`, connects to that
+single downstream server, and runs `tools/call` — no `ozy index` required.
+
+`describeTool` remains catalog-backed by design and is **not** part of the
+live flow: it serves indexed tools from the persisted catalog and returns
+`TOOL_NOT_FOUND` for tools that have only been discovered live. The agent
+should use the `inputSchema` returned in the `findTool` candidate as the
+authoritative schema when planning a call.
 
 ### Quick start
 
@@ -177,7 +191,10 @@ Ozy exposes exactly three stable MCP tools (SPEC.md §9):
 - `findTool` — find the best known tool for a capability query (returns a
   decision, not just a list);
 - `describeTool` — return the exact schema and usage guidance for one tool;
-- `callTool` — invoke a downstream tool through Ozy (live-gated).
+- `callTool` — invoke a downstream tool through Ozy. It performs live
+  brokered invocation: one configured downstream server is contacted per
+  call, the result is normalized to the `SPEC.md` §9.3 envelope, and
+  `budgets.callTool.maxResultBytes` bounds the returned result.
 
 The CLI mirrors these operations through the same in-process broker, so the CLI
 and MCP paths cannot drift.

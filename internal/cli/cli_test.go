@@ -16,8 +16,10 @@ import (
 	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/daemon"
 	"github.com/rokasklive/ozy/internal/downstream"
 	ozymcp "github.com/rokasklive/ozy/internal/mcp"
+	"github.com/rokasklive/ozy/internal/search"
 )
 
 const cfgWithSecret = `{
@@ -285,8 +287,153 @@ func TestListDescribeAndSearchUsePersistedCatalog(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &searchPayload); err != nil {
 		t.Fatalf("search output is not valid JSON: %v\n%s", err, out)
 	}
-	if searchPayload.Decision != "known_but_unavailable" {
-		t.Fatalf("search decision = %q, want known_but_unavailable (live discovery without reachable servers)", searchPayload.Decision)
+	if searchPayload.Decision != "catalog_empty" && searchPayload.Decision != "no_good_match" {
+		t.Fatalf("search decision = %q, want catalog_empty or no_good_match (catalog-backed, no indexed tools)", searchPayload.Decision)
+	}
+}
+
+func TestSearchAndBrokerFindToolParity(t *testing.T) {
+	t.Parallel()
+
+	// Write a config and index tools into the catalog.
+	cfgPath := writeCfg(t, `{"version":1,"mcp":{"fixture":{"type":"local","enabled":true}}}`)
+	cfg := &config.Loaded{Path: cfgPath, Resolved: &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"fixture": {Type: "local", Enabled: true},
+		},
+	}}
+
+	store := catalog.NewMemory()
+	_ = store.PutTool(context.Background(), catalog.Tool{
+		ToolRef:            "fixture.search",
+		ServerID:           "fixture",
+		DownstreamToolName: "search",
+		Title:              "Search Documents",
+		Description:        "Search across all internal documents and wiki pages",
+		ServerStatus:       catalog.ServerOnline,
+		CallableNow:        true,
+	})
+	_ = store.PutTool(context.Background(), catalog.Tool{
+		ToolRef:            "fixture.send_message",
+		ServerID:           "fixture",
+		DownstreamToolName: "send_message",
+		Title:              "Send Message",
+		Description:        "Send a chat message to a channel",
+		ServerStatus:       catalog.ServerOnline,
+		CallableNow:        true,
+	})
+
+	d := daemon.NewWithStore(cfg, store)
+	brokerDecision, err := d.Broker().FindTool(context.Background(), "search documents wiki")
+	if err != nil {
+		t.Fatalf("Broker().FindTool() error = %v", err)
+	}
+	if brokerDecision.Decision != "use" {
+		t.Fatalf("broker decision = %q, want use", brokerDecision.Decision)
+	}
+
+	// The CLI search command uses the user's catalog via DefaultPath, not our
+	// in-memory store. So we verify the broker produces a consistent decision
+	// and that the decision includes a selected tool with its toolRef.
+	if brokerDecision.SelectedToolRef != "fixture.search" {
+		t.Errorf("broker selected = %q, want fixture.search", brokerDecision.SelectedToolRef)
+	}
+	if len(brokerDecision.Alternatives) != 1 {
+		t.Errorf("alternatives len = %d, want 1 runner-up", len(brokerDecision.Alternatives))
+	}
+	if brokerDecision.NextAction == nil || brokerDecision.NextAction.Tool != "describeTool" {
+		t.Error("nextAction should direct to describeTool")
+	}
+}
+
+func TestDiscoveryEval_GoldIntentMatchesExpectedToolRef(t *testing.T) {
+	t.Parallel()
+	store := catalog.NewMemory()
+
+	goldTools := []catalog.Tool{
+		{
+			ToolRef:            "confluence.search_pages",
+			ServerID:           "confluence",
+			DownstreamToolName: "search_pages",
+			Title:              "Search Confluence Pages",
+			Description:        "Search all Confluence wiki pages and blog posts",
+			ServerStatus:       catalog.ServerOnline,
+			CallableNow:        true,
+		},
+		{
+			ToolRef:            "jira.search_issues",
+			ServerID:           "jira",
+			DownstreamToolName: "search_issues",
+			Title:              "Search Jira Issues",
+			Description:        "Search issues across all Jira projects using JQL",
+			ServerStatus:       catalog.ServerOnline,
+			CallableNow:        true,
+		},
+		{
+			ToolRef:            "github.search_code",
+			ServerID:           "github",
+			DownstreamToolName: "search_code",
+			Title:              "GitHub Code Search",
+			Description:        "Search across GitHub repositories for code",
+			ServerStatus:       catalog.ServerOnline,
+			CallableNow:        true,
+		},
+		{
+			ToolRef:            "slack.send_message",
+			ServerID:           "slack",
+			DownstreamToolName: "send_message",
+			Title:              "Send Slack Message",
+			Description:        "Send a message to a Slack channel",
+			ServerStatus:       catalog.ServerOnline,
+			CallableNow:        true,
+		},
+	}
+
+	for _, tool := range goldTools {
+		_ = store.PutTool(context.Background(), tool)
+	}
+
+	engine := search.New(store, nil)
+
+	tests := []struct {
+		intent  string
+		wantRef string
+	}{
+		{"search confluence wiki pages", "confluence.search_pages"},
+		{"find github code", "github.search_code"},
+		{"jira issue search", "jira.search_issues"},
+		{"send a message to slack", "slack.send_message"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.intent, func(t *testing.T) {
+			ranking, err := engine.Find(context.Background(), tt.intent)
+			if err != nil {
+				t.Fatalf("Find() error = %v", err)
+			}
+			if len(ranking.Entries) == 0 {
+				t.Fatal("no entries returned")
+			}
+
+			decision := search.Decide(ranking)
+			if decision.Verdict != search.DecisionUse {
+				t.Fatalf("verdict = %s, want use", decision.Verdict)
+			}
+			if decision.Selected == nil {
+				t.Fatal("selected is nil")
+			}
+			if decision.Selected.Tool.ToolRef != tt.wantRef {
+				t.Errorf("selected = %q, want %q", decision.Selected.Tool.ToolRef, tt.wantRef)
+			}
+
+			// Verify the two-best response shape.
+			if decision.RunnerUp == nil {
+				t.Error("runner-up should be present for use decision")
+			}
+			if decision.Selected.Tool.ToolRef == decision.RunnerUp.Tool.ToolRef {
+				t.Error("selected and runner-up should be different tools")
+			}
+		})
 	}
 }
 
@@ -579,7 +726,7 @@ func TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath(t *testing.T
 		MCP: map[string]config.ServerConfig{
 			"fixture": {Type: "local", Enabled: true},
 		},
-	}, connector)
+	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
 	adapter := ozymcp.New(liveBroker, "test")

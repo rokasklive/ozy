@@ -13,6 +13,7 @@ import (
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/search"
 )
 
 // callSession is a fake downstream.Session that returns a configured
@@ -67,7 +68,7 @@ func (c *callConnector) Connect(_ context.Context, serverID string, _ config.Ser
 
 func newCallBroker(t *testing.T, cfg *config.Config, conn Connector) Broker {
 	t.Helper()
-	return NewLive(catalog.NewMemory(), cfg, conn)
+	return NewLive(catalog.NewMemory(), cfg, conn, search.New(catalog.NewMemory(), nil))
 }
 
 func TestCallTool_SuccessfulInvocationNormalizesAndSummarizes(t *testing.T) {

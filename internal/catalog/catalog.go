@@ -77,4 +77,10 @@ type Store interface {
 	GetTool(ctx context.Context, toolRef string) (Tool, bool, error)
 	// Stats returns lightweight catalog health.
 	Stats(ctx context.Context) (Stats, error)
+	// LastIndexedAt returns the run-level timestamp of the last successful index
+	// pass. The bool is true when a prior index has completed; false when the
+	// catalog has never been indexed. A zero time with false means "never indexed".
+	LastIndexedAt(ctx context.Context) (time.Time, bool, error)
+	// SetLastIndexedAt records the timestamp of a completed index run.
+	SetLastIndexedAt(ctx context.Context, t time.Time) error
 }

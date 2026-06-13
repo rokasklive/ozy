@@ -8,11 +8,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/index"
+	"github.com/rokasklive/ozy/internal/search"
 )
 
 // Daemon holds the runtime wiring shared by the CLI and MCP adapter.
@@ -43,7 +46,7 @@ func NewWithStore(cfg *config.Loaded, store catalog.Store) *Daemon {
 	return &Daemon{
 		cfg:    cfg,
 		store:  store,
-		broker: broker.NewLive(store, resolved, downstream.New()),
+		broker: broker.NewLive(store, resolved, downstream.New(), search.New(store, nil)),
 	}
 }
 
@@ -65,8 +68,11 @@ func (d *Daemon) SemanticDegraded() bool {
 
 // Run reports readiness, then blocks until ctx is cancelled (for example by an
 // interrupt signal), at which point it returns nil after a clean shutdown. The
-// daemon never requires semantic search or the embedding worker to start.
+// daemon never requires semantic search or the embedding worker to start. Before
+// readiness, it runs a conditional index when the catalog is stale relative to
+// the configuration file's modification time.
 func (d *Daemon) Run(ctx context.Context, status io.Writer) error {
+	d.runStartupIndex(ctx, status)
 	if status != nil {
 		fmt.Fprintln(status, "ozy daemon ready")
 		if d.SemanticDegraded() {
@@ -78,4 +84,56 @@ func (d *Daemon) Run(ctx context.Context, status io.Writer) error {
 		fmt.Fprintln(status, "ozy daemon stopped")
 	}
 	return nil
+}
+
+func (d *Daemon) runStartupIndex(ctx context.Context, status io.Writer) {
+	lastIdx, ok, err := d.store.LastIndexedAt(ctx)
+	if err != nil {
+		if status != nil {
+			fmt.Fprintf(status, "notice: could not read last-indexed time: %v\n", err)
+		}
+		return
+	}
+
+	stale := !ok
+	if !stale && d.cfg != nil && d.cfg.Path != "" {
+		fi, statErr := os.Stat(d.cfg.Path)
+		if statErr == nil {
+			if fi.ModTime().After(lastIdx) {
+				stale = true
+				if status != nil {
+					fmt.Fprintln(status, "catalog is stale — reindexing on startup")
+				}
+			}
+		} else if !ok {
+			// os.Stat failed: index only if never indexed (avoid thrashing).
+			stale = true
+		}
+	} else if stale && status != nil {
+		fmt.Fprintln(status, "catalog has never been indexed — running initial index")
+	}
+
+	if !stale {
+		return
+	}
+
+	var resolved *config.Config
+	if d.cfg != nil {
+		resolved = d.cfg.Resolved
+	}
+	idx := index.New(d.store, nil)
+	summary := idx.Run(ctx, resolved)
+
+	if status != nil {
+		fmt.Fprintf(status, "index complete: %d servers reached, %d tools indexed, %d errors",
+			summary.ServersReached, summary.ToolsIndexed, len(summary.Errors))
+		if !summary.OK {
+			fmt.Fprintln(status, " (partial/failed)")
+		} else {
+			fmt.Fprintln(status)
+		}
+		if summary.AgentInstruction != "" {
+			fmt.Fprintln(status, summary.AgentInstruction)
+		}
+	}
 }

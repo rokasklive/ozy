@@ -9,20 +9,23 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	"time"
 )
 
 // File is an atomic JSON document Store. It keeps an in-memory copy for fast
 // reads and writes the whole document with temp-file plus rename after updates.
 type File struct {
-	mu      sync.RWMutex
-	path    string
-	servers map[string]Server
-	tools   map[string]Tool
+	mu            sync.RWMutex
+	path          string
+	servers       map[string]Server
+	tools         map[string]Tool
+	lastIndexedAt time.Time
 }
 
 type fileDocument struct {
-	Servers map[string]Server `json:"servers,omitempty"`
-	Tools   map[string]Tool   `json:"tools,omitempty"`
+	Servers       map[string]Server `json:"servers,omitempty"`
+	Tools         map[string]Tool   `json:"tools,omitempty"`
+	LastIndexedAt time.Time         `json:"lastIndexedAt,omitempty"`
 }
 
 // DefaultPath returns the durable catalog path. OZY_CATALOG overrides the
@@ -70,6 +73,7 @@ func NewFile(path string) (*File, error) {
 	for ref, t := range doc.Tools {
 		store.tools[ref] = t
 	}
+	store.lastIndexedAt = doc.LastIndexedAt
 	return store, nil
 }
 
@@ -155,6 +159,29 @@ func (f *File) Stats(ctx context.Context) (Stats, error) {
 	return stats, nil
 }
 
+// LastIndexedAt returns the timestamp of the last successful index run and
+// a bool indicating whether a prior index has completed.
+func (f *File) LastIndexedAt(ctx context.Context) (time.Time, bool, error) {
+	if err := ctx.Err(); err != nil {
+		return time.Time{}, false, err
+	}
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+	ok := !f.lastIndexedAt.IsZero()
+	return f.lastIndexedAt, ok, nil
+}
+
+// SetLastIndexedAt records the timestamp of a completed index run.
+func (f *File) SetLastIndexedAt(ctx context.Context, t time.Time) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.lastIndexedAt = t
+	return f.persistLocked()
+}
+
 func (f *File) persistLocked() error {
 	dir := filepath.Dir(f.path)
 	if err := os.MkdirAll(dir, 0o750); err != nil {
@@ -169,7 +196,7 @@ func (f *File) persistLocked() error {
 
 	enc := json.NewEncoder(tmp)
 	enc.SetIndent("", "  ")
-	if err := enc.Encode(fileDocument{Servers: f.servers, Tools: f.tools}); err != nil {
+	if err := enc.Encode(fileDocument{Servers: f.servers, Tools: f.tools, LastIndexedAt: f.lastIndexedAt}); err != nil {
 		_ = tmp.Close()
 		return fmt.Errorf("encode catalog: %w", err)
 	}

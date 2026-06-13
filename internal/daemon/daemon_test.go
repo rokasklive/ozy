@@ -3,6 +3,8 @@ package daemon
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -87,5 +89,98 @@ func TestRun_StartsWithSemanticDisabled(t *testing.T) {
 	cancel() // already done; Run should return promptly
 	if err := d.Run(ctx, nil); err != nil {
 		t.Fatalf("Run() error = %v", err)
+	}
+}
+
+func TestRun_StaleCatalogTriggersReindex(t *testing.T) {
+	t.Parallel()
+	store := catalog.NewMemory()
+	ctx := context.Background()
+
+	oldTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := store.SetLastIndexedAt(ctx, oldTime); err != nil {
+		t.Fatalf("SetLastIndexedAt() error = %v", err)
+	}
+
+	// Config file with mtime newer than oldTime.
+	cfgPath := filepath.Join(t.TempDir(), "ozy.jsonc")
+	if err := os.WriteFile(cfgPath, []byte(`{"version":1}`), 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	cfg := &config.Loaded{Path: cfgPath, Resolved: &config.Config{Version: 1}}
+
+	d := NewWithStore(cfg, store)
+	ctx2, cancel := context.WithCancel(ctx)
+	var status bytes.Buffer
+	done := make(chan error, 1)
+	go func() { done <- d.Run(ctx2, &status) }()
+
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	<-done
+
+	out := status.String()
+	if !strings.Contains(out, "reindexing") && !strings.Contains(out, "index complete") {
+		t.Errorf("status does not mention reindexing: %q", out)
+	}
+	if !strings.Contains(out, "ready") {
+		t.Error("daemon should report ready even after indexing")
+	}
+}
+
+func TestRun_FreshCatalogSkipsIndexing(t *testing.T) {
+	t.Parallel()
+	store := catalog.NewMemory()
+	ctx := context.Background()
+
+	cfgPath := filepath.Join(t.TempDir(), "ozy.jsonc")
+	if err := os.WriteFile(cfgPath, []byte(`{"version":1}`), 0o644); err != nil {
+		t.Fatalf("WriteFile() error = %v", err)
+	}
+	cfg := &config.Loaded{Path: cfgPath, Resolved: &config.Config{Version: 1}}
+
+	// Set last indexed to now+1s so config file is definitely older.
+	if err := store.SetLastIndexedAt(ctx, time.Now().Add(time.Second)); err != nil {
+		t.Fatalf("SetLastIndexedAt() error = %v", err)
+	}
+
+	d := NewWithStore(cfg, store)
+	ctx2, cancel := context.WithCancel(ctx)
+	var status bytes.Buffer
+	done := make(chan error, 1)
+	go func() { done <- d.Run(ctx2, &status) }()
+
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	<-done
+
+	out := status.String()
+	if strings.Contains(out, "reindexing") || strings.Contains(out, "index complete") {
+		t.Errorf("fresh catalog should not reindex: %q", out)
+	}
+	if !strings.Contains(out, "ready") {
+		t.Error("daemon should report ready")
+	}
+}
+
+func TestRun_IndexingFailureStillReportsReady(t *testing.T) {
+	t.Parallel()
+	store := catalog.NewMemory()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	// No MCP servers configured — startup indexing will find no reachable servers.
+	d := NewWithStore(cfg, store)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var status bytes.Buffer
+	done := make(chan error, 1)
+	go func() { done <- d.Run(ctx, &status) }()
+
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	<-done
+
+	out := status.String()
+	if !strings.Contains(out, "ready") {
+		t.Errorf("daemon should report ready even on indexing failure: %q", out)
 	}
 }

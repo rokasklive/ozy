@@ -141,6 +141,17 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 	case len(summary.Errors) > 0:
 		summary.AgentInstruction = "Some servers failed, but reachable servers were indexed. Use `ozy list` or `ozy describe` for indexed tools and repair failed servers separately."
 	}
+	if summary.ServersReached > 0 {
+		if err := i.store.SetLastIndexedAt(ctx, i.now()); err != nil {
+			summary.OK = false
+			summary.Errors = append(summary.Errors, contract.Error{
+				Type:             contract.ErrTypeConfigError,
+				Retryable:        true,
+				Message:          fmt.Sprintf("failed to persist last-indexed time: %v", err),
+				AgentInstruction: "Check catalog storage permissions, then retry indexing.",
+			})
+		}
+	}
 	return summary
 }
 

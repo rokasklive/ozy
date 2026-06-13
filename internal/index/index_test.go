@@ -209,3 +209,93 @@ func TestIndexer_ListToolsErrorRedactsConfiguredSecrets(t *testing.T) {
 		t.Fatalf("ListTools error leaked secret: %+v", summary.Errors[0])
 	}
 }
+
+func TestIndexer_SetsLastIndexedAtOnSuccess(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	indexTime := time.Date(2026, 6, 14, 14, 30, 0, 0, time.UTC)
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name: "confluence_search", InputSchema: map[string]any{"type": "object"},
+			}}},
+		},
+	}}, WithClock(func() time.Time { return indexTime }))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if !summary.OK || summary.ServersReached != 1 {
+		t.Fatalf("summary = %+v, want success", summary)
+	}
+
+	ts, ok, err := store.LastIndexedAt(ctx)
+	if err != nil {
+		t.Fatalf("LastIndexedAt() error = %v", err)
+	}
+	if !ok {
+		t.Error("LastIndexedAt() ok = false after successful index, want true")
+	}
+	if !ts.Equal(indexTime) {
+		t.Errorf("LastIndexedAt() = %v, want %v", ts, indexTime)
+	}
+}
+
+func TestIndexer_DoesNotAdvanceLastIndexedAtOnTotalFailure(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "bad",
+			Error: &contract.Error{
+				Type: contract.ErrTypeDownstreamServerOffline, ServerID: "bad", Message: "offline",
+			},
+		},
+	}})
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if summary.OK || summary.ServersReached != 0 {
+		t.Fatalf("summary = %+v, want total failure", summary)
+	}
+
+	ts, ok, err := store.LastIndexedAt(ctx)
+	if err != nil {
+		t.Fatalf("LastIndexedAt() error = %v", err)
+	}
+	if ok {
+		t.Error("LastIndexedAt() ok = true after failed index, want false")
+	}
+	if !ts.IsZero() {
+		t.Errorf("LastIndexedAt() = %v, want zero time", ts)
+	}
+}
+
+func TestIndexer_SetsLastIndexedAtWhenReachableServerHasZeroTools(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	indexTime := time.Date(2026, 6, 14, 15, 0, 0, 0, time.UTC)
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "empty",
+			Session:  fakeSession{tools: nil},
+		},
+	}}, WithClock(func() time.Time { return indexTime }))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if summary.ServersReached != 1 || summary.ToolsIndexed != 0 {
+		t.Fatalf("summary = %+v, want one reachable server with zero tools", summary)
+	}
+
+	ts, ok, err := store.LastIndexedAt(ctx)
+	if err != nil {
+		t.Fatalf("LastIndexedAt() error = %v", err)
+	}
+	if !ok {
+		t.Error("LastIndexedAt() ok = false for reachable server with zero tools, want true")
+	}
+	if !ts.Equal(indexTime) {
+		t.Errorf("LastIndexedAt() = %v, want %v", ts, indexTime)
+	}
+}

@@ -21,6 +21,10 @@ func (f fakeConnector) ConnectAll(context.Context, *config.Config) []downstream.
 	return f.results
 }
 
+func (fakeConnector) Connect(_ context.Context, _ string, _ config.ServerConfig) downstream.Result {
+	return downstream.Result{ServerID: "unused"}
+}
+
 type fakeSession struct {
 	tools []*mcpsdk.Tool
 	err   error
@@ -30,12 +34,20 @@ func (f fakeSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsd
 	return &mcpsdk.ListToolsResult{Tools: f.tools}, f.err
 }
 
+func (fakeSession) CallTool(context.Context, *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
+	return &mcpsdk.CallToolResult{}, nil
+}
+
 func (fakeSession) Close() error { return nil }
 
 type failingSession struct{}
 
 func (failingSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
 	return nil, errors.New("tools/list internal error")
+}
+
+func (failingSession) CallTool(context.Context, *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
+	return nil, errors.New("tools/call not implemented in failingSession")
 }
 
 func (failingSession) Close() error { return nil }
@@ -300,13 +312,25 @@ func TestLiveBroker_PreservesDescribeCallPlaceholders(t *testing.T) {
 	if ce.Type != contract.ErrTypeToolNotFound {
 		t.Errorf("error type = %q, want %q", ce.Type, contract.ErrTypeToolNotFound)
 	}
+}
 
-	_, err = b.CallTool(context.Background(), "atlassian.missing", nil)
+func TestLiveBroker_CallToolUnknownServerReturnsConfigError(t *testing.T) {
+	t.Parallel()
+	b := newLiveBroker(t, fakeConnector{})
+
+	_, err := b.CallTool(context.Background(), "atlassian.missing", nil)
+	var ce *contract.Error
 	if !errors.As(err, &ce) {
 		t.Fatalf("CallTool() error = %v, want *contract.Error", err)
 	}
-	if ce.Type != contract.ErrTypeToolNotFound {
-		t.Errorf("error type = %q, want %q", ce.Type, contract.ErrTypeToolNotFound)
+	if ce.Type != contract.ErrTypeConfigError {
+		t.Errorf("error type = %q, want %q", ce.Type, contract.ErrTypeConfigError)
+	}
+	if ce.ServerID != "atlassian" {
+		t.Errorf("ServerID = %q, want atlassian", ce.ServerID)
+	}
+	if ce.AgentInstruction == "" {
+		t.Error("structured failure must carry an agentInstruction")
 	}
 }
 

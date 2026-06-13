@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -95,6 +96,10 @@ func (f fakeLiveConnector) ConnectAll(context.Context, *config.Config) []downstr
 	return f.results
 }
 
+func (fakeLiveConnector) Connect(_ context.Context, _ string, _ config.ServerConfig) downstream.Result {
+	return downstream.Result{ServerID: "unused"}
+}
+
 type fakeLiveSession struct {
 	tools []*mcpsdk.Tool
 	err   error
@@ -102,6 +107,10 @@ type fakeLiveSession struct {
 
 func (f fakeLiveSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
 	return &mcpsdk.ListToolsResult{Tools: f.tools}, f.err
+}
+
+func (fakeLiveSession) CallTool(context.Context, *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
+	return &mcpsdk.CallToolResult{}, nil
 }
 
 func (fakeLiveSession) Close() error { return nil }
@@ -344,5 +353,224 @@ func TestAdapter_CallToolReturnsStructuredFailure(t *testing.T) {
 	}
 	if errObj["agentInstruction"] == "" || errObj["agentInstruction"] == nil {
 		t.Error("failure must carry an agentInstruction")
+	}
+}
+
+func TestAdapter_CallToolInvokesFixtureDownstreamAndNormalizesResult(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	// Factory: spawns a fresh fixture downstream server with one echo tool on
+	// each connect. Each connect gets a fresh in-memory transport pair because
+	// net.Pipe-backed transports are single-session.
+	factory := func(_ string, _ config.ServerConfig) (mcpsdk.Transport, error) {
+		dsServerT, dsClientT := mcpsdk.NewInMemoryTransports()
+		dsServer := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "fixture-downstream", Version: "0"}, nil)
+		mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+			Name:        "fixture_echo",
+			Title:       "Fixture Echo",
+			Description: "Echo the supplied text argument back",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{"text": map[string]any{"type": "string"}},
+			},
+		}, func(_ context.Context, _ *mcpsdk.CallToolRequest, args map[string]any) (*mcpsdk.CallToolResult, any, error) {
+			text, _ := args["text"].(string)
+			return &mcpsdk.CallToolResult{
+				Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "echo: " + text}},
+			}, nil, nil
+		})
+		go func() { _ = dsServer.Run(ctx, dsServerT) }()
+		return dsClientT, nil
+	}
+
+	connector := downstream.New(downstream.WithTransportFactory(factory))
+	liveBroker := broker.NewLive(catalog.NewMemory(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"fixture": {Type: "local", Enabled: true},
+		},
+	}, connector)
+
+	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(liveBroker, "test")
+	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, ozyClientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	// Downstream tools must not leak through the adapter surface.
+	list, err := cs.ListTools(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("ListTools: %v", err)
+	}
+	if len(list.Tools) != 3 {
+		t.Errorf("advertised %d tools, want 3: %+v", len(list.Tools), list.Tools)
+	}
+	advertised := make(map[string]bool, len(list.Tools))
+	for _, tool := range list.Tools {
+		advertised[tool.Name] = true
+	}
+	for _, name := range []string{"findTool", "describeTool", "callTool"} {
+		if !advertised[name] {
+			t.Errorf("missing advertised tool %q", name)
+		}
+	}
+	for _, name := range []string{"fixture_echo", "fixture_read", "fixture_search"} {
+		if advertised[name] {
+			t.Errorf("downstream tool %q leaked into the advertised set", name)
+		}
+	}
+
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name: "callTool",
+		Arguments: map[string]any{
+			"toolRef":   "fixture.fixture_echo",
+			"arguments": map[string]any{"text": "hello"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(callTool): %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("callTool returned IsError=true; content=%+v", res.Content)
+	}
+	payload := textPayload(t, res)
+	if payload["ok"] != true {
+		t.Errorf("ok = %v, want true", payload["ok"])
+	}
+	if payload["toolRef"] != "fixture.fixture_echo" {
+		t.Errorf("toolRef = %v, want fixture.fixture_echo", payload["toolRef"])
+	}
+	got, _ := payload["result"].(string)
+	if !strings.Contains(got, "hello") {
+		t.Errorf("result = %q, want substring %q", got, "hello")
+	}
+	summary, _ := payload["resultSummary"].(string)
+	if summary == "" {
+		t.Error("resultSummary is empty, want non-empty")
+	}
+}
+
+func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	factory := func(_ string, _ config.ServerConfig) (mcpsdk.Transport, error) {
+		dsServerT, dsClientT := mcpsdk.NewInMemoryTransports()
+		dsServer := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "fixture-downstream", Version: "0"}, nil)
+		mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+			Name:        "fixture_echo",
+			Title:       "Fixture Echo",
+			Description: "Echo the supplied text argument back",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{"text": map[string]any{"type": "string"}},
+			},
+		}, func(_ context.Context, _ *mcpsdk.CallToolRequest, args map[string]any) (*mcpsdk.CallToolResult, any, error) {
+			text, _ := args["text"].(string)
+			return &mcpsdk.CallToolResult{
+				Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "echo: " + text}},
+			}, nil, nil
+		})
+		mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+			Name:        "fixture_read",
+			Title:       "Fixture Read",
+			Description: "Return a fixed fixture string",
+		}, func(context.Context, *mcpsdk.CallToolRequest, map[string]any) (*mcpsdk.CallToolResult, any, error) {
+			return &mcpsdk.CallToolResult{
+				Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "fixture_read_payload"}},
+			}, nil, nil
+		})
+		go func() { _ = dsServer.Run(ctx, dsServerT) }()
+		return dsClientT, nil
+	}
+
+	connector := downstream.New(downstream.WithTransportFactory(factory))
+	liveBroker := broker.NewLive(catalog.NewMemory(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"fixture": {Type: "local", Enabled: true},
+		},
+	}, connector)
+
+	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(liveBroker, "test")
+	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, ozyClientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	// Live discovery through findTool — no ozy index, no catalog priming.
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name:      "findTool",
+		Arguments: map[string]any{"query": "read"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(findTool): %v", err)
+	}
+	payload := textPayload(t, res)
+	if payload["decision"] != "choose_from_candidates" {
+		t.Fatalf("decision = %v, want choose_from_candidates", payload["decision"])
+	}
+	candidates, ok := payload["candidates"].([]any)
+	if !ok || len(candidates) == 0 {
+		t.Fatalf("candidates = %v, want non-empty array", payload["candidates"])
+	}
+
+	var picked string
+	for _, c := range candidates {
+		cm, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		if name, _ := cm["name"].(string); name == "fixture_read" {
+			ref, _ := cm["toolRef"].(string)
+			if !strings.HasPrefix(ref, "fixture.") {
+				t.Fatalf("picked toolRef %q does not start with %q", ref, "fixture.")
+			}
+			picked = ref
+			break
+		}
+	}
+	if picked == "" {
+		t.Fatalf("no candidate named %q among %v", "fixture_read", candidates)
+	}
+
+	// Live invocation through callTool — no catalog, no pre-warmed session.
+	res, err = cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name: "callTool",
+		Arguments: map[string]any{
+			"toolRef":   picked,
+			"arguments": map[string]any{},
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(callTool): %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("callTool returned IsError=true; content=%+v", res.Content)
+	}
+	payload = textPayload(t, res)
+	if payload["ok"] != true {
+		t.Errorf("ok = %v, want true", payload["ok"])
+	}
+	if payload["toolRef"] != picked {
+		t.Errorf("toolRef = %v, want %q", payload["toolRef"], picked)
+	}
+	got, _ := payload["result"].(string)
+	if !strings.Contains(got, "fixture_read") {
+		t.Errorf("result = %q, want substring %q", got, "fixture_read")
+	}
+	if summary, _ := payload["resultSummary"].(string); summary == "" {
+		t.Error("resultSummary is empty, want non-empty")
 	}
 }

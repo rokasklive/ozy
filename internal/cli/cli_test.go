@@ -13,7 +13,11 @@ import (
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
+	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/downstream"
+	ozymcp "github.com/rokasklive/ozy/internal/mcp"
 )
 
 const cfgWithSecret = `{
@@ -55,6 +59,22 @@ func runTestMCPServer() int {
 		},
 	}, func(context.Context, *mcpsdk.CallToolRequest, map[string]any) (*mcpsdk.CallToolResult, any, error) {
 		return &mcpsdk.CallToolResult{}, nil, nil
+	})
+	mcpsdk.AddTool(server, &mcpsdk.Tool{
+		Name:        "fixture_echo",
+		Title:       "Fixture Echo",
+		Description: "Echo the `query` argument back to the caller",
+		InputSchema: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"query": map[string]any{"type": "string"},
+			},
+		},
+	}, func(_ context.Context, _ *mcpsdk.CallToolRequest, args map[string]any) (*mcpsdk.CallToolResult, any, error) {
+		query, _ := args["query"].(string)
+		return &mcpsdk.CallToolResult{
+			Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "echo: " + query}},
+		}, nil, nil
 	})
 	if err := server.Run(context.Background(), &mcpsdk.StdioTransport{}); err != nil {
 		return 1
@@ -333,8 +353,8 @@ func TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &indexPayload); err != nil {
 		t.Fatalf("index output is not valid JSON: %v\n%s", err, out)
 	}
-	if !indexPayload.OK || indexPayload.ServersReached != 1 || indexPayload.ToolsIndexed != 1 {
-		t.Fatalf("index payload = %+v, want one reached server and one tool", indexPayload)
+	if !indexPayload.OK || indexPayload.ServersReached != 1 || indexPayload.ToolsIndexed != 2 {
+		t.Fatalf("index payload = %+v, want one reached server and two tools", indexPayload)
 	}
 
 	out, _, code = run("--config", cfgPath, "--format", "json", "list")
@@ -351,9 +371,27 @@ func TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &listPayload); err != nil {
 		t.Fatalf("list output is not valid JSON: %v\n%s", err, out)
 	}
-	if len(listPayload.Tools) != 1 || listPayload.Tools[0].ToolRef != "fixture.fixture_search" ||
-		listPayload.Tools[0].ServerID != "fixture" || listPayload.Tools[0].Freshness != "fresh" {
-		t.Fatalf("list payload = %+v, want indexed fixture tool", listPayload)
+	if len(listPayload.Tools) != 2 {
+		t.Fatalf("list payload = %+v, want two indexed fixture tools", listPayload)
+	}
+	seenTools := make(map[string]struct {
+		serverID  string
+		freshness string
+	})
+	for _, tool := range listPayload.Tools {
+		if tool.ServerID != "fixture" || tool.Freshness != "fresh" {
+			t.Fatalf("list payload = %+v, want every tool to be on server fixture with fresh freshness", listPayload)
+		}
+		seenTools[tool.ToolRef] = struct {
+			serverID  string
+			freshness string
+		}{tool.ServerID, tool.Freshness}
+	}
+	if _, ok := seenTools["fixture.fixture_search"]; !ok {
+		t.Errorf("list missing fixture.fixture_search: %+v", listPayload)
+	}
+	if _, ok := seenTools["fixture.fixture_echo"]; !ok {
+		t.Errorf("list missing fixture.fixture_echo: %+v", listPayload)
 	}
 
 	out, _, code = run("--config", cfgPath, "--format", "json", "describe", "fixture.fixture_search")
@@ -468,5 +506,127 @@ func TestDoctorReportsMissingEnv(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("doctor did not name the missing env var:\n%s", out)
+	}
+}
+
+func TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath(t *testing.T) {
+	catalogPath := filepath.Join(t.TempDir(), "catalog.json")
+	t.Setenv("OZY_CATALOG", catalogPath)
+	cfgPath := writeCfg(t, fmt.Sprintf(`{
+  "mcp": {
+    "fixture": {
+      "type": "local",
+      "command": [%q],
+      "environment": {"OZY_TEST_MCP_SERVER": "1"},
+      "timeout": 5000
+    }
+  }
+}`, os.Args[0]))
+
+	const (
+		toolRef = "fixture.fixture_echo"
+		query   = "hello"
+	)
+
+	out, _, code := run("--config", cfgPath, "--format", "json", "call", toolRef, "--json", fmt.Sprintf(`{"query":%q}`, query))
+	if code != 0 {
+		t.Fatalf("CLI call exit code = %d, want 0\n%s", code, out)
+	}
+	var cliPayload map[string]any
+	if err := json.Unmarshal([]byte(out), &cliPayload); err != nil {
+		t.Fatalf("CLI output is not valid JSON: %v\n%s", err, out)
+	}
+	if cliPayload["ok"] != true {
+		t.Errorf("CLI ok = %v, want true", cliPayload["ok"])
+	}
+	if cliPayload["toolRef"] != toolRef {
+		t.Errorf("CLI toolRef = %v, want %q", cliPayload["toolRef"], toolRef)
+	}
+	if cliPayload["result"] != fmt.Sprintf("echo: %s", query) {
+		t.Errorf("CLI result = %v, want %q", cliPayload["result"], fmt.Sprintf("echo: %s", query))
+	}
+	if summary, _ := cliPayload["resultSummary"].(string); summary == "" {
+		t.Errorf("CLI resultSummary must be non-empty, got %v", cliPayload["resultSummary"])
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	dsServer := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "fixture-downstream", Version: "0"}, nil)
+	mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+		Name:        "fixture_echo",
+		Title:       "Fixture Echo",
+		Description: "Echo the `query` argument back to the caller",
+		InputSchema: map[string]any{
+			"type":       "object",
+			"properties": map[string]any{"query": map[string]any{"type": "string"}},
+		},
+	}, func(_ context.Context, _ *mcpsdk.CallToolRequest, args map[string]any) (*mcpsdk.CallToolResult, any, error) {
+		q, _ := args["query"].(string)
+		return &mcpsdk.CallToolResult{
+			Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "echo: " + q}},
+		}, nil, nil
+	})
+	dsServerT, dsClientT := mcpsdk.NewInMemoryTransports()
+	go func() { _ = dsServer.Run(ctx, dsServerT) }()
+
+	connector := downstream.New(downstream.WithTransportFactory(
+		func(_ string, _ config.ServerConfig) (mcpsdk.Transport, error) {
+			return dsClientT, nil
+		},
+	))
+	liveBroker := broker.NewLive(catalog.NewMemory(), &config.Config{
+		MCP: map[string]config.ServerConfig{
+			"fixture": {Type: "local", Enabled: true},
+		},
+	}, connector)
+
+	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
+	adapter := ozymcp.New(liveBroker, "test")
+	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, ozyClientT, nil)
+	if err != nil {
+		t.Fatalf("MCP client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name: "callTool",
+		Arguments: map[string]any{
+			"toolRef":   toolRef,
+			"arguments": map[string]any{"query": query},
+		},
+	})
+	if err != nil {
+		t.Fatalf("MCP CallTool: %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("MCP callTool returned IsError; content=%v", res.Content)
+	}
+	if len(res.Content) == 0 {
+		t.Fatal("MCP callTool returned no content")
+	}
+	tc, ok := res.Content[0].(*mcpsdk.TextContent)
+	if !ok {
+		t.Fatalf("MCP content[0] is %T, want *TextContent", res.Content[0])
+	}
+	var mcpPayload map[string]any
+	if err := json.Unmarshal([]byte(tc.Text), &mcpPayload); err != nil {
+		t.Fatalf("MCP content is not valid JSON: %v\n%s", err, tc.Text)
+	}
+
+	if mcpPayload["ok"] != cliPayload["ok"] {
+		t.Errorf("parity: ok = %v (MCP) vs %v (CLI)", mcpPayload["ok"], cliPayload["ok"])
+	}
+	if mcpPayload["toolRef"] != cliPayload["toolRef"] {
+		t.Errorf("parity: toolRef = %v (MCP) vs %v (CLI)", mcpPayload["toolRef"], cliPayload["toolRef"])
+	}
+	if mcpPayload["result"] != cliPayload["result"] {
+		t.Errorf("parity: result = %v (MCP) vs %v (CLI)", mcpPayload["result"], cliPayload["result"])
+	}
+	if mcpPayload["resultSummary"] != cliPayload["resultSummary"] {
+		t.Errorf("parity: resultSummary = %v (MCP) vs %v (CLI)", mcpPayload["resultSummary"], cliPayload["resultSummary"])
 	}
 }

@@ -32,11 +32,20 @@ func (f fakeSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsd
 	return &mcpsdk.ListToolsResult{Tools: f.tools}, f.err
 }
 
+func (fakeSession) CallTool(context.Context, *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
+	return &mcpsdk.CallToolResult{}, nil
+}
+
 func (fakeSession) Close() error { return nil }
 
 type blockingSession struct{}
 
 func (blockingSession) ListTools(ctx context.Context, _ *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
+	<-ctx.Done()
+	return nil, ctx.Err()
+}
+
+func (blockingSession) CallTool(ctx context.Context, _ *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
 	<-ctx.Done()
 	return nil, ctx.Err()
 }

@@ -23,10 +23,18 @@ const (
 	redacted              = "****"
 )
 
-// Session is the downstream MCP client surface used by discovery.
+// Session is the downstream MCP client surface used by discovery and
+// brokered invocation. The MCP Go SDK's *ClientSession satisfies it.
 type Session interface {
 	ListTools(ctx context.Context, params *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error)
+	CallTool(ctx context.Context, params *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error)
 	Close() error
+}
+
+// Scrub replaces every configured secret value in msg with the redaction mask.
+// Empty values and {env:...} placeholders are left alone.
+func Scrub(msg string, server config.ServerConfig) string {
+	return scrub(msg, server)
 }
 
 // Result is the per-server outcome of a connection attempt.

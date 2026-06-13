@@ -159,6 +159,8 @@ func (f *File) Stats(ctx context.Context) (Stats, error) {
 	return stats, nil
 }
 
+// LastIndexedAt returns the timestamp of the last successful index run and
+// a bool indicating whether a prior index has completed.
 func (f *File) LastIndexedAt(ctx context.Context) (time.Time, bool, error) {
 	if err := ctx.Err(); err != nil {
 		return time.Time{}, false, err
@@ -169,6 +171,7 @@ func (f *File) LastIndexedAt(ctx context.Context) (time.Time, bool, error) {
 	return f.lastIndexedAt, ok, nil
 }
 
+// SetLastIndexedAt records the timestamp of a completed index run.
 func (f *File) SetLastIndexedAt(ctx context.Context, t time.Time) error {
 	if err := ctx.Err(); err != nil {
 		return err

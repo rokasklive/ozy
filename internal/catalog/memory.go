@@ -93,6 +93,8 @@ func (m *Memory) Stats(context.Context) (Stats, error) {
 	return stats, nil
 }
 
+// LastIndexedAt returns the timestamp of the last successful index run and
+// a bool indicating whether a prior index has completed.
 func (m *Memory) LastIndexedAt(ctx context.Context) (time.Time, bool, error) {
 	if err := ctx.Err(); err != nil {
 		return time.Time{}, false, err
@@ -103,6 +105,7 @@ func (m *Memory) LastIndexedAt(ctx context.Context) (time.Time, bool, error) {
 	return m.lastIndexedAt, ok, nil
 }
 
+// SetLastIndexedAt records the timestamp of a completed index run.
 func (m *Memory) SetLastIndexedAt(_ context.Context, t time.Time) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

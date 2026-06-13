@@ -96,7 +96,7 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 		if decision.Selected != nil {
 			result.Reason = fmt.Sprintf("No indexed tool strongly matches %q.", query)
 		}
-		result.AgentInstruction = fmt.Sprintf("Refine the query to be more specific, then retry findTool. If the tool should be available, run `ozy doctor` to check the catalog and then `ozy index` to refresh it. Do not infer that the capability is unavailable.")
+		result.AgentInstruction = "Refine the query to be more specific, then retry findTool. If the tool should be available, run `ozy doctor` to check the catalog and then `ozy index` to refresh it. Do not infer that the capability is unavailable."
 
 	case search.DecisionCatalogEmpty:
 		result.AgentInstruction = "The catalog has no indexed tools. Run `ozy index` to populate it, or check configuration with `ozy doctor`. Do not infer that capabilities are unavailable."
@@ -285,66 +285,6 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 
 func (l *live) List(ctx context.Context) (*contract.ListResult, error) {
 	return l.skeleton.List(ctx)
-}
-
-func (l *live) serverConfig(serverID string) config.ServerConfig {
-	if l.cfg != nil {
-		return l.cfg.MCP[serverID]
-	}
-	return config.ServerConfig{}
-}
-
-func (l *live) listSessionTools(ctx context.Context, serverID string, _ config.ServerConfig, session downstream.Session) ([]*mcpsdk.Tool, *contract.Error) {
-	tools, err := session.ListTools(ctx, nil)
-	if err != nil {
-		return nil, &contract.Error{
-			Type:             contract.ErrTypeDownstreamCallFailed,
-			ServerID:         serverID,
-			Retryable:        true,
-			Message:          fmt.Sprintf("tools/list failed on server %q: %v", serverID, err),
-			AgentInstruction: "Check the downstream server health and retry.",
-		}
-	}
-	return tools.Tools, nil
-}
-
-func (l *live) normalizeCandidate(serverID string, tool *mcpsdk.Tool) contract.Candidate {
-	toolRef := serverID + "." + tool.Name
-	return contract.Candidate{
-		ToolRef:            toolRef,
-		ServerID:           serverID,
-		DownstreamToolName: tool.Name,
-		Title:              tool.Title,
-		Description:        tool.Description,
-		InputSchema:        normalizeInputSchema(tool.InputSchema),
-	}
-}
-
-func normalizeInputSchema(schema any) map[string]any {
-	if schema == nil {
-		return map[string]any{"type": "object"}
-	}
-	switch s := schema.(type) {
-	case map[string]any:
-		return s
-	default:
-		return map[string]any{"type": "object", "raw": schema}
-	}
-}
-
-func candidateRefs(candidates []contract.Candidate) string {
-	refs := make([]string, len(candidates))
-	for i, c := range candidates {
-		refs[i] = c.ToolRef
-	}
-	result := ""
-	for i, r := range refs {
-		if i > 0 {
-			result += ", "
-		}
-		result += r
-	}
-	return result
 }
 
 // splitToolRef parses "<serverId>.<downstreamToolName>" by splitting on the

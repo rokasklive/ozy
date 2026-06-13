@@ -28,12 +28,6 @@ const (
 	bm25b  = 0.75
 )
 
-// indexedField holds one weighted text segment for a tool.
-type indexedField struct {
-	weight float64
-	text   string
-}
-
 // tokenize splits a query or text into lowercase token terms.
 // Keeps terms of length ≥ 2 and skips pure symbols.
 func tokenize(text string) []string {
@@ -166,11 +160,11 @@ func newLexicalScorer(query string, tools []catalog.Tool) *lexicalScorer {
 	return ls
 }
 
-func idf(df int, N float64) float64 {
+func idf(df int, n float64) float64 {
 	if df == 0 {
 		return 0
 	}
-	return math.Log((N-float64(df)+0.5)/(float64(df)+0.5) + 1)
+	return math.Log((n-float64(df)+0.5)/(float64(df)+0.5) + 1)
 }
 
 // scoreFields computes BM25 for a single tool against the scorer's query terms.

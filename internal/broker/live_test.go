@@ -6,8 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
-
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
@@ -26,33 +24,6 @@ func (f fakeConnector) ConnectAll(context.Context, *config.Config) []downstream.
 func (fakeConnector) Connect(_ context.Context, _ string, _ config.ServerConfig) downstream.Result {
 	return downstream.Result{ServerID: "unused"}
 }
-
-type fakeSession struct {
-	tools []*mcpsdk.Tool
-	err   error
-}
-
-func (f fakeSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
-	return &mcpsdk.ListToolsResult{Tools: f.tools}, f.err
-}
-
-func (fakeSession) CallTool(context.Context, *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
-	return &mcpsdk.CallToolResult{}, nil
-}
-
-func (fakeSession) Close() error { return nil }
-
-type failingSession struct{}
-
-func (failingSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
-	return nil, errors.New("tools/list internal error")
-}
-
-func (failingSession) CallTool(context.Context, *mcpsdk.CallToolParams) (*mcpsdk.CallToolResult, error) {
-	return nil, errors.New("tools/call not implemented in failingSession")
-}
-
-func (failingSession) Close() error { return nil }
 
 func newLiveBroker(t *testing.T, connector Connector) Broker {
 	t.Helper()
@@ -247,17 +218,4 @@ func TestLiveBroker_CallToolUnknownServerReturnsConfigError(t *testing.T) {
 	if ce.AgentInstruction == "" {
 		t.Error("structured failure must carry an agentInstruction")
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && searchSubstring(s, substr)
-}
-
-func searchSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

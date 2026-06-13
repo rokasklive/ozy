@@ -230,6 +230,50 @@ func (f *fakeSemantic) Score(_ context.Context, _ string, _ []catalog.Tool) ([]f
 
 func (f *fakeSemantic) Available() bool { return f.available }
 
+func TestEngine_Find_WithSemanticAvailable(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := storeWithTools(t, []catalog.Tool{
+		{ToolRef: "a.search", ServerID: "a", DownstreamToolName: "search", Title: "Search", Description: "search tool"},
+		{ToolRef: "b.other", ServerID: "b", DownstreamToolName: "other", Title: "Other", Description: "other tool"},
+	})
+
+	// Semantic scorer returns high score for second tool.
+	sem := &fakeSemantic{scores: []float64{0.1, 0.9}, available: true}
+	engine := New(store, sem)
+	ranking, err := engine.Find(ctx, "search")
+	if err != nil {
+		t.Fatalf("Find() error = %v", err)
+	}
+	if !ranking.SemanticAvailable {
+		t.Error("SemanticAvailable should be true")
+	}
+	if len(ranking.Entries) < 2 {
+		t.Fatal("not enough entries")
+	}
+}
+
+func TestEngine_Find_SemanticUnavailableDegrades(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := storeWithTools(t, []catalog.Tool{
+		{ToolRef: "a.search", ServerID: "a", DownstreamToolName: "search", Title: "Search", Description: "search tool"},
+	})
+
+	sem := &fakeSemantic{available: false}
+	engine := New(store, sem)
+	ranking, err := engine.Find(ctx, "search")
+	if err != nil {
+		t.Fatalf("Find() error = %v", err)
+	}
+	if ranking.SemanticAvailable {
+		t.Error("SemanticAvailable should be false when scorer is unavailable")
+	}
+	if len(ranking.Entries) == 0 {
+		t.Fatal("should still rank lexically")
+	}
+}
+
 func TestDecide_UseDecision(t *testing.T) {
 	t.Parallel()
 	tools := []catalog.Tool{

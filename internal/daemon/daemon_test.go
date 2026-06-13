@@ -117,7 +117,7 @@ func TestRun_StaleCatalogTriggersReindex(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 	cancel()
-	_ = <-done
+	<-done
 
 	out := status.String()
 	if !strings.Contains(out, "reindexing") && !strings.Contains(out, "index complete") {
@@ -152,7 +152,7 @@ func TestRun_FreshCatalogSkipsIndexing(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 	cancel()
-	_ = <-done
+	<-done
 
 	out := status.String()
 	if strings.Contains(out, "reindexing") || strings.Contains(out, "index complete") {
@@ -177,7 +177,7 @@ func TestRun_IndexingFailureStillReportsReady(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 	cancel()
-	_ = <-done
+	<-done
 
 	out := status.String()
 	if !strings.Contains(out, "ready") {

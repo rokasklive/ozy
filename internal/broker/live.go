@@ -190,20 +190,20 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 	})
 	if err != nil {
 		return nil, &contract.Error{
-			Type:     contract.ErrTypeDownstreamCallFailed,
-			ServerID: serverID,
-			ToolRef:  toolRef,
-			Retryable: true,
+			Type:             contract.ErrTypeDownstreamCallFailed,
+			ServerID:         serverID,
+			ToolRef:          toolRef,
+			Retryable:        true,
 			Message:          fmt.Sprintf("tools/call failed on server %q: %v", serverID, downstream.Scrub(err.Error(), server)),
 			AgentInstruction: "Check the downstream server health and the call arguments, then retry.",
 		}
 	}
 	if callRes.IsError {
 		return nil, &contract.Error{
-			Type:     contract.ErrTypeDownstreamCallFailed,
-			ServerID: serverID,
-			ToolRef:  toolRef,
-			Retryable: false,
+			Type:             contract.ErrTypeDownstreamCallFailed,
+			ServerID:         serverID,
+			ToolRef:          toolRef,
+			Retryable:        false,
 			Message:          downstream.Scrub(extractErrorText(callRes), server),
 			AgentInstruction: "Inspect the downstream error and the call arguments; do not retry the same call unchanged.",
 		}
@@ -427,7 +427,9 @@ func applyCallBudget(cfg *config.Config, result any) (any, string, bool) {
 	if limit < 16 {
 		limit = 16
 	}
-	truncated := append(encoded[:limit], []byte("...[truncated]")...)
+	truncated := make([]byte, 0, limit+len("...[truncated]"))
+	truncated = append(truncated, encoded[:limit]...)
+	truncated = append(truncated, "...[truncated]"...)
 	marker := fmt.Sprintf("(result exceeded budgets.callTool.maxResultBytes=%d bytes; narrow the call for full output)", cfg.Budgets.CallTool.MaxResultBytes)
 	return string(truncated), marker, true
 }

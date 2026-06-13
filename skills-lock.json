@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "chunking-strategy-design": {
+      "source": "rokasklive/retrieval-engineering",
+      "sourceType": "github",
+      "skillPath": "skills/chunking-strategy-design/SKILL.md",
+      "computedHash": "390e38eda691435831281213ab13ad65da105b5bf955f871626c6f5f93c54365"
+    },
+    "drift-management-and-freshness": {
+      "source": "rokasklive/retrieval-engineering",
+      "sourceType": "github",
+      "skillPath": "skills/drift-management-and-freshness/SKILL.md",
+      "computedHash": "dec4e412d7d958782757e4be99125ba1fdec1c2e501b62e242c16478306f6ef1"
+    },
+    "evaluation-operations": {
+      "source": "rokasklive/retrieval-engineering",
+      "sourceType": "github",
+      "skillPath": "skills/evaluation-operations/SKILL.md",
+      "computedHash": "dc31aa9131cdc2a92924835f7b55833409d2d2382d2cea616c075c5e0c94830e"
+    },
+    "hybrid-search-architecture": {
+      "source": "rokasklive/retrieval-engineering",
+      "sourceType": "github",
+      "skillPath": "skills/hybrid-search-architecture/SKILL.md",
+      "computedHash": "50e2bd6f62d087f366a6dc57dc62f0a9bca9a32a972f79c775831997b9c641e8"
+    },
+    "retrieval-pipeline-design": {
+      "source": "rokasklive/retrieval-engineering",
+      "sourceType": "github",
+      "skillPath": "skills/retrieval-pipeline-design/SKILL.md",
+      "computedHash": "b9e91698a487086b9e2bd660647865231bb028b7568396ce106b07624c14083d"
+    }
+  }
+}

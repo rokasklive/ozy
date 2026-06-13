@@ -19,11 +19,11 @@ import (
 // *mcpsdk.CallToolResult from CallTool. It records the params and the
 // arguments map, and tracks Close calls.
 type callSession struct {
-	res      *mcpsdk.CallToolResult
-	err      error
-	gotName  atomic.Value // string
-	gotArgs  atomic.Value // map[string]any
-	closed   atomic.Bool
+	res     *mcpsdk.CallToolResult
+	err     error
+	gotName atomic.Value // string
+	gotArgs atomic.Value // map[string]any
+	closed  atomic.Bool
 }
 
 func (c *callSession) ListTools(context.Context, *mcpsdk.ListToolsParams) (*mcpsdk.ListToolsResult, error) {
@@ -268,8 +268,8 @@ func TestCallTool_DownstreamToolErrorReturnsDownstreamCallFailed(t *testing.T) {
 	const secret = "Bearer supersecretvalue"
 	session := &callSession{
 		res: &mcpsdk.CallToolResult{
-			Content:  []mcpsdk.Content{&mcpsdk.TextContent{Text: "downstream rejected request: " + secret}},
-			IsError:  true,
+			Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: "downstream rejected request: " + secret}},
+			IsError: true,
 		},
 	}
 	connector := &callConnector{connectResult: downstream.Result{ServerID: "atlassian", Session: session}}

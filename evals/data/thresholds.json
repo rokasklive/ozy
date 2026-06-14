@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "_note": "Conservative seed thresholds. Per the methodology, these are ratcheted upward from the measured baseline once a representative run exists. Fields left unset are not gated. *Max fields gate rates (lower is better); *Min fields gate accuracy (higher is better). A gate marked requiresSemanticLeg is skipped when the run did not exercise the real embedding model. no_match is intentionally TRACKED-BUT-NOT-GATED: it is a known weakness (the relevance floors are too permissive, and the semantic ANN floor makes it worse) and will be gated once calibration raises it — see METHODOLOGY.md.",
+  "discovery": {
+    "lexical": { "top1Min": 0.70, "top3Min": 0.90, "mrrMin": 0.78 },
+    "wrong_server": { "top1Min": 0.50, "wrongServerRateMax": 0.40 },
+    "no_match": {},
+    "overall": { "top1Min": 0.45, "top3Min": 0.65, "mrrMin": 0.55 },
+    "semantic": { "top1Min": 0.35, "top3Min": 0.50, "mrrMin": 0.45, "requiresSemanticLeg": true }
+  },
+  "invocation": {
+    "validArgumentRateMin": 1.0,
+    "firstCallSuccessMin": 1.0,
+    "repairSuccessMin": 1.0,
+    "schemaErrorRateMin": 1.0,
+    "offlineHandledRateMin": 1.0,
+    "errorClarityMin": 1.0
+  },
+  "ergonomics": {
+    "decisionRateMin": 1.0,
+    "instructionRateMin": 1.0,
+    "errorDispositionRateMin": 1.0,
+    "withinBudgetRateMin": 1.0,
+    "parityRateMin": 1.0
+  },
+  "tokens": {
+    "startupReductionMin": 0.5
+  }
+}

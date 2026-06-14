@@ -1,0 +1,8 @@
+{"intent": "give everyone a heads up that the release is out", "category": "semantic", "acceptable": ["slack.post_message"], "rationale": "Broadcasting a heads-up maps to posting a Slack message; avoids 'post/message/channel/notify'."}
+{"intent": "what's on my schedule for tomorrow", "category": "semantic", "acceptable": ["gcalendar.list_events"], "rationale": "Checking one's schedule maps to listing calendar events; avoids 'calendar/event/list'."}
+{"intent": "trace parseConfig back to its declaration", "category": "semantic", "acceptable": ["opengrok.get_definition"], "rationale": "Tracing a symbol to its declaration maps to the definition tool; avoids 'where/function/symbol/defined'."}
+{"intent": "save this draft so I can open it later", "category": "semantic", "acceptable": ["filesystem.write_file"], "rationale": "Saving for later maps to writing a file; avoids 'write/file/content'."}
+{"intent": "track down the chat where we discussed pricing", "category": "semantic", "acceptable": ["slack.search_messages"], "rationale": "Finding a past chat maps to searching Slack history; avoids 'search/message/history'."}
+{"intent": "pull up the customer records from the warehouse", "category": "semantic", "acceptable": ["postgres.run_query"], "rationale": "Pulling records maps to running a query; avoids 'sql/query/run/database/table'."}
+{"intent": "file a bug for the broken checkout flow", "category": "semantic", "acceptable": ["jira.create_issue"], "rationale": "Filing a bug maps to creating a Jira issue; avoids 'jira/issue/create'."}
+{"intent": "show me what's inside that folder", "category": "semantic", "acceptable": ["filesystem.list_directory"], "rationale": "Folder contents maps to listing a directory; avoids 'directory/list'."}

@@ -58,10 +58,18 @@ ozy describe atlassian.confluence_search
 ozy call atlassian.confluence_search --json '{"query":"billing migration","limit":5}'
 ozy daemon                     # run the daemon
 ozy mcp                        # serve the MCP adapter over stdio
+ozy eval run                   # run the eval suite over the committed corpus
 ```
 
 Every command accepts a global `--format` flag with `human` (default), `json`
 (a single machine-readable document for agents and evals), or `concise`.
+
+`ozy eval run` exercises the evaluation suite (`SPEC.md` §14) — discovery
+accuracy, and (as they land) invocation, agent ergonomics, and search
+performance — against a committed test corpus, writes a tracked benchmark
+snapshot, and exits non-zero if a gate fails. The public scoreboard lives in
+[evals/BENCHMARKS.md](evals/BENCHMARKS.md); see [evals/README.md](evals/README.md)
+to run it or add cases.
 
 ## Configuration
 

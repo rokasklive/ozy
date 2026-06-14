@@ -1,0 +1,4 @@
+{"intent": "search wiki pages in Confluence", "category": "wrong_server", "acceptable": ["confluence.search_pages"], "rationale": "Several servers expose a search tool; the right one is Confluence's. Picking another server's search is a wrong-server error."}
+{"intent": "search code specifically on GitHub", "category": "wrong_server", "acceptable": ["github.search_code"], "rationale": "OpenGrok also searches code; the intent names GitHub, so opengrok.search_code is a wrong-server trap."}
+{"intent": "search Slack message history", "category": "wrong_server", "acceptable": ["slack.search_messages"], "rationale": "Many search_* tools exist; the intent names Slack, so any other server's search is wrong-server."}
+{"intent": "search my Gmail mailbox", "category": "wrong_server", "acceptable": ["gmail.search_emails"], "rationale": "The intent names Gmail; other search tools are wrong-server traps."}

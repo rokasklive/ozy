@@ -1,0 +1,275 @@
+{
+  "schema": "ozy-eval/v1",
+  "generatedAt": "2026-06-14T17:52:43.771621+03:00",
+  "provenance": {
+    "corpusVersion": 1,
+    "model": "lexical-only",
+    "semanticRan": false,
+    "tokenEstimator": "chars/4 heuristic",
+    "gitCommit": "unknown",
+    "host": "Rokass-Mac-mini.lan"
+  },
+  "discovery": {
+    "overall": {
+      "n": 30,
+      "top1": 0.64,
+      "top3": 0.76,
+      "mrr": 0.7236280193236715,
+      "noMatchCorrectness": 0.2
+    },
+    "byCategory": {
+      "ambiguous": {
+        "n": 3,
+        "top1": 1,
+        "top3": 1,
+        "mrr": 1
+      },
+      "lexical": {
+        "n": 10,
+        "top1": 1,
+        "top3": 1,
+        "mrr": 1
+      },
+      "no_match": {
+        "n": 5,
+        "top1": 0,
+        "top3": 0,
+        "mrr": 0,
+        "noMatchCorrectness": 0.2
+      },
+      "semantic": {
+        "n": 8,
+        "top1": 0,
+        "top3": 0.25,
+        "mrr": 0.1988375603864734
+      },
+      "wrong_server": {
+        "n": 4,
+        "top1": 0.75,
+        "top3": 1,
+        "mrr": 0.875
+      }
+    }
+  },
+  "invocation": {
+    "overall": {
+      "n": 10,
+      "validArgumentRate": 1,
+      "firstCallSuccess": 1,
+      "repairSuccess": 1,
+      "schemaErrorRate": 1,
+      "offlineHandledRate": 1,
+      "errorClarity": 1
+    }
+  },
+  "ergonomics": {
+    "overall": {
+      "n": 9,
+      "decisionRate": 1,
+      "instructionRate": 1,
+      "errorDispositionRate": 1,
+      "withinBudgetRate": 1,
+      "parityRate": 1
+    }
+  },
+  "tokenEconomy": {
+    "estimator": "chars/4 heuristic",
+    "directStartupTokens": 1647,
+    "ozyStartupTokens": 235,
+    "startupReductionRatio": 0.8573163327261688,
+    "directTokensToSuccess": 1660,
+    "ozyTokensToSuccess": 645,
+    "largestPayloadTokens": 231,
+    "brokerCalls": 3
+  },
+  "performance": {
+    "lexical": {
+      "n": 100,
+      "p50Micros": 464.166,
+      "p95Micros": 713.25,
+      "opsPerSec": 1978.5459926667963
+    },
+    "fusion": {
+      "n": 100,
+      "p50Micros": 0.041,
+      "p95Micros": 0.042,
+      "opsPerSec": 17519271.19831815
+    },
+    "endToEnd": {
+      "n": 100,
+      "p50Micros": 442.875,
+      "p95Micros": 726.125,
+      "opsPerSec": 2021.0781473714403
+    }
+  },
+  "gates": [
+    {
+      "name": "discovery.lexical.top1",
+      "comparator": "min",
+      "threshold": 0.7,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "discovery.lexical.top3",
+      "comparator": "min",
+      "threshold": 0.9,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "discovery.lexical.mrr",
+      "comparator": "min",
+      "threshold": 0.78,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "discovery.overall.top1",
+      "comparator": "min",
+      "threshold": 0.45,
+      "actual": 0.64,
+      "pass": true
+    },
+    {
+      "name": "discovery.overall.top3",
+      "comparator": "min",
+      "threshold": 0.65,
+      "actual": 0.76,
+      "pass": true
+    },
+    {
+      "name": "discovery.overall.mrr",
+      "comparator": "min",
+      "threshold": 0.55,
+      "actual": 0.7236280193236715,
+      "pass": true
+    },
+    {
+      "name": "discovery.semantic.top1",
+      "comparator": "min",
+      "threshold": 0.35,
+      "actual": 0,
+      "pass": false,
+      "skipped": true,
+      "skipReason": "semantic leg did not run"
+    },
+    {
+      "name": "discovery.semantic.top3",
+      "comparator": "min",
+      "threshold": 0.5,
+      "actual": 0.25,
+      "pass": false,
+      "skipped": true,
+      "skipReason": "semantic leg did not run"
+    },
+    {
+      "name": "discovery.semantic.mrr",
+      "comparator": "min",
+      "threshold": 0.45,
+      "actual": 0.1988375603864734,
+      "pass": false,
+      "skipped": true,
+      "skipReason": "semantic leg did not run"
+    },
+    {
+      "name": "discovery.wrong_server.top1",
+      "comparator": "min",
+      "threshold": 0.5,
+      "actual": 0.75,
+      "pass": true
+    },
+    {
+      "name": "discovery.wrong_server.wrongServerRate",
+      "comparator": "max",
+      "threshold": 0.4,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "invocation.validArgumentRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "invocation.firstCallSuccess",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "invocation.repairSuccess",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "invocation.schemaErrorRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "invocation.offlineHandledRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "invocation.errorClarity",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "ergonomics.decisionRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "ergonomics.instructionRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "ergonomics.errorDispositionRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "ergonomics.withinBudgetRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "ergonomics.parityRate",
+      "comparator": "min",
+      "threshold": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "tokens.startupReduction",
+      "comparator": "min",
+      "threshold": 0.5,
+      "actual": 0.8573163327261688,
+      "pass": true
+    }
+  ],
+  "verdict": "pass"
+}

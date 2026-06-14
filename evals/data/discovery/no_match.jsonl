@@ -1,0 +1,5 @@
+{"intent": "translate this document into French", "category": "no_match", "acceptable": [], "rationale": "No translation capability exists in the catalog; the broker should refuse rather than force a wrong tool."}
+{"intent": "transcribe this audio recording to text", "category": "no_match", "acceptable": [], "rationale": "No speech-to-text tool is cataloged."}
+{"intent": "book me a flight to Tokyo next week", "category": "no_match", "acceptable": [], "rationale": "No travel-booking capability exists."}
+{"intent": "resize this image to a thumbnail", "category": "no_match", "acceptable": [], "rationale": "No image-processing tool is cataloged."}
+{"intent": "charge the customer's credit card", "category": "no_match", "acceptable": [], "rationale": "No payments capability exists; refusing protects against a dangerous wrong call."}

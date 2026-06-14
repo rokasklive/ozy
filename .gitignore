@@ -39,6 +39,10 @@ go.work.sum
 # env file
 .env
 
+# Eval run snapshots — keep only the committed baseline; timestamped runs are local.
+/evals/snapshots/*
+!/evals/snapshots/baseline.json
+
 # Editor/IDE
 # .idea/
 # .vscode/

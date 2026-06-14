@@ -139,29 +139,141 @@ func TestSearchJSONIsSingleDocument(t *testing.T) {
 	}
 }
 
-func TestEvalReturnsNotImplemented(t *testing.T) {
-	out, _, code := run("--format", "json", "eval", "run")
-	if code != 1 {
-		t.Fatalf("exit code = %d, want 1 for an unimplemented operation", code)
+// TestEvalRunIsWired verifies eval run executes the harness (no longer
+// NOT_IMPLEMENTED) and emits a single verdict-bearing JSON document whose exit
+// status follows the gate verdict. --out "" keeps the run from writing files.
+func TestEvalRunIsWired(t *testing.T) {
+	out, _, code := run("--format", "json", "eval", "run", "--out", "")
+	if strings.Contains(out, "NOT_IMPLEMENTED") {
+		t.Fatalf("eval run should be wired, got NOT_IMPLEMENTED:\n%s", out)
 	}
 	var payload struct {
-		OK    bool `json:"ok"`
-		Error struct {
-			Type             string `json:"type"`
-			AgentInstruction string `json:"agentInstruction"`
-		} `json:"error"`
+		Schema    string `json:"schema"`
+		Verdict   string `json:"verdict"`
+		Discovery *struct {
+			Overall struct {
+				N int `json:"n"`
+			} `json:"overall"`
+		} `json:"discovery"`
 	}
 	if err := json.Unmarshal([]byte(out), &payload); err != nil {
-		t.Fatalf("output is not valid JSON: %v\n%s", err, out)
+		t.Fatalf("eval run output is not one JSON document: %v\n%s", err, out)
 	}
-	if payload.OK {
-		t.Error("ok = true, want false")
+	if payload.Schema == "" {
+		t.Error("eval run result missing schema")
 	}
-	if payload.Error.Type != "NOT_IMPLEMENTED" {
-		t.Errorf("error.type = %q, want NOT_IMPLEMENTED", payload.Error.Type)
+	if payload.Discovery == nil || payload.Discovery.Overall.N == 0 {
+		t.Error("eval run should report discovery metrics")
 	}
-	if payload.Error.AgentInstruction == "" {
-		t.Error("NOT_IMPLEMENTED must carry an agentInstruction")
+	switch payload.Verdict {
+	case "pass":
+		if code != 0 {
+			t.Errorf("exit code = %d, want 0 for a passing run", code)
+		}
+	case "fail":
+		if code != 1 {
+			t.Errorf("exit code = %d, want 1 for a failing run", code)
+		}
+	default:
+		t.Errorf("verdict = %q, want pass or fail", payload.Verdict)
+	}
+}
+
+// TestEvalRunScopedToFamily verifies eval run can scope to one family.
+func TestEvalRunScopedToFamily(t *testing.T) {
+	out, _, _ := run("--format", "json", "eval", "run", "discovery", "--out", "")
+	if !strings.Contains(out, "\"discovery\"") {
+		t.Errorf("scoped run should include the discovery report:\n%s", out)
+	}
+}
+
+// TestEvalReportReadsSnapshot verifies eval report emits the latest snapshot.
+func TestEvalReportReadsSnapshot(t *testing.T) {
+	dir := t.TempDir()
+	if _, _, code := run("eval", "run", "--out", dir, "--format", "concise"); code != 0 && code != 1 {
+		t.Fatalf("eval run --out exit = %d", code)
+	}
+	out, _, code := run("--format", "json", "eval", "report", "--out", dir)
+	if code != 0 {
+		t.Fatalf("eval report exit = %d:\n%s", code, out)
+	}
+	var payload struct {
+		Schema string `json:"schema"`
+	}
+	if err := json.Unmarshal([]byte(out), &payload); err != nil {
+		t.Fatalf("eval report output is not JSON: %v\n%s", err, out)
+	}
+	if payload.Schema == "" {
+		t.Error("eval report result missing schema")
+	}
+}
+
+// TestEvalRunProducesSnapshotAndVerdict is the end-to-end acceptance test: a real
+// `ozy eval run` over the committed corpus writes a timestamped snapshot plus
+// baseline.json and the BENCHMARKS.md scoreboard, and yields a verdict whose
+// exit status the process honors. This runs with the semantic leg gated OFF (the
+// default fast path); run it with OZY_EVAL_SEMANTIC=1 to fold in the real-model
+// numbers.
+func TestEvalRunProducesSnapshotAndVerdict(t *testing.T) {
+	dir := t.TempDir()
+	out, _, code := run("--format", "json", "eval", "run", "--out", dir)
+
+	var payload struct {
+		Schema     string `json:"schema"`
+		Verdict    string `json:"verdict"`
+		Provenance struct {
+			SemanticRan bool `json:"semanticRan"`
+		} `json:"provenance"`
+		Invocation   json.RawMessage `json:"invocation"`
+		Ergonomics   json.RawMessage `json:"ergonomics"`
+		TokenEconomy json.RawMessage `json:"tokenEconomy"`
+	}
+	if err := json.Unmarshal([]byte(out), &payload); err != nil {
+		t.Fatalf("eval run output is not one JSON document: %v\n%s", err, out)
+	}
+	if payload.Provenance.SemanticRan {
+		t.Error("semantic leg should be gated off by default in the acceptance test")
+	}
+	for name, raw := range map[string]json.RawMessage{
+		"invocation": payload.Invocation, "ergonomics": payload.Ergonomics, "tokenEconomy": payload.TokenEconomy,
+	} {
+		if len(raw) == 0 {
+			t.Errorf("a full run should report the %s family", name)
+		}
+	}
+	switch payload.Verdict {
+	case "pass":
+		if code != 0 {
+			t.Errorf("exit code = %d, want 0 for a passing run", code)
+		}
+	case "fail":
+		if code != 1 {
+			t.Errorf("exit code = %d, want 1 for a failing run", code)
+		}
+	default:
+		t.Fatalf("verdict = %q, want pass or fail", payload.Verdict)
+	}
+
+	for _, rel := range []string{
+		filepath.Join("snapshots", "baseline.json"),
+		"BENCHMARKS.md",
+	} {
+		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
+			t.Errorf("expected artifact %s was not written: %v", rel, err)
+		}
+	}
+	entries, err := os.ReadDir(filepath.Join(dir, "snapshots"))
+	if err != nil {
+		t.Fatalf("read snapshots dir: %v", err)
+	}
+	var timestamped int
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), "run-") && strings.HasSuffix(e.Name(), ".json") {
+			timestamped++
+		}
+	}
+	if timestamped == 0 {
+		t.Error("eval run should write a timestamped snapshot alongside baseline.json")
 	}
 }
 
@@ -343,188 +455,6 @@ func TestSearchAndBrokerFindToolParity(t *testing.T) {
 	}
 	if brokerDecision.NextAction == nil || brokerDecision.NextAction.Tool != "describeTool" {
 		t.Error("nextAction should direct to describeTool")
-	}
-}
-
-func TestDiscoveryEval_GoldIntentMatchesExpectedToolRef(t *testing.T) {
-	t.Parallel()
-	store := catalog.NewMemory()
-
-	goldTools := []catalog.Tool{
-		{
-			ToolRef:            "confluence.search_pages",
-			ServerID:           "confluence",
-			DownstreamToolName: "search_pages",
-			Title:              "Search Confluence Pages",
-			Description:        "Search all Confluence wiki pages and blog posts",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-		{
-			ToolRef:            "jira.search_issues",
-			ServerID:           "jira",
-			DownstreamToolName: "search_issues",
-			Title:              "Search Jira Issues",
-			Description:        "Search issues across all Jira projects using JQL",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-		{
-			ToolRef:            "github.search_code",
-			ServerID:           "github",
-			DownstreamToolName: "search_code",
-			Title:              "GitHub Code Search",
-			Description:        "Search across GitHub repositories for code",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-		{
-			ToolRef:            "slack.send_message",
-			ServerID:           "slack",
-			DownstreamToolName: "send_message",
-			Title:              "Send Slack Message",
-			Description:        "Send a message to a Slack channel",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-	}
-
-	for _, tool := range goldTools {
-		_ = store.PutTool(context.Background(), tool)
-	}
-
-	engine := search.New(store, nil)
-
-	tests := []struct {
-		intent  string
-		wantRef string
-	}{
-		{"search confluence wiki pages", "confluence.search_pages"},
-		{"find github code", "github.search_code"},
-		{"jira issue search", "jira.search_issues"},
-		{"send a message to slack", "slack.send_message"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.intent, func(t *testing.T) {
-			ranking, err := engine.Find(context.Background(), tt.intent)
-			if err != nil {
-				t.Fatalf("Find() error = %v", err)
-			}
-			if len(ranking.Entries) == 0 {
-				t.Fatal("no entries returned")
-			}
-
-			decision := search.Decide(ranking)
-			if decision.Verdict != search.DecisionUse {
-				t.Fatalf("verdict = %s, want use", decision.Verdict)
-			}
-			if decision.Selected == nil {
-				t.Fatal("selected is nil")
-			}
-			if decision.Selected.Tool.ToolRef != tt.wantRef {
-				t.Errorf("selected = %q, want %q", decision.Selected.Tool.ToolRef, tt.wantRef)
-			}
-			// Verify the two-best response shape.
-			if decision.RunnerUp == nil {
-				t.Error("runner-up should be present for use decision")
-			}
-			if decision.Selected.Tool.ToolRef == decision.RunnerUp.Tool.ToolRef {
-				t.Error("selected and runner-up should be different tools")
-			}
-		})
-	}
-}
-
-// semanticFakeProvider is a configurable semantic provider used to exercise the
-// RRF fusion path with curated inputs (we cannot use real FastEmbed in tests).
-type semanticFakeProvider struct {
-	hits []search.SemanticHit
-}
-
-func (f *semanticFakeProvider) Query(_ context.Context, _ string, _ int, _ search.Filter) ([]search.SemanticHit, error) {
-	return f.hits, nil
-}
-func (f *semanticFakeProvider) Available() bool { return true }
-
-// TestDiscoveryEval_SemanticIntentChangesWinner is the §14.1 scenario: a gold
-// intent phrased as a paraphrase with no lexical overlap must, with the
-// semantic leg, point to a different tool than the lexical baseline picks.
-// Three tools are needed so RRF k=60 produces a non-tied fused ordering.
-func TestDiscoveryEval_SemanticIntentChangesWinner(t *testing.T) {
-	t.Parallel()
-	store := catalog.NewMemory()
-
-	paraphraseTools := []catalog.Tool{
-		{
-			ToolRef:            "messaging.slack_post",
-			ServerID:           "messaging",
-			DownstreamToolName: "slack_post",
-			Title:              "Post a Slack message",
-			Description:        "Send a message to a Slack channel",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-		{
-			ToolRef:            "messaging.gmail_send",
-			ServerID:           "messaging",
-			DownstreamToolName: "gmail_send",
-			Title:              "Compose a Gmail email",
-			Description:        "Send an email via Gmail",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-		{
-			ToolRef:            "calendar.schedule",
-			ServerID:           "calendar",
-			DownstreamToolName: "schedule",
-			Title:              "Schedule a meeting",
-			Description:        "Book a meeting in the calendar",
-			ServerStatus:       catalog.ServerOnline,
-			CallableNow:        true,
-		},
-	}
-	for _, tool := range paraphraseTools {
-		_ = store.PutTool(context.Background(), tool)
-	}
-
-	const query = "get in touch with my team about billing"
-
-	lexEngine := search.New(store, nil)
-	lexRanking, err := lexEngine.Find(context.Background(), query)
-	if err != nil {
-		t.Fatalf("Find() error = %v", err)
-	}
-	lexDecision := search.Decide(lexRanking)
-	if lexDecision.Selected == nil {
-		t.Fatal("lexical-only decision has no selected")
-	}
-	lexWinner := lexDecision.Selected.Tool.ToolRef
-
-	// With the semantic leg active, gmail_send ranks first semantically (the
-	// intent "get in touch with my team" maps strongly to "send an email"),
-	// while the lexical winner remains the first tool in store order.
-	sem := &semanticFakeProvider{
-		hits: []search.SemanticHit{
-			{ToolRef: "messaging.gmail_send", Score: 0.85},
-			{ToolRef: "messaging.slack_post", Score: 0.55},
-			{ToolRef: "calendar.schedule", Score: 0.30},
-		},
-	}
-	fusedEngine := search.New(store, sem)
-	fusedRanking, err := fusedEngine.Find(context.Background(), query)
-	if err != nil {
-		t.Fatalf("Find() error = %v", err)
-	}
-	fusedDecision := search.Decide(fusedRanking)
-	if fusedDecision.Selected == nil {
-		t.Fatal("fused decision has no selected")
-	}
-	if fusedDecision.Selected.Tool.ToolRef == lexWinner {
-		t.Errorf("semantic leg failed to change the winner: lex and fused both = %s", lexWinner)
-	}
-	if fusedDecision.Selected.Tool.ToolRef != "messaging.gmail_send" {
-		t.Errorf("fused winner = %s, want messaging.gmail_send", fusedDecision.Selected.Tool.ToolRef)
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
+	"github.com/rokasklive/ozy/internal/eval"
 	ozyindex "github.com/rokasklive/ozy/internal/index"
 	ozymcp "github.com/rokasklive/ozy/internal/mcp"
 )
@@ -195,16 +197,81 @@ func (a *app) evalCmd() *cobra.Command {
 		Use:   "eval",
 		Short: "Run Ozy evaluation scenarios",
 	}
-	cmd.AddCommand(&cobra.Command{
-		Use:   "run <scenario>",
-		Short: "Run a single evaluation scenario",
+	cmd.AddCommand(a.evalRunCmd(), a.evalReportCmd())
+	return cmd
+}
+
+// evalRunCmd runs the eval harness over the committed corpus. It does not touch
+// the user's config or catalog — the corpus is embedded — so it never calls load().
+func (a *app) evalRunCmd() *cobra.Command {
+	var out string
+	var semantic bool
+	cmd := &cobra.Command{
+		Use:   "run [family]",
+		Short: "Run the eval suite (optionally scoped to one family) over the committed corpus",
 		Args:  cobra.MaximumNArgs(1),
-		RunE: func(*cobra.Command, []string) error {
-			a.emitError(contract.NotImplemented("ozy eval run"))
+		RunE: func(_ *cobra.Command, args []string) error {
+			opts := eval.Options{OutDir: out, Semantic: semantic}
+			if len(args) == 1 {
+				opts.Families = []string{args[0]}
+			}
+			// Supply the real-model semantic builder whenever the leg may run
+			// (flag or env). eval.Run skips cleanly if provisioning fails.
+			if semantic || os.Getenv("OZY_EVAL_SEMANTIC") == "1" {
+				opts.SemanticBuilder = sidecarSemanticBuilder("")
+			}
+			res, err := eval.Run(context.Background(), opts)
+			if err != nil {
+				a.emitError(evalError(err))
+				return nil
+			}
+			a.emit(res)
+			if res.Failed() {
+				a.exitCode = 1
+			}
 			return nil
 		},
-	})
+	}
+	cmd.Flags().StringVar(&out, "out", "evals", "directory to write the snapshot and BENCHMARKS.md (empty to skip writing)")
+	cmd.Flags().BoolVar(&semantic, "semantic", false, "run the real-model semantic leg (also enabled via OZY_EVAL_SEMANTIC=1)")
 	return cmd
+}
+
+// evalReportCmd shows the latest committed benchmark snapshot.
+func (a *app) evalReportCmd() *cobra.Command {
+	var out string
+	cmd := &cobra.Command{
+		Use:   "report",
+		Short: "Show the latest benchmark snapshot",
+		Args:  cobra.NoArgs,
+		RunE: func(*cobra.Command, []string) error {
+			res, err := eval.LoadSnapshot(out)
+			if err != nil {
+				a.emitError(&contract.Error{
+					Type:             contract.ErrTypeConfigError,
+					Retryable:        false,
+					Message:          err.Error(),
+					AgentInstruction: "Run `ozy eval run --out evals` to produce a benchmark snapshot first.",
+				})
+				return nil
+			}
+			a.emit(res)
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&out, "out", "evals", "directory containing snapshots/baseline.json")
+	return cmd
+}
+
+// evalError wraps a harness failure as a structured CONFIG_ERROR (the eval suite
+// is dev/CI tooling; a failure is a setup/corpus problem, not a broker call).
+func evalError(err error) *contract.Error {
+	return &contract.Error{
+		Type:             contract.ErrTypeConfigError,
+		Retryable:        false,
+		Message:          err.Error(),
+		AgentInstruction: "Fix the eval corpus or arguments named in the message, then re-run `ozy eval run`.",
+	}
 }
 
 // asError unwraps a broker error into its structured contract form, synthesizing

@@ -198,10 +198,11 @@ func uvResolvePython(ctx context.Context, uvPath, pyVersion string) (string, err
 	return strings.TrimSpace(string(out)), nil
 }
 
-// resolveSource finds the directory the `sidecar` Python package
-// lives in. The default walks up from the running binary until it
-// finds a go.mod; the package is the sibling `sidecar/` directory.
-// OZY_SIDECAR_SOURCE overrides the default.
+// resolveSource finds the directory `python -m sidecar` must run from — the
+// one whose immediate `sidecar/` child is the importable package (with
+// __main__.py). The default walks up to the go.mod root and then descends into
+// the `sidecar/` project directory, since the runnable package lives at
+// <repo>/sidecar/sidecar. OZY_SIDECAR_SOURCE overrides the default.
 func resolveSource(override string) (string, error) {
 	if override != "" {
 		if !fileExists(filepath.Join(override, "sidecar")) {
@@ -219,7 +220,13 @@ func resolveSource(override string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return root, nil
+	// The Python project lives at <repo>/sidecar and the importable package at
+	// <repo>/sidecar/sidecar, so `python -m sidecar` must run from <repo>/sidecar.
+	source := filepath.Join(root, "sidecar")
+	if !fileExists(filepath.Join(source, "sidecar")) {
+		return "", fmt.Errorf("sidecar: package not found under %s", source)
+	}
+	return source, nil
 }
 
 // findModuleRoot locates the repo root by walking up from this

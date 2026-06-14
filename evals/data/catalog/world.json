@@ -1,0 +1,380 @@
+{
+  "version": 1,
+  "description": "Ozyworld — a synthetic but realistic downstream MCP catalog used by the eval suite. Servers and tools are modeled on real MCP servers. Several servers expose similarly-named capabilities (notably 'search') so wrong-server selection is measurable, and many tools are phrased so a paraphrased intent has no lexical shortcut to the right tool.",
+  "servers": [
+    { "id": "confluence", "status": "online" },
+    { "id": "jira", "status": "online" },
+    { "id": "github", "status": "online" },
+    { "id": "slack", "status": "online" },
+    { "id": "gmail", "status": "online" },
+    { "id": "gcalendar", "status": "online" },
+    { "id": "filesystem", "status": "online" },
+    { "id": "postgres", "status": "online" },
+    { "id": "opengrok", "status": "online" }
+  ],
+  "tools": [
+    {
+      "toolRef": "confluence.search_pages",
+      "serverId": "confluence",
+      "name": "search_pages",
+      "title": "Search Confluence Pages",
+      "description": "Search Confluence wiki pages and blog posts by free text. Returns matching page titles and ids.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string", "description": "Free-text search query." },
+          "spaceKey": { "type": "string", "description": "Restrict to a single space." },
+          "limit": { "type": "integer", "default": 10 }
+        }
+      }
+    },
+    {
+      "toolRef": "confluence.get_page",
+      "serverId": "confluence",
+      "name": "get_page",
+      "title": "Get Confluence Page",
+      "description": "Fetch the full content of a single Confluence page by its page id.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["pageId"],
+        "properties": {
+          "pageId": { "type": "string", "description": "The Confluence page id." }
+        }
+      }
+    },
+    {
+      "toolRef": "jira.search_issues",
+      "serverId": "jira",
+      "name": "search_issues",
+      "title": "Search Jira Issues",
+      "description": "Search issues across Jira projects using a JQL query. Use for bug reports, tickets, and tasks.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["jql"],
+        "properties": {
+          "jql": { "type": "string", "description": "A JQL query string." },
+          "maxResults": { "type": "integer", "default": 25 }
+        }
+      }
+    },
+    {
+      "toolRef": "jira.create_issue",
+      "serverId": "jira",
+      "name": "create_issue",
+      "title": "Create Jira Issue",
+      "description": "File a new Jira issue (bug, task, or story) in a project.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["projectKey", "summary"],
+        "properties": {
+          "projectKey": { "type": "string" },
+          "summary": { "type": "string" },
+          "description": { "type": "string" },
+          "issueType": { "type": "string", "default": "Task" }
+        }
+      }
+    },
+    {
+      "toolRef": "jira.add_comment",
+      "serverId": "jira",
+      "name": "add_comment",
+      "title": "Comment on Jira Issue",
+      "description": "Add a comment to an existing Jira issue.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["issueKey", "body"],
+        "properties": {
+          "issueKey": { "type": "string" },
+          "body": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "github.search_code",
+      "serverId": "github",
+      "name": "search_code",
+      "title": "GitHub Code Search",
+      "description": "Search source code across GitHub repositories by keyword and qualifiers.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["q"],
+        "properties": {
+          "q": { "type": "string", "description": "Code search query." },
+          "perPage": { "type": "integer", "default": 30 }
+        }
+      }
+    },
+    {
+      "toolRef": "github.search_issues",
+      "serverId": "github",
+      "name": "search_issues",
+      "title": "GitHub Issue Search",
+      "description": "Search GitHub issues and pull requests across repositories.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["q"],
+        "properties": {
+          "q": { "type": "string" },
+          "perPage": { "type": "integer", "default": 30 }
+        }
+      }
+    },
+    {
+      "toolRef": "github.create_pull_request",
+      "serverId": "github",
+      "name": "create_pull_request",
+      "title": "Open a Pull Request",
+      "description": "Open a new pull request from a head branch into a base branch.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["owner", "repo", "head", "base", "title"],
+        "properties": {
+          "owner": { "type": "string" },
+          "repo": { "type": "string" },
+          "head": { "type": "string" },
+          "base": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "github.get_file_contents",
+      "serverId": "github",
+      "name": "get_file_contents",
+      "title": "Read GitHub File",
+      "description": "Read the contents of a file at a path in a GitHub repository.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["owner", "repo", "path"],
+        "properties": {
+          "owner": { "type": "string" },
+          "repo": { "type": "string" },
+          "path": { "type": "string" },
+          "ref": { "type": "string", "description": "Branch, tag, or commit." }
+        }
+      }
+    },
+    {
+      "toolRef": "slack.post_message",
+      "serverId": "slack",
+      "name": "post_message",
+      "title": "Post Slack Message",
+      "description": "Send a message to a Slack channel or user so teammates are notified.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["channel", "text"],
+        "properties": {
+          "channel": { "type": "string", "description": "Channel id or name." },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "slack.search_messages",
+      "serverId": "slack",
+      "name": "search_messages",
+      "title": "Search Slack History",
+      "description": "Search the history of Slack messages across channels.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string" },
+          "count": { "type": "integer", "default": 20 }
+        }
+      }
+    },
+    {
+      "toolRef": "slack.list_channels",
+      "serverId": "slack",
+      "name": "list_channels",
+      "title": "List Slack Channels",
+      "description": "List the Slack channels the workspace has.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer", "default": 100 }
+        }
+      }
+    },
+    {
+      "toolRef": "gmail.send_email",
+      "serverId": "gmail",
+      "name": "send_email",
+      "title": "Send Email",
+      "description": "Compose and send an email message through Gmail to one or more recipients.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["to", "subject", "body"],
+        "properties": {
+          "to": { "type": "array", "items": { "type": "string" } },
+          "subject": { "type": "string" },
+          "body": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "gmail.search_emails",
+      "serverId": "gmail",
+      "name": "search_emails",
+      "title": "Search Email",
+      "description": "Search the Gmail mailbox for messages matching a query.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string" },
+          "maxResults": { "type": "integer", "default": 20 }
+        }
+      }
+    },
+    {
+      "toolRef": "gcalendar.list_events",
+      "serverId": "gcalendar",
+      "name": "list_events",
+      "title": "List Calendar Events",
+      "description": "List upcoming events on a calendar within a time window.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "calendarId": { "type": "string", "default": "primary" },
+          "timeMin": { "type": "string", "description": "RFC3339 lower bound." },
+          "timeMax": { "type": "string", "description": "RFC3339 upper bound." }
+        }
+      }
+    },
+    {
+      "toolRef": "gcalendar.create_event",
+      "serverId": "gcalendar",
+      "name": "create_event",
+      "title": "Schedule Calendar Event",
+      "description": "Book a new event or meeting on a calendar with attendees and a time.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["summary", "start", "end"],
+        "properties": {
+          "summary": { "type": "string" },
+          "start": { "type": "string", "description": "RFC3339 start time." },
+          "end": { "type": "string", "description": "RFC3339 end time." },
+          "attendees": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    {
+      "toolRef": "filesystem.read_file",
+      "serverId": "filesystem",
+      "name": "read_file",
+      "title": "Read File",
+      "description": "Read the contents of a file from the local filesystem.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "filesystem.write_file",
+      "serverId": "filesystem",
+      "name": "write_file",
+      "title": "Write File",
+      "description": "Write or overwrite content to a file on the local filesystem, saving it for later.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["path", "content"],
+        "properties": {
+          "path": { "type": "string" },
+          "content": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "filesystem.search_files",
+      "serverId": "filesystem",
+      "name": "search_files",
+      "title": "Search Files",
+      "description": "Find files on disk by name pattern or by content match within a directory tree.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["pattern"],
+        "properties": {
+          "pattern": { "type": "string" },
+          "root": { "type": "string", "default": "." }
+        }
+      }
+    },
+    {
+      "toolRef": "filesystem.list_directory",
+      "serverId": "filesystem",
+      "name": "list_directory",
+      "title": "List Directory",
+      "description": "List the files and subdirectories within a directory.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "postgres.run_query",
+      "serverId": "postgres",
+      "name": "run_query",
+      "title": "Run SQL Query",
+      "description": "Execute a read-only SQL SELECT statement against the database and return rows.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["sql"],
+        "properties": {
+          "sql": { "type": "string", "description": "A read-only SQL statement." }
+        }
+      }
+    },
+    {
+      "toolRef": "postgres.list_tables",
+      "serverId": "postgres",
+      "name": "list_tables",
+      "title": "List Database Tables",
+      "description": "List the tables and views available in the connected database schema.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "schema": { "type": "string", "default": "public" }
+        }
+      }
+    },
+    {
+      "toolRef": "opengrok.search_code",
+      "serverId": "opengrok",
+      "name": "search_code",
+      "title": "OpenGrok Source Search",
+      "description": "Full-text search across an indexed source code repository for symbols and text.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string" },
+          "project": { "type": "string" }
+        }
+      }
+    },
+    {
+      "toolRef": "opengrok.get_definition",
+      "serverId": "opengrok",
+      "name": "get_definition",
+      "title": "Find Symbol Definition",
+      "description": "Locate where a function, class, or symbol is defined in the indexed source.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["symbol"],
+        "properties": {
+          "symbol": { "type": "string" },
+          "project": { "type": "string" }
+        }
+      }
+    }
+  ]
+}

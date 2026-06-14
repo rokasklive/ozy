@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/ozy.png" alt="Ozy" width="180" />
+<img src="assets/ozy.png" alt="Ozy" width="400" />
 
 # Ozy
 
@@ -10,12 +10,9 @@
 
 <br/>
 
-[![License](https://img.shields.io/github/license/rokasklive/ozy?style=for-the-badge&color=blue)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue?style=for-the-badge&logo=apache&logoColor=white)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white)](go.mod)
-[![CI](https://img.shields.io/github/actions/workflow/status/rokasklive/ozy/ci.yml?style=for-the-badge&label=CI)](.github/workflows/ci.yml)
-
-<br/>
-
+[![CI](https://github.com/rokasklive/ozy/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 [![MCP](https://img.shields.io/badge/MCP-Server-1f6feb?style=for-the-badge)](SPEC.md)
 [![Evals](https://img.shields.io/badge/Evals-Tracked-success?style=for-the-badge)](evals/BENCHMARKS.md)
 

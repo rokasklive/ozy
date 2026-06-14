@@ -299,3 +299,223 @@ func TestIndexer_SetsLastIndexedAtWhenReachableServerHasZeroTools(t *testing.T) 
 		t.Errorf("LastIndexedAt() = %v, want %v", ts, indexTime)
 	}
 }
+
+type recordingSink struct {
+	available   bool
+	upserted    []EmbedItem
+	deleted     []string
+	listReturn  []string
+	listErr     error
+	upsertErr   error
+	deleteErr   error
+	persistErr  error
+	persistCall int
+}
+
+func (s *recordingSink) Available() bool { return s.available }
+func (s *recordingSink) Upsert(_ context.Context, items []EmbedItem) error {
+	if s.upsertErr != nil {
+		return s.upsertErr
+	}
+	s.upserted = append(s.upserted, items...)
+	return nil
+}
+func (s *recordingSink) Delete(_ context.Context, toolRefs []string) error {
+	if s.deleteErr != nil {
+		return s.deleteErr
+	}
+	s.deleted = append(s.deleted, toolRefs...)
+	return nil
+}
+func (s *recordingSink) List(context.Context) ([]string, error) {
+	return s.listReturn, s.listErr
+}
+func (s *recordingSink) Persist(context.Context) error {
+	s.persistCall++
+	return s.persistErr
+}
+
+func TestIndexer_WithSink_UpsertsChangedAndNewTools(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	now := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+
+	sink := &recordingSink{available: true}
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name:        "confluence_search",
+				Title:       "Confluence Search",
+				Description: "Search wiki pages",
+				InputSchema: map[string]any{
+					"type":       "object",
+					"properties": map[string]any{"query": map[string]any{"type": "string"}},
+				},
+			}}},
+		},
+	}}, WithClock(func() time.Time { return now }), WithSink(sink))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if !summary.OK {
+		t.Fatalf("summary not OK: %+v", summary)
+	}
+	if len(sink.upserted) != 1 {
+		t.Fatalf("sink.upserted = %d items, want 1", len(sink.upserted))
+	}
+	if sink.upserted[0].ToolRef != "atlassian.confluence_search" {
+		t.Errorf("upserted[0].ToolRef = %s", sink.upserted[0].ToolRef)
+	}
+	if sink.upserted[0].Text == "" {
+		t.Error("upserted text empty; the §10.2 indexed fields should be included")
+	}
+	if sink.persistCall != 1 {
+		t.Errorf("sink.Persist called %d times, want 1", sink.persistCall)
+	}
+}
+
+func TestIndexer_WithSink_ReconcilesDeletedTools(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	now := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+
+	sink := &recordingSink{
+		available:  true,
+		listReturn: []string{"atlassian.confluence_search", "github.removed_tool"},
+	}
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name:        "confluence_search",
+				Title:       "Confluence Search",
+				Description: "Search wiki",
+				InputSchema: map[string]any{
+					"type":       "object",
+					"properties": map[string]any{"query": map[string]any{"type": "string"}},
+				},
+			}}},
+		},
+	}}, WithClock(func() time.Time { return now }), WithSink(sink))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if !summary.OK {
+		t.Fatalf("summary not OK: %+v", summary)
+	}
+	if len(sink.deleted) != 1 {
+		t.Fatalf("sink.deleted = %v, want [github.removed_tool]", sink.deleted)
+	}
+	if sink.deleted[0] != "github.removed_tool" {
+		t.Errorf("deleted[0] = %s, want github.removed_tool", sink.deleted[0])
+	}
+}
+
+func TestIndexer_NoSink_StillIndexesCatalog(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name:        "confluence_search",
+				Title:       "Confluence Search",
+				Description: "Search wiki",
+				InputSchema: map[string]any{
+					"type":       "object",
+					"properties": map[string]any{"query": map[string]any{"type": "string"}},
+				},
+			}}},
+		},
+	}})
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if !summary.OK {
+		t.Fatalf("summary not OK: %+v", summary)
+	}
+	if summary.ToolsIndexed != 1 {
+		t.Errorf("ToolsIndexed = %d, want 1", summary.ToolsIndexed)
+	}
+	tools, err := store.Tools(ctx)
+	if err != nil {
+		t.Fatalf("Tools() error = %v", err)
+	}
+	if len(tools) != 1 {
+		t.Errorf("catalog has %d tools, want 1", len(tools))
+	}
+}
+
+func TestIndexer_WithUnavailableSink_StillIndexesCatalog(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	sink := &recordingSink{available: false}
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name:        "confluence_search",
+				Title:       "Confluence Search",
+				Description: "Search wiki",
+				InputSchema: map[string]any{
+					"type":       "object",
+					"properties": map[string]any{"query": map[string]any{"type": "string"}},
+				},
+			}}},
+		},
+	}}, WithSink(sink))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if !summary.OK {
+		t.Fatalf("summary not OK: %+v", summary)
+	}
+	if len(sink.upserted) != 0 {
+		t.Errorf("upserted = %d, want 0 (sink unavailable)", len(sink.upserted))
+	}
+}
+
+func TestIndexer_SinkUpsertFailureDegradesGracefully(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	sink := &recordingSink{available: true, upsertErr: errors.New("sidecar gone")}
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name:        "confluence_search",
+				Title:       "Confluence Search",
+				Description: "Search wiki",
+				InputSchema: map[string]any{
+					"type":       "object",
+					"properties": map[string]any{"query": map[string]any{"type": "string"}},
+				},
+			}}},
+		},
+	}}, WithSink(sink))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if !summary.OK {
+		t.Fatalf("summary not OK (catalog must persist even when sink fails): %+v", summary)
+	}
+	if summary.ToolsIndexed != 1 {
+		t.Errorf("ToolsIndexed = %d, want 1", summary.ToolsIndexed)
+	}
+	if len(summary.Errors) == 0 {
+		t.Error("summary.Errors empty, want an SEMANTIC_SEARCH_UNAVAILABLE error")
+	}
+	var sawSemantic bool
+	for _, e := range summary.Errors {
+		if e.Type == contract.ErrTypeSemanticSearchUnavailable {
+			sawSemantic = true
+			if !strings.Contains(e.Message, "upsert") {
+				t.Errorf("error message %q, want to mention upsert", e.Message)
+			}
+		}
+	}
+	if !sawSemantic {
+		t.Error("expected an SEMANTIC_SEARCH_UNAVAILABLE error for sink upsert failure")
+	}
+}

@@ -103,16 +103,97 @@ func (s ServerConfig) DiscoveryTimeout() time.Duration {
 	return time.Duration(timeout) * time.Millisecond
 }
 
-// EmbeddingConfig configures the optional embedding worker.
+// VectorBackend names the on-disk vector index implementation used by the
+// embedding sidecar. turbovec is the zero-config default; faiss is an opt-in
+// alternative chosen before the first index is built.
+const (
+	VectorBackendTurbovec = "turbovec"
+	VectorBackendFAISS    = "faiss"
+)
+
+// DefaultVectorBackend is the resolved vector backend when configuration omits
+// the field. It must match the default the proposal promises so a user who
+// enables semantic search without picking a backend gets turbovec.
+const DefaultVectorBackend = VectorBackendTurbovec
+
+// DefaultEmbeddingModel is the FastEmbed model id used when configuration does
+// not name one. Documented in SPEC.md §10.4 and pinned in the sidecar.
+const DefaultEmbeddingModel = "BAAI/bge-small-en-v1.5"
+
+// embeddingConfigJSON is the raw JSON form of EmbeddingConfig, used so that
+// omitted fields can be distinguished from explicit falsy values. VectorBackend
+// and Model default at the type level (the zero value is empty), so we apply
+// the documented defaults in applyDefaults below.
+type embeddingConfigJSON struct {
+	Provider      string `json:"provider"`
+	Required      bool   `json:"required"`
+	VectorBackend string `json:"vectorBackend"`
+	Model         string `json:"model"`
+}
+
+// EmbeddingConfig configures the optional embedding worker and its vector
+// index. VectorBackend defaults to "turbovec"; Model defaults to the
+// FastEmbed CPU-friendly default. The vector dimension is derived from the
+// selected model at runtime by the sidecar — it is not configured.
 type EmbeddingConfig struct {
-	Provider string `json:"provider,omitempty"`
-	Required bool   `json:"required"`
+	Provider      string `json:"provider,omitempty"`
+	Required      bool   `json:"required"`
+	VectorBackend string `json:"vectorBackend,omitempty"`
+	Model         string `json:"model,omitempty"`
+}
+
+// UnmarshalJSON applies the documented defaults for omitted fields.
+func (e *EmbeddingConfig) UnmarshalJSON(data []byte) error {
+	var raw embeddingConfigJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	e.Provider = raw.Provider
+	e.Required = raw.Required
+	e.VectorBackend = raw.VectorBackend
+	if e.VectorBackend == "" {
+		e.VectorBackend = DefaultVectorBackend
+	}
+	e.Model = raw.Model
+	if e.Model == "" {
+		e.Model = DefaultEmbeddingModel
+	}
+	return nil
 }
 
 // SearchConfig configures the lexical baseline and optional semantic search.
+// When the `semantic` section is entirely omitted, semantic search is treated
+// as enabled (the default-on behavior) — see UnmarshalJSON.
 type SearchConfig struct {
 	Lexical  LexicalSearch  `json:"lexical,omitempty"`
 	Semantic SemanticSearch `json:"semantic,omitempty"`
+}
+
+// searchConfigJSON lets us distinguish "search.semantic omitted" from
+// "search.semantic present with all defaults".
+type searchConfigJSON struct {
+	Lexical  *LexicalSearch  `json:"lexical"`
+	Semantic *SemanticSearch `json:"semantic"`
+}
+
+// UnmarshalJSON applies the default-on semantic search when the semantic
+// sub-section is omitted. A pointer distinguishes omitted from explicit zero.
+func (s *SearchConfig) UnmarshalJSON(data []byte) error {
+	var raw searchConfigJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Lexical != nil {
+		s.Lexical = *raw.Lexical
+	} else {
+		s.Lexical = LexicalSearch{Enabled: true}
+	}
+	if raw.Semantic != nil {
+		s.Semantic = *raw.Semantic
+	} else {
+		s.Semantic = SemanticSearch{Enabled: true}
+	}
+	return nil
 }
 
 // LexicalSearch toggles the mandatory lexical baseline.
@@ -120,10 +201,36 @@ type LexicalSearch struct {
 	Enabled bool `json:"enabled"`
 }
 
+// semanticSearchJSON is the raw JSON form of SemanticSearch so that an omitted
+// `enabled` field can default to true (semantic on by default) while an
+// explicit `false` disables it.
+type semanticSearchJSON struct {
+	Enabled  *bool `json:"enabled"`
+	Required bool  `json:"required"`
+}
+
 // SemanticSearch toggles optional semantic search and whether it is required.
+// When `enabled` is omitted, semantic search is treated as ON (default-on for
+// the out-of-the-box hybrid experience). Set `enabled: false` explicitly to
+// opt back into lexical-only.
 type SemanticSearch struct {
 	Enabled  bool `json:"enabled"`
 	Required bool `json:"required"`
+}
+
+// UnmarshalJSON applies the default-on semantic semantics.
+func (s *SemanticSearch) UnmarshalJSON(data []byte) error {
+	var raw semanticSearchJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Enabled == nil {
+		s.Enabled = true
+	} else {
+		s.Enabled = *raw.Enabled
+	}
+	s.Required = raw.Required
+	return nil
 }
 
 // BudgetsConfig holds per-tool response budgets (SPEC.md §13).
@@ -240,10 +347,46 @@ func Load(path string) (*Loaded, *contract.Error) {
 		return nil, cerr
 	}
 
+	applyDefaults(&raw, sectionPresent(data, "search"))
+
 	resolved := cloneConfig(raw)
 	missing := resolveEnv(&resolved)
 
 	return &Loaded{Path: path, Raw: &raw, Resolved: &resolved, Missing: missing}, nil
+}
+
+// sectionPresent reports whether a top-level key exists in the JSONC document.
+// Used to distinguish "omitted" from "present with zero value" for sections
+// that drive default-on semantics (e.g. `search`).
+func sectionPresent(data []byte, key string) bool {
+	standard, err := hujson.Standardize(data)
+	if err != nil {
+		return false
+	}
+	var probe map[string]json.RawMessage
+	if err := json.Unmarshal(standard, &probe); err != nil {
+		return false
+	}
+	_, ok := probe[key]
+	return ok
+}
+
+// applyDefaults resolves the documented defaults for fields the user omitted.
+// UnmarshalJSON handles per-section omission of optional fields; this catches
+// the case where the entire section (e.g. `embedding` or `search.semantic`) is
+// missing from the JSON document.
+func applyDefaults(c *Config, searchPresent bool) {
+	if c.Embedding.VectorBackend == "" {
+		c.Embedding.VectorBackend = DefaultVectorBackend
+	}
+	if c.Embedding.Model == "" {
+		c.Embedding.Model = DefaultEmbeddingModel
+	}
+	// When search is entirely omitted we have no signal that the user wanted
+	// the lexical-only escape hatch; treat the default as default-on semantic.
+	if !searchPresent {
+		c.Search.Semantic.Enabled = true
+	}
 }
 
 func unmarshalJSONC(data []byte, dst any) error {
@@ -282,6 +425,14 @@ func validate(c *Config) *contract.Error {
 				fmt.Sprintf("server %q has invalid type %q", id, s.Type),
 				fmt.Sprintf("Set server %q type to `local` or `remote`.", id))
 		}
+	}
+	switch c.Embedding.VectorBackend {
+	case "", VectorBackendTurbovec, VectorBackendFAISS:
+		// ok — empty resolves to the documented default at the type level
+	default:
+		return configError("", "embedding.vectorBackend",
+			fmt.Sprintf("embedding.vectorBackend %q is not a known backend", c.Embedding.VectorBackend),
+			fmt.Sprintf("Set embedding.vectorBackend to %q or %q.", VectorBackendTurbovec, VectorBackendFAISS))
 	}
 	return nil
 }

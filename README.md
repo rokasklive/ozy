@@ -11,16 +11,27 @@ full product specification.
 
 > **Status:** early implementation. Ozy can load `ozy.jsonc`, connect to
 > configured downstream MCP servers, run `ozy index`, and persist discovered
-> tool metadata for offline `list` and `describe`. `findTool` now ranks the
+> tool metadata for offline `list` and `describe`. `findTool` ranks the
 > **persistent catalog** with a hybrid (lexical + optional semantic) search
-> engine, returning the single best tool plus one runner-up with confidence
-> and a reason — no live discovery needed. The daemon indexes the catalog
-> **on startup** when it is stale (never indexed, or configured servers
-> changed), and serves the existing catalog gracefully even when downstream
-> servers are offline. `callTool` remains live-gated: invocation connects to
-> the target server at call time. `describeTool` returns the exact schema from
-> the catalog. Semantic search defaults to unavailable (lexical-only) and
-> degrades gracefully without failing.
+> engine and returns the single best tool plus one runner-up with confidence
+> and a reason — no live discovery needed. The lexical and semantic
+> rankings are fused with **Reciprocal Rank Fusion (RRF)**, so they are
+> combined by rank rather than by mixing their incomparable raw scores. The
+> semantic leg is produced by an integrated **Python embedding sidecar** that
+> the Go daemon launches over stdio (newline-delimited JSON), embeds with
+> **FastEmbed** (ONNX, CPU-only), and serves an ANN search over **turbovec**
+> by default (4-bit quantization, kernel-level allowlist filtering). **FAISS**
+> is an opt-in alternative. The sidecar environment is auto-provisioned on
+> demand via `uv` (with a `python -m venv` + `pip` fallback) and the env is
+> cached under XDG state. The daemon indexes the catalog **on startup** when
+> it is stale (never indexed, or configured servers changed), and serves the
+> existing catalog gracefully even when downstream servers are offline.
+> `callTool` remains live-gated: invocation connects to the target server at
+> call time. `describeTool` returns the exact schema from the catalog.
+> Semantic search is **enabled by default**; when Python or the sidecar is
+> absent, fails to provision, crashes, or a query times out, the daemon
+> marks semantic unavailable, continues serving `findTool` from the lexical
+> baseline, and surfaces the degraded mode rather than failing.
 
 ## Build
 
@@ -100,9 +111,14 @@ milliseconds and defaults to `5000`. Ozy's own `search`, `embedding`, and
   },
   "search": {
     "lexical": {"enabled": true},
-    "semantic": {"enabled": false, "required": false}
+    "semantic": {"enabled": true, "required": false}
   },
-  "embedding": {"provider": "python-local", "required": false},
+  "embedding": {
+    "provider": "python-local",
+    "vectorBackend": "turbovec",
+    "model": "BAAI/bge-small-en-v1.5",
+    "required": false
+  },
   "budgets": {
     "findTool": {"maxResults": 5, "includeFullSchemas": false},
     "describeTool": {"includeExamples": true},
@@ -110,6 +126,21 @@ milliseconds and defaults to `5000`. Ozy's own `search`, `embedding`, and
   }
 }
 ```
+
+Semantic search is **on by default** (omit `search.semantic.enabled` for the
+out-of-the-box hybrid experience, or set it `false` to opt back into
+lexical-only). The vector backend is `turbovec` by default; set
+`embedding.vectorBackend` to `faiss` **before the first index is built** to
+opt into FAISS (`faiss-cpu` is installed on that path only). The embedding
+model is the FastEmbed `BAAI/bge-small-en-v1.5` by default; override via
+`embedding.model` to use a different model (the sidecar rebuilds the index
+when the model changes). The vector dimension is derived from the model at
+runtime — it is not configured. The Python sidecar is **auto-provisioned on
+demand** (the daemon resolves a Python interpreter and creates a pinned
+isolated environment under XDG state via `uv` with a `python -m venv` +
+`pip` fallback, then launches the sidecar over stdio). If Python or the
+sidecar is unavailable, the daemon continues to serve lexical-only `findTool`
+results and surfaces the degraded mode rather than failing.
 
 Secrets should be supplied through `{env:NAME}` references rather than literals.
 `ozy doctor` reports unresolved references by variable name and never prints

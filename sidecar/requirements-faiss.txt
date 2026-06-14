@@ -1,0 +1,13 @@
+# Opt-in extra: install the FAISS backend in addition to the default turbovec
+# stack. Only needed when the user selects `vectorBackend: faiss` in their
+# Ozy config.
+#
+# Install with:  pip install -r requirements-faiss.txt
+#
+# Notes:
+# - faiss-cpu ships its own numpy constraint; pip resolves both files together
+#   when they are installed side-by-side.
+# - faiss-cpu is platform-wheeled, so installation may compile from source on
+#   exotic platforms; in practice prebuilt wheels cover Linux/macOS/Windows.
+-r requirements.txt
+faiss-cpu==1.14.3

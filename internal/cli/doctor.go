@@ -14,6 +14,31 @@ import (
 	"github.com/rokasklive/ozy/internal/downstream"
 )
 
+// SidecarStatus is the embedding-subsystem health snapshot rendered by
+// `ozy doctor`. Available=true means the Python sidecar is up and answered
+// health/stats. Available=false means lexical-only mode is in effect (the
+// Reason field carries the cause).
+type SidecarStatus struct {
+	Available   bool
+	Model       string
+	Dim         int
+	Backend     string
+	ToolCount   int
+	VectorCount int
+	Reason      string
+}
+
+// SidecarInspector returns the current embedding-subsystem status. The default
+// (unset) inspector always reports Unavailable so `ozy doctor` renders the
+// lexical-only notice without depending on the sidecar package. The sidecar
+// package overrides this in an init() to wire the real probe.
+type SidecarInspector func(ctx context.Context) SidecarStatus
+
+// sidecarInspector is the active inspector. Tests can override it.
+var sidecarInspector SidecarInspector = func(_ context.Context) SidecarStatus {
+	return SidecarStatus{Available: false, Reason: "semantic unavailable (lexical-only)"}
+}
+
 func (a *app) doctorCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
@@ -110,7 +135,47 @@ func (a *app) runDoctor() *contract.DoctorResult {
 		Detail: "ready (run `ozy mcp` to serve)",
 	})
 
+	// Embedding subsystem — Python sidecar health, backend, model, count.
+	// Reports a single check that is OK when the sidecar is up, WARN when it
+	// is absent (lexical-only degradation is the supported safety net).
+	embCtx, embCancel := context.WithTimeout(context.Background(), 3*time.Second)
+	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector))
+	embCancel()
+
 	return res
+}
+
+// embeddingCheck turns a SidecarStatus into one DoctorCheck. The check is OK
+// when the sidecar is up; WARN otherwise (the user is still served lexical
+// search — degradation is the supported safety net, not a failure).
+func embeddingCheck(ctx context.Context, inspector SidecarInspector) contract.DoctorCheck {
+	if inspector == nil {
+		return contract.DoctorCheck{
+			Name:   "embedding",
+			Status: contract.CheckWarn,
+			Detail: "semantic unavailable (lexical-only)",
+		}
+	}
+	st := inspector(ctx)
+	if !st.Available {
+		return contract.DoctorCheck{
+			Name:   "embedding",
+			Status: contract.CheckWarn,
+			Detail: "semantic unavailable (lexical-only)" + reasonSuffix(st.Reason),
+		}
+	}
+	return contract.DoctorCheck{
+		Name:   "embedding",
+		Status: contract.CheckOK,
+		Detail: fmt.Sprintf("ready; backend=%s model=%s dim=%d indexed_tools=%d", st.Backend, st.Model, st.Dim, st.ToolCount),
+	}
+}
+
+func reasonSuffix(r string) string {
+	if r == "" {
+		return ""
+	}
+	return ": " + r
 }
 
 func indexedToolCounts() (map[string]int, error) {

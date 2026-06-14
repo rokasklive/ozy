@@ -1,0 +1,10 @@
+# Pinned core dependencies for the Ozy embedding sidecar.
+#
+# Install with:  pip install -r requirements.txt
+#
+# faiss-cpu is an opt-in (see requirements-faiss.txt). The default install
+# MUST stay fast and small so lexical-only users are not forced to pull FAISS
+# wheels they will never use.
+numpy>=1.24,<3
+fastembed==0.8.0
+turbovec==0.8.0

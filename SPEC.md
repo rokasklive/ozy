@@ -641,7 +641,24 @@ Ozy should index:
 
 ### 10.3 Hybrid search
 
-When semantic search is enabled, Ozy should combine lexical and vector scores into an explainable ranking.
+When semantic search is enabled, Ozy combines the lexical and semantic
+rankings with **Reciprocal Rank Fusion (RRF)**:
+
+```text
+score(tool) = Σ_lists  1 / (k + rank_in_list)      with k = 60
+```
+
+RRF is rank-based, so the BM25 lexical scores and the cosine similarities
+from the sidecar do not need to be calibrated to a common scale. With no
+semantic signal, RRF over the single lexical list reduces to the lexical
+order, so the degraded path is identical to today's baseline.
+
+The `use` vs. `ambiguous` decision is made on the RRF gap between the top two
+entries; `no_good_match` is gated on an absolute component floor
+(normalized lexical relevance OR cosine similarity) because RRF alone carries
+no absolute relevance. The floors and the RRF `k` are named tunable constants
+in `internal/search` and can be calibrated against the discovery evals
+(§14.1).
 
 `findTool` responses should be able to say why a tool matched, for example:
 
@@ -651,22 +668,52 @@ Matched lexical term "confluence" and semantic intent "internal wiki search".
 
 ### 10.4 Embedding/indexing architecture
 
-Current baseline:
+Ozy ships with an **integrated Python embedding sidecar** that the Go daemon
+launches and supervises. The sidecar speaks newline-delimited JSON over its
+standard input/output, with the daemon owning the lifecycle (provisioning,
+spawn, health-check, shutdown) and stderr drained for logs.
 
-- Go owns runtime, daemon, MCP, CLI, catalog authority, brokered calls, and online search.
-- Python may be used as an optional indexing/embedding worker.
-- Python must not own Ozy's authoritative catalog state.
-- If Python is unavailable, Ozy must still operate with lexical search.
+Boundary:
 
-The preferred boundary:
+- **Go** owns runtime, daemon, MCP, CLI, catalog authority, brokered calls,
+  online search, and the lexical BM25 ranker.
+- **Python sidecar** owns the embedding model, the embedding-metadata store
+  (SQLite, the `toolRef ↔ vector_id` map, content hashes, model/version
+  metadata, and raw float32 vectors), and the ANN index. It does NOT own
+  Ozy's authoritative catalog of tools, schemas, or runtime status.
+- **Vector index** is a derived artifact, rebuildable from SQLite. The default
+  backend is **turbovec** (`IdMapIndex` with 4-bit quantization and kernel-level
+  allowlist filtering); **FAISS** (`IndexIDMap` over `IndexFlatIP` with
+  `IDSelectorBatch` allowlist) is an opt-in alternative selected before the
+  first index is built. Switching backends after the first index requires a
+  rebuild.
 
-```text
-Go daemon writes normalized indexing job
-  -> Python worker produces embeddings/index artifacts
-  -> Go stores and serves search over the resulting data
-```
+**Vector backend selection is fixed before the first index and immutable
+after** — a mismatch between configured and recorded backend forces a
+rebuild from SQLite rather than serving mixed artifacts.
 
-Future changes may refine this, but must preserve graceful degradation.
+**Facet-scoped search** resolves a facet (e.g. `server_id = "atlassian"`) in
+SQLite to an allowlist of `vector_id`s, then passes that allowlist to the
+index. Filtering happens inside the search kernel; results are not
+over-fetched and post-filtered.
+
+**Provisioning and supervision** are owned by the daemon. When semantic search
+is enabled, the daemon resolves a Python interpreter, creates a pinned
+isolated environment under XDG state via `uv` (with a `python -m venv` +
+`pip` fallback), installs `fastembed` and `turbovec` (`faiss-cpu` only when
+the FAISS backend is selected), caches the env, and starts the sidecar.
+Provisioning never blocks daemon readiness: any failure (no `uv`, no
+`python3`, pip install error) leaves the daemon ready in lexical-only mode
+with a surfaced notice. The planned standalone bootstrap/installer change
+will replace this interim on-demand provisioner.
+
+The Go client in `internal/sidecar` speaks the JSONL protocol
+(`health`/`upsert`/`delete`/`query`/`stats`), drains stderr to a logger,
+enforces per-request timeouts, and returns "unavailable" (not an error) on
+any failure so the engine degrades.
+
+The full protocol shape and request/response payloads are documented in
+`sidecar/README.md`.
 
 ---
 

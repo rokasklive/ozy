@@ -325,3 +325,73 @@ func TestWriteStarter(t *testing.T) {
 		t.Error("WriteStarter() should refuse to overwrite an existing file")
 	}
 }
+
+func TestEmbeddingConfig_DefaultsWhenEmbeddingOmitted(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{"mcp":{}}`)
+	loaded, cerr := Load(path)
+	if cerr != nil {
+		t.Fatalf("Load() error = %v", cerr)
+	}
+	emb := loaded.Resolved.Embedding
+	if emb.VectorBackend != DefaultVectorBackend {
+		t.Errorf("VectorBackend = %q, want %q", emb.VectorBackend, DefaultVectorBackend)
+	}
+	if emb.Model != DefaultEmbeddingModel {
+		t.Errorf("Model = %q, want %q", emb.Model, DefaultEmbeddingModel)
+	}
+}
+
+func TestEmbeddingConfig_FAISSOptIn(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{"mcp":{},"embedding":{"vectorBackend":"faiss"}}`)
+	loaded, cerr := Load(path)
+	if cerr != nil {
+		t.Fatalf("Load() error = %v", cerr)
+	}
+	if got := loaded.Resolved.Embedding.VectorBackend; got != VectorBackendFAISS {
+		t.Errorf("VectorBackend = %q, want %q", got, VectorBackendFAISS)
+	}
+}
+
+func TestEmbeddingConfig_UnknownBackendRejected(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{"mcp":{},"embedding":{"vectorBackend":"qdrant"}}`)
+	_, cerr := Load(path)
+	if cerr == nil || cerr.Type != contract.ErrTypeConfigError {
+		t.Fatalf("Load() error = %v, want CONFIG_ERROR", cerr)
+	}
+	if !strings.Contains(cerr.Message, "qdrant") || !strings.Contains(cerr.Message, "embedding.vectorBackend") {
+		t.Errorf("error = %+v, want to name qdrant and the field", cerr)
+	}
+}
+
+func TestSemanticSearch_DefaultsToEnabledWhenOmitted(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{"mcp":{}}`)
+	loaded, cerr := Load(path)
+	if cerr != nil {
+		t.Fatalf("Load() error = %v", cerr)
+	}
+	if !loaded.Resolved.Search.Semantic.Enabled {
+		t.Errorf("Semantic.Enabled = false, want true when search.semantic is omitted")
+	}
+}
+
+func TestSemanticSearch_DefaultsToEnabledWhenSearchSectionOmitted(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{"mcp":{},"search":{"lexical":{"enabled":true}}}`)
+	loaded, cerr := Load(path)
+	if cerr != nil {
+		t.Fatalf("Load() error = %v", cerr)
+	}
+	if !loaded.Resolved.Search.Semantic.Enabled {
+		t.Errorf("Semantic.Enabled = false, want true when search.semantic is omitted but search.lexical is set")
+	}
+}
+
+func TestSemanticSearch_ExplicitFalseDisables(t *testing.T) {
+	path := writeTemp(t, "ozy.jsonc", `{"mcp":{},"search":{"semantic":{"enabled":false}}}`)
+	loaded, cerr := Load(path)
+	if cerr != nil {
+		t.Fatalf("Load() error = %v", cerr)
+	}
+	if loaded.Resolved.Search.Semantic.Enabled {
+		t.Errorf("Semantic.Enabled = true, want false when explicitly disabled")
+	}
+}

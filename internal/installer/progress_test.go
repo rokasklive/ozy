@@ -26,6 +26,9 @@ func TestProgressPlainNoANSI(t *testing.T) {
 }
 
 func TestProgressColorOnTTY(t *testing.T) {
+	// CI runners set CI=true, which Plain() (correctly) treats as plain output.
+	// Clear it so this test exercises the colour-capable TTY path.
+	t.Setenv("CI", "")
 	var buf bytes.Buffer
 	p := NewProgress(&buf, Platform{TTY: true, Color: true})
 	p.Done("Step")

@@ -14,13 +14,15 @@ func TestResolveLinuxHonorsXDG(t *testing.T) {
 		"XDG_CONFIG_HOME": "/x/config",
 		"XDG_DATA_HOME":   "/x/data",
 	}), "/home/u")
-	if p.ConfigDir != "/x/config/ozy" {
+	// ToSlash normalizes the separator so the assertion holds on a Windows host
+	// too (resolve uses the host's filepath separator; only the structure matters).
+	if filepath.ToSlash(p.ConfigDir) != "/x/config/ozy" {
 		t.Errorf("ConfigDir = %q, want /x/config/ozy", p.ConfigDir)
 	}
-	if p.ConfigFile != "/x/config/ozy/ozy.jsonc" {
+	if filepath.ToSlash(p.ConfigFile) != "/x/config/ozy/ozy.jsonc" {
 		t.Errorf("ConfigFile = %q", p.ConfigFile)
 	}
-	if p.DataDir != "/x/data/ozy" {
+	if filepath.ToSlash(p.DataDir) != "/x/data/ozy" {
 		t.Errorf("DataDir = %q, want /x/data/ozy", p.DataDir)
 	}
 }
@@ -42,7 +44,7 @@ func TestResolveLinuxDefaults(t *testing.T) {
 		"BinaryPath": p.BinaryPath,
 	}
 	for k, v := range want {
-		if got[k] != v {
+		if filepath.ToSlash(got[k]) != v {
 			t.Errorf("%s = %q, want %q", k, got[k], v)
 		}
 	}
@@ -78,10 +80,10 @@ func TestResolveOzyConfigOverrideWins(t *testing.T) {
 		"OZY_CONFIG":      "/custom/place/my.jsonc",
 		"XDG_CONFIG_HOME": "/x/config",
 	}), "/home/u")
-	if p.ConfigFile != "/custom/place/my.jsonc" {
+	if filepath.ToSlash(p.ConfigFile) != "/custom/place/my.jsonc" {
 		t.Errorf("ConfigFile = %q, want override", p.ConfigFile)
 	}
-	if p.ConfigDir != "/custom/place" {
+	if filepath.ToSlash(p.ConfigDir) != "/custom/place" {
 		t.Errorf("ConfigDir = %q, want /custom/place", p.ConfigDir)
 	}
 }

@@ -71,6 +71,7 @@ func (a *app) rootCmd() *cobra.Command {
 		a.describeCmd(),
 		a.callCmd(),
 		a.evalCmd(),
+		a.uninstallCmd(),
 	)
 	return root
 }

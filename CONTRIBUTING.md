@@ -57,8 +57,9 @@ end-to-end smoke test before opening a pull request.
 
 ```
 .
-├── cmd/ozy/           # binary entry point
-├── internal/          # implementation packages (broker, catalog, CLI, MCP adapter, …)
+├── cmd/ozy/           # `ozy` binary entry point
+├── cmd/ozy-install/   # one-command install/uninstall bootstrap (runs before `ozy` exists)
+├── internal/          # implementation packages (broker, catalog, CLI, installer, paths, MCP adapter, …)
 ├── sidecar/           # Python embedding sidecar (FastEmbed + turbovec / FAISS)
 ├── evals/             # committed evaluation corpus, scoreboard, and methodology
 ├── examples/          # starter ozy.jsonc and real MCP example configs

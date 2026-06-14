@@ -51,8 +51,11 @@ const starterConfig = `{
     "lexical": {
       "enabled": true
     },
+    // Semantic search is on by default (hybrid lexical+semantic). It is not
+    // required: if no embedding backend is available, Ozy degrades to
+    // lexical-only. The installer provisions a managed Python venv for it.
     "semantic": {
-      "enabled": false,
+      "enabled": true,
       "required": false
     }
   },

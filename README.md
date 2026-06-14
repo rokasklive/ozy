@@ -48,21 +48,37 @@ Ozy fixes that by acting as a single, brokered entry point:
 
 ## Quick start
 
+The one-line bootstrap inspects your machine, prints a plan (nothing changes
+until you confirm), then installs the `ozy` binary, writes a starter config,
+provisions the embedding sidecar, and puts `ozy` on your `PATH`:
+
 ```bash
-# 1. Install
-go install github.com/rokasklive/ozy/cmd/ozy@latest
+go run github.com/rokasklive/ozy/cmd/ozy-install@latest
+```
 
-# 2. Scaffold a config (one-time)
-ozy init
+It is dry-run-first, consent-based, and safe to rerun. Then:
 
-# 3. Declare your downstream MCP servers in ~/.config/ozy/ozy.jsonc
+```bash
+# 1. Declare your downstream MCP servers in your ozy.jsonc
 #    (copy-paste your existing mcp.json entries — the shape is opencode-compatible)
 
-# 4. Index, then run
+# 2. Index, then run
 ozy index                # connect, discover, persist the catalog
 ozy search "confluence"  # find the right tool
 ozy mcp                  # expose Ozy to your agent
 ```
+
+Prefer to manage the binary yourself? Install it directly and scaffold a config:
+
+```bash
+go install github.com/rokasklive/ozy/cmd/ozy@latest
+ozy init
+```
+
+To remove Ozy, run `ozy uninstall` (or
+`go run github.com/rokasklive/ozy/cmd/ozy-install@latest uninstall`). It is
+plan-first and conservative — your config and downstream MCP definitions are
+kept unless you pass `--purge`.
 
 ## Usage
 
@@ -77,7 +93,12 @@ ozy call  atlassian.confluence_search --json '{"query":"billing migration","limi
 ozy daemon                     # run the daemon
 ozy mcp                        # serve the MCP adapter over stdio
 ozy eval run                   # run the eval suite over the committed corpus
+ozy uninstall                  # remove Ozy (plan-first; keeps config unless --purge)
 ```
+
+Install and removal run through a separate bootstrap so they work before `ozy`
+exists: `go run github.com/rokasklive/ozy/cmd/ozy-install@latest` to set up, and
+`… /cmd/ozy-install@latest uninstall` (or `ozy uninstall`) to remove.
 
 Every command accepts a global `--format` flag: `human` (default), `json`
 (single machine-readable document for agents and evals), or `concise`.

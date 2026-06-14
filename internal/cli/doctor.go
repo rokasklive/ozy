@@ -12,6 +12,7 @@ import (
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/sidecar"
 )
 
 // SidecarStatus is the embedding-subsystem health snapshot rendered by
@@ -34,9 +35,78 @@ type SidecarStatus struct {
 // package overrides this in an init() to wire the real probe.
 type SidecarInspector func(ctx context.Context) SidecarStatus
 
-// sidecarInspector is the active inspector. Tests can override it.
+// sidecarInspector is the active inspector. Tests override it via
+// OverrideSidecarInspector; production code uses the sentinel default and
+// runDoctor wires the real probe when semantic search is enabled.
 var sidecarInspector SidecarInspector = func(_ context.Context) SidecarStatus {
 	return SidecarStatus{Available: false, Reason: "semantic unavailable (lexical-only)"}
+}
+
+// sidecarInspectorOverridden is set true when a test overrides the inspector.
+// runDoctor uses it to decide whether to wire the real sidecar probe.
+var sidecarInspectorOverridden bool
+
+// OverrideSidecarInspector replaces the default inspector. Tests use this to
+// inject fakes. Production code should never call this.
+func OverrideSidecarInspector(f SidecarInspector) {
+	sidecarInspector = f
+	sidecarInspectorOverridden = true
+}
+
+// newSidecarProbe returns a SidecarInspector that provisions and
+// health-checks the Python embedding sidecar, returning the real status
+// that `ozy doctor` reports. It uses the provisioned venv directory as
+// the data directory so real vector and tool counts are visible.
+// Provisioning honours the marker-based cache: a previously-provisioned
+// venv skips the venv-creation step and returns in milliseconds.
+func newSidecarProbe(emb config.EmbeddingConfig) SidecarInspector {
+	return func(ctx context.Context) SidecarStatus {
+		resolved, err := sidecar.Provision(ctx, sidecar.ProvisionOptions{
+			Backend: emb.VectorBackend,
+			Model:   emb.Model,
+		})
+		if err != nil {
+			return SidecarStatus{Available: false, Reason: err.Error()}
+		}
+
+		client, err := sidecar.NewClient(sidecar.Options{
+			DataDir: resolved.VenvDir,
+			Backend: emb.VectorBackend,
+			Model:   emb.Model,
+			ProcessOptions: sidecar.ProcessOptions{
+				PythonPath: resolved.PythonPath,
+				SourceDir:  resolved.SourceDir,
+				DataDir:    resolved.VenvDir,
+				Backend:    emb.VectorBackend,
+				Model:      emb.Model,
+			},
+		})
+		if err != nil {
+			return SidecarStatus{Available: false, Reason: "start: " + err.Error()}
+		}
+		defer client.Close()
+
+		hr := client.Health(ctx)
+		if !hr.OK {
+			reason := "health: "
+			if hr.Err != nil {
+				reason += hr.Err.Error()
+			} else {
+				reason += "unknown error"
+			}
+			return SidecarStatus{Available: false, Reason: reason}
+		}
+
+		stats, _ := client.Stats(ctx)
+		return SidecarStatus{
+			Available:   true,
+			Model:       hr.Model,
+			Dim:         hr.Dim,
+			Backend:     hr.Backend,
+			VectorCount: stats.VectorCount,
+			ToolCount:   stats.ToolCount,
+		}
+	}
 }
 
 func (a *app) doctorCmd() *cobra.Command {
@@ -136,9 +206,12 @@ func (a *app) runDoctor() *contract.DoctorResult {
 	})
 
 	// Embedding subsystem — Python sidecar health, backend, model, count.
-	// Reports a single check that is OK when the sidecar is up, WARN when it
-	// is absent (lexical-only degradation is the supported safety net).
-	embCtx, embCancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// When semantic is enabled and the inspector hasn't been overridden by
+	// tests, wire the real sidecar probe; otherwise use the injected fake.
+	if !sidecarInspectorOverridden && loaded.Resolved.Search.Semantic.Enabled {
+		sidecarInspector = newSidecarProbe(loaded.Resolved.Embedding)
+	}
+	embCtx, embCancel := context.WithTimeout(context.Background(), 15*time.Second)
 	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector))
 	embCancel()
 

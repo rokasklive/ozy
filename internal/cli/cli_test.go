@@ -682,11 +682,10 @@ func TestDoctorEmbeddingSectionUnavailableByDefault(t *testing.T) {
 	t.Setenv("OZY_TEST_TOKEN", "tok")
 	t.Setenv("OZY_CATALOG", filepath.Join(t.TempDir(), "catalog.json"))
 
-	prev := sidecarInspector
-	sidecarInspector = func(_ context.Context) SidecarStatus {
+	OverrideSidecarInspector(func(_ context.Context) SidecarStatus {
 		return SidecarStatus{Available: false, Reason: "no python toolchain"}
-	}
-	t.Cleanup(func() { sidecarInspector = prev })
+	})
+	t.Cleanup(func() { sidecarInspectorOverridden = false; sidecarInspector = nil })
 
 	out, _, code := run("--config", path, "--format", "json", "doctor")
 	if code != 0 {
@@ -725,8 +724,7 @@ func TestDoctorEmbeddingSectionAvailable(t *testing.T) {
 	t.Setenv("OZY_TEST_TOKEN", "tok")
 	t.Setenv("OZY_CATALOG", filepath.Join(t.TempDir(), "catalog.json"))
 
-	prev := sidecarInspector
-	sidecarInspector = func(_ context.Context) SidecarStatus {
+	OverrideSidecarInspector(func(_ context.Context) SidecarStatus {
 		return SidecarStatus{
 			Available:   true,
 			Model:       "BAAI/bge-small-en-v1.5",
@@ -735,8 +733,8 @@ func TestDoctorEmbeddingSectionAvailable(t *testing.T) {
 			VectorCount: 42,
 			ToolCount:   42,
 		}
-	}
-	t.Cleanup(func() { sidecarInspector = prev })
+	})
+	t.Cleanup(func() { sidecarInspectorOverridden = false; sidecarInspector = nil })
 
 	out, _, code := run("--config", path, "--format", "json", "doctor")
 	if code != 0 {

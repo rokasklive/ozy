@@ -1,16 +1,16 @@
 # Graph Report - ozy  (2026-06-14)
 
 ## Corpus Check
-- 92 files · ~60,892 words
+- 125 files · ~96,890 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1269 nodes · 1967 edges · 69 communities (66 shown, 3 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 155 edges (avg confidence: 0.8)
+- 1924 nodes · 3196 edges · 106 communities (102 shown, 4 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 245 edges (avg confidence: 0.71)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cd0ba596`
+- Built from commit: `de8ea9fd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -74,57 +74,94 @@
 - [[_COMMUNITY_Community 56|Community 56]]
 - [[_COMMUNITY_Community 57|Community 57]]
 - [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
+- [[_COMMUNITY_Community 63|Community 63]]
+- [[_COMMUNITY_Community 64|Community 64]]
+- [[_COMMUNITY_Community 65|Community 65]]
 - [[_COMMUNITY_Community 66|Community 66]]
+- [[_COMMUNITY_Community 67|Community 67]]
+- [[_COMMUNITY_Community 68|Community 68]]
+- [[_COMMUNITY_Community 69|Community 69]]
+- [[_COMMUNITY_Community 70|Community 70]]
+- [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 73|Community 73]]
 - [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 76|Community 76]]
 - [[_COMMUNITY_Community 77|Community 77]]
 - [[_COMMUNITY_Community 78|Community 78]]
+- [[_COMMUNITY_Community 79|Community 79]]
 - [[_COMMUNITY_Community 80|Community 80]]
+- [[_COMMUNITY_Community 81|Community 81]]
+- [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
+- [[_COMMUNITY_Community 87|Community 87]]
+- [[_COMMUNITY_Community 88|Community 88]]
+- [[_COMMUNITY_Community 89|Community 89]]
+- [[_COMMUNITY_Community 90|Community 90]]
+- [[_COMMUNITY_Community 91|Community 91]]
+- [[_COMMUNITY_Community 92|Community 92]]
+- [[_COMMUNITY_Community 93|Community 93]]
+- [[_COMMUNITY_Community 94|Community 94]]
+- [[_COMMUNITY_Community 95|Community 95]]
+- [[_COMMUNITY_Community 96|Community 96]]
+- [[_COMMUNITY_Community 97|Community 97]]
+- [[_COMMUNITY_Community 98|Community 98]]
+- [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
+- [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
+- [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 104|Community 104]]
+- [[_COMMUNITY_Community 105|Community 105]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `contains()` - 41 edges
-2. `NewMemory()` - 35 edges
-3. `live` - 32 edges
-4. `Config` - 31 edges
-5. `SPEC.md — Ozy Living Specification` - 25 edges
-6. `Requirement: Opencode MCP section compatibility` - 21 edges
-7. `Connector` - 20 edges
-8. `NewLive()` - 18 edges
-9. `File` - 18 edges
-10. `newCallBroker()` - 17 edges
+1. `NewMemory()` - 45 edges
+2. `Store` - 38 edges
+3. `TurbovecBackend` - 37 edges
+4. `Config` - 36 edges
+5. `Client` - 33 edges
+6. `Ops` - 33 edges
+7. `newTestClient()` - 30 edges
+8. `live` - 27 edges
+9. `T` - 26 edges
+10. `SPEC.md — Ozy Living Specification` - 25 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `Execute()`  [INFERRED]
   cmd/ozy/main.go → internal/cli/cli.go
+- `New()` --calls--> `NewClient()`  [INFERRED]
+  internal/downstream/connector.go → internal/sidecar/client.go
 - `newCallBroker()` --calls--> `NewLive()`  [INFERRED]
   internal/broker/call_test.go → internal/broker/live.go
 - `newCallBroker()` --calls--> `NewMemory()`  [INFERRED]
   internal/broker/call_test.go → internal/catalog/memory.go
-- `newBrokerWithTools()` --calls--> `NewLive()`  [INFERRED]
-  internal/broker/live_test.go → internal/broker/live.go
-- `newLiveBroker()` --calls--> `NewLive()`  [INFERRED]
-  internal/broker/live_test.go → internal/broker/live.go
+- `TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath()` --calls--> `NewLive()`  [INFERRED]
+  internal/cli/cli_test.go → internal/broker/live.go
 
 ## Import Cycles
 - None detected.
 
-## Communities (69 total, 3 thin omitted)
+## Communities (106 total, 4 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (50): NewLive(), ClientSession, Cmd, Connection, blockingTransport, hasEnv(), inMemoryFactory(), resultsByID() (+42 more)
+Cohesion: 0.09
+Nodes (47): fakeConnector, NewLive(), newBrokerWithTools(), newLiveBroker(), TestFindTool_CatalogEmpty(), TestFindTool_NoGoodMatch(), TestFindTool_OfflineToolStillDiscoverable(), TestFindTool_ReasonNamesMatchedBasis() (+39 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.13
 Nodes (14): Execute(), Daemon, app, Command, Error, Writer, Writer, T (+6 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.07
-Nodes (51): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, cloneConfig(), cloneServerConfig(), cloneStringMap() (+43 more)
+Cohesion: 0.05
+Nodes (64): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, applyDefaults(), cloneConfig(), cloneServerConfig() (+56 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.41
@@ -139,24 +176,24 @@ Cohesion: 0.09
 Nodes (22): CallToolRequest, asError(), WriteStarter(), Error, ErrorEnvelope, NewErrorEnvelope(), NotImplemented(), app (+14 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.12
-Nodes (30): Bool, newCallBroker(), TestCallTool_DisabledServerReturnsConfigError(), TestCallTool_DownstreamToolErrorReturnsDownstreamCallFailed(), TestCallTool_MalformedToolRefReturnsToolNotFound(), TestCallTool_ResultExceedingBudgetIsTruncated(), TestCallTool_ResultWithinBudgetIsUnchanged(), TestCallTool_StructuredContentPreferredOverText() (+22 more)
+Cohesion: 0.14
+Nodes (26): newCallBroker(), TestCallTool_DisabledServerReturnsConfigError(), TestCallTool_DownstreamToolErrorReturnsDownstreamCallFailed(), TestCallTool_MalformedToolRefReturnsToolNotFound(), TestCallTool_ResultExceedingBudgetIsTruncated(), TestCallTool_ResultWithinBudgetIsUnchanged(), TestCallTool_StructuredContentPreferredOverText(), TestCallTool_SuccessfulInvocationNormalizesAndSummarizes() (+18 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.14
 Nodes (20): skeleton, NewSkeleton(), newBroker(), TestCallTool_KnownToolReturnsNotImplemented(), TestCallTool_UnknownToolReturnsToolNotFound(), TestDescribeTool_UnknownReturnsToolNotFound(), TestFindTool_EmptyCatalogReturnsCatalogEmpty(), TestFindTool_NonEmptyCatalogReturnsNoGoodMatch() (+12 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.15
-Nodes (21): Client, Connector, configError(), connectionError(), isOAuthAuthFailure(), Scrub(), secretValues(), WithMaxConcurrency() (+13 more)
+Cohesion: 0.08
+Nodes (45): Connection, blockingTransport, Connector, configError(), connectionError(), isOAuthAuthFailure(), New(), Scrub() (+37 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.16
-Nodes (18): Connector, New(), normalizeSchema(), normalizeTool(), scrub(), secretValues(), Indexer, Option (+10 more)
+Cohesion: 0.12
+Nodes (13): blockingSession, fakeConnector, fakeSession, recordingSink, CallToolParams, CallToolResult, Config, Context (+5 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.10
-Nodes (36): Context, Ranking, Engine, RankedEntry, Ranking, Context, RankedEntry, Store (+28 more)
+Nodes (39): RankedEntry, Ranking, Context, Filter, RankedEntry, SemanticHit, Store, T (+31 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.12
@@ -175,32 +212,32 @@ Cohesion: 0.25
 Nodes (8): File, fileDocument, Context, RWMutex, Server, Stats, Time, Tool
 
 ### Community 15 - "Community 15"
-Cohesion: 0.33
-Nodes (5): configuration, Purpose, Requirements, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration
+Cohesion: 0.14
+Nodes (15): FakeEmbedder, _needs_bge_query_prefix(), FastEmbed wrapper for the Ozy embedding sidecar.  The embedder is the only place, Deterministic embedder used in tests.      Generates a stable unit vector per te, Return True if the BGE ``"query: "`` prefix should be applied., Tests for the FastEmbed wrapper and the deterministic ``FakeEmbedder``., When separate_query_space=False, query and doc vectors are identical., test_fake_embedder_call_count() (+7 more)
 
 ### Community 16 - "Community 16"
 Cohesion: 0.10
 Nodes (20): daemon-runtime, Purpose, Requirements, Requirement: Catalog store interface placeholder, Requirement: Conditional indexing on startup, Requirement: Daemon lifecycle, Requirement: Graceful degradation of optional subsystems, Requirement: Shared in-process broker seam (+12 more)
 
 ### Community 17 - "Community 17"
-Cohesion: 0.18
-Nodes (14): NewFile(), TestFile_EmptyStoreQueriesAreClean(), TestFile_LastIndexedAtSurvivesRestart(), TestFile_OverwriteKeepsValidJSON(), TestFile_PersistedCatalogContainsNoConfigSecrets(), TestFile_WritesAndReloadsCatalog(), indexedToolCounts(), serverHealthChecks() (+6 more)
+Cohesion: 0.19
+Nodes (12): embeddingCheck(), indexedToolCounts(), reasonSuffix(), serverHealthChecks(), SidecarInspector, SidecarStatus, DoctorCheck, DoctorResult (+4 more)
 
 ### Community 18 - "Community 18"
-Cohesion: 0.08
-Nodes (24): cli-interface, Purpose, Requirements, ADDED Requirements, Requirement: CLI exposes tools from explicit MCP configuration, Scenario: Describing an indexed tool from the CLI, Scenario: Indexing tools from the example config, Scenario: Listing indexed tools from the CLI (+16 more)
+Cohesion: 0.20
+Nodes (11): ADDED Requirements, Requirement: CLI exposes tools from explicit MCP configuration, Scenario: Describing an indexed tool from the CLI, Scenario: Indexing tools from the example config, Scenario: Listing indexed tools from the CLI, Scenario: Search uses the populated catalog, Requirement: CLI exposes tools from explicit MCP configuration, Scenario: Describing an indexed tool from the CLI (+3 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.13
 Nodes (14): Confidence → decision mapping (the two-best contract), Context, Decisions, `findTool` becomes catalog-backed; the broker delegates to a search engine, Goals / Non-Goals, Hybrid fusion: normalized weighted sum, not RRF (so the confidence floor is meaningful), Lexical baseline: field-weighted BM25-style scoring over the indexed fields, Migration Plan (+6 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.07
-Nodes (28): Requirement: Discover tools via tools/list, Requirement: Discovered tools carry freshness and runtime status, Requirement: List and describe reflect discovered tools, Requirement: `ozy index` populates the catalog, Requirement: Stable toolRef normalization, Scenario: A discovered tool gets a stable toolRef, Scenario: A freshly indexed tool is marked fresh, Scenario: describe returns a discovered tool's schema (+20 more)
+Cohesion: 0.20
+Nodes (9): Requirement: Discover tools via tools/list, Requirement: Discovered tools carry freshness and runtime status, Requirement: Stable toolRef normalization, Scenario: A discovered tool gets a stable toolRef, Scenario: A freshly indexed tool is marked fresh, Scenario: Tools are retrieved from a connected server, Purpose, Requirements (+1 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.14
-Nodes (16): ADDED Requirements, Requirements, Requirement: Connect to local (stdio) servers, Requirement: Connect to remote (HTTP) servers, Requirement: Non-leaky connection errors, Scenario: Connection failure error is redacted, Scenario: Local command environment is applied, Scenario: Local server connects and initializes (+8 more)
+Cohesion: 0.10
+Nodes (22): ADDED Requirements, Requirements, Requirement: Connect to local (stdio) servers, Requirement: Connect to remote (HTTP) servers, Requirement: Non-leaky connection errors, Requirement: Per-server isolation, Scenario: Connection failure error is redacted, Scenario: Disabled servers are skipped (+14 more)
 
 ### Community 22 - "Community 22"
 Cohesion: 0.15
@@ -211,20 +248,20 @@ Cohesion: 0.28
 Nodes (7): Memory, Context, RWMutex, Server, Stats, Time, Tool
 
 ### Community 24 - "Community 24"
-Cohesion: 0.07
-Nodes (29): downstream-connection, Purpose, Scenario: findTool returns a contract-shaped result, ADDED Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Output formats, Requirement: Structured handling of unimplemented operations (+21 more)
+Cohesion: 0.17
+Nodes (10): downstream-connection, Purpose, ADDED Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Structured handling of unimplemented operations, Scenario: All MVP commands are registered, Scenario: CLI routes through the shared broker (+2 more)
 
 ### Community 25 - "Community 25"
-Cohesion: 0.11
-Nodes (25): failingSession, fakeConnector, fakeSession, newBrokerWithTools(), newLiveBroker(), searchSubstring(), TestFindTool_CatalogEmpty(), TestFindTool_NoGoodMatch() (+17 more)
+Cohesion: 0.12
+Nodes (42): Client, T, Bool, Client, Context, Filter, Logger, SemanticHit (+34 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.11
 Nodes (17): Requirement: Invocation does not amplify retries, Requirement: Invoke the downstream tool via tools/call, Requirement: Normalize results and downstream errors, Requirement: Resolve toolRef to a downstream server and tool, Scenario: A malformed toolRef is rejected instructionally, Scenario: A reachable tool is invoked and returns a success result, Scenario: A valid toolRef resolves to its server and tool, Scenario: An unknown or disabled server is rejected instructionally (+9 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.07
-Nodes (27): mcp-adapter, Purpose, Requirements, Requirement: MCP findTool performs live downstream discovery, Scenario: findTool keeps downstream tools as data, Scenario: findTool reports empty live discovery, Scenario: findTool reports partial downstream failures, Scenario: findTool reports total downstream failure (+19 more)
+Cohesion: 0.15
+Nodes (14): Requirement: MCP findTool performs live downstream discovery, Scenario: findTool keeps downstream tools as data, Scenario: findTool reports empty live discovery, Scenario: findTool reports partial downstream failures, Scenario: findTool reports total downstream failure, Scenario: findTool returns all live-discovered tools, Scenario: Harness sees findTool on Ozy MCP, Requirement: MCP findTool performs live downstream discovery (+6 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.17
@@ -239,8 +276,8 @@ Cohesion: 0.18
 Nodes (10): 10. Verification, 1. Module and scaffold, 2. Configuration, 3. Catalog store, 4. Broker seam and contract models, 5. CLI interface, 6. MCP adapter, 7. Daemon runtime (+2 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.08
-Nodes (35): Alternative, Connector, live, applyCallBudget(), candidateRefs(), catalogToolToCandidate(), disabledServer(), extractErrorText() (+27 more)
+Cohesion: 0.09
+Nodes (31): Alternative, Connector, live, applyCallBudget(), catalogToolToCandidate(), disabledServer(), extractErrorText(), firstLine() (+23 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.08
@@ -259,12 +296,12 @@ Cohesion: 0.36
 Nodes (7): Freshness, Server, ServerStatus, Stats, Store, Tool, Time
 
 ### Community 36 - "Community 36"
-Cohesion: 0.05
-Nodes (44): ADDED Requirements, MODIFIED Requirements, Requirement: Configuration initialization writes to user config home, Requirement: Opencode MCP section compatibility, Scenario: Default timeout is applied, Scenario: Enabled defaults to true, Scenario: Enabled false disables server, Scenario: Example fixture loads successfully (+36 more)
+Cohesion: 0.11
+Nodes (24): Requirement: Opencode MCP section compatibility, Scenario: Default timeout is applied, Scenario: Enabled defaults to true, Scenario: Enabled false disables server, Scenario: Example fixture loads successfully, Scenario: Local command entries are preserved, Scenario: Local cwd is preserved, Scenario: Non-MCP opencode sections are out of scope (+16 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.28
-Nodes (14): rankedEntry, Tool, fieldTokens, indexedField, containsToken(), extractFields(), extractSchemaText(), gatherTokens() (+6 more)
+Cohesion: 0.19
+Nodes (18): Context, Ranking, Engine, SemanticHit, rankedEntry, Tool, rankOfHits(), fieldTokens (+10 more)
 
 ### Community 38 - "Community 38"
 Cohesion: 0.10
@@ -307,8 +344,8 @@ Cohesion: 0.25
 Nodes (7): ADDED Requirements, Requirement: Conditional indexing on startup, Requirement: Startup indexing degrades gracefully, Scenario: A fresh catalog skips startup indexing, Scenario: A stale catalog is reindexed on startup, Scenario: Partial startup indexing still serves reachable results, Scenario: Startup indexing failure does not block readiness
 
 ### Community 51 - "Community 51"
-Cohesion: 0.25
-Nodes (22): run(), runTestMCPServer(), TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath(), TestCallStructuredFailureExitsNonZero(), TestCLIIndexesAndExposesToolsFromExplicitMCPConfig(), TestDiscoveryEval_GoldIntentMatchesExpectedToolRef(), TestDoctorDoesNotLeakSecret(), TestDoctorReportsMissingEnv() (+14 more)
+Cohesion: 0.12
+Nodes (37): NewFile(), TestFile_EmptyStoreQueriesAreClean(), TestFile_LastIndexedAtSurvivesRestart(), TestFile_OverwriteKeepsValidJSON(), TestFile_PersistedCatalogContainsNoConfigSecrets(), TestFile_WritesAndReloadsCatalog(), run(), runTestMCPServer() (+29 more)
 
 ### Community 52 - "Community 52"
 Cohesion: 0.12
@@ -328,15 +365,19 @@ Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What C
 
 ### Community 56 - "Community 56"
 Cohesion: 0.07
-Nodes (42): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_LastIndexedAt(), TestMemory_StatsCountFreshness(), Daemon, New(), NewWithStore(), TestNew_UsesPersistentCatalogStore() (+34 more)
+Nodes (56): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_LastIndexedAt(), TestMemory_StatsCountFreshness(), NewWithStore(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore(), TestRun_FreshCatalogSkipsIndexing() (+48 more)
 
 ### Community 57 - "Community 57"
 Cohesion: 0.33
 Nodes (5): ADDED Requirements, Requirement: Catalog records the last successful index time, Scenario: A successful index run records its timestamp, Scenario: Absence of a prior index is distinguishable, Scenario: Last index time is readable without re-discovery
 
 ### Community 58 - "Community 58"
-Cohesion: 0.14
-Nodes (13): Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, MODIFIED Requirements, Requirement: Environment reference resolution, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, Scenario: Missing environment reference is diagnosable, Scenario: Resolving a present environment reference (+5 more)
+Cohesion: 0.13
+Nodes (14): Requirement: Environment reference resolution, Scenario: Missing environment reference is diagnosable, Scenario: Resolving a present environment reference, MODIFIED Requirements, Requirement: Environment reference resolution, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, Scenario: Missing environment reference is diagnosable (+6 more)
+
+### Community 59 - "Community 59"
+Cohesion: 0.13
+Nodes (40): Context, Logger, T, marker, basePythonNames(), defaultRunner(), ensureVenv(), fileExists() (+32 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.40
@@ -350,17 +391,61 @@ Nodes (16): 1. Configuration (JSONC + opencode shape), 2. Persistent catalog sto
 Cohesion: 0.24
 Nodes (10): Scenario: Invalid configuration is rejected with a structured error, Requirement: Configuration validation, Requirement: Configuration validation, Scenario: Local server without a command is rejected, Scenario: Remote server without a url is rejected, Scenario: Unknown server type is rejected, Requirement: Configuration validation, Scenario: Local server without a command is rejected (+2 more)
 
+### Community 63 - "Community 63"
+Cohesion: 0.07
+Nodes (20): Row, ndarray, SQLite-backed embedding metadata store.  The store is the sidecar's source of tr, SQLite-backed embedding metadata store.      The store owns its own connection (, Return the meta value for ``key`` or None when missing., Insert-or-replace the meta value for ``key``., Return the row for ``tool_ref`` or None when missing., Return the row for ``vector_id`` or None when missing. (+12 more)
+
+### Community 64 - "Community 64"
+Cohesion: 0.12
+Nodes (14): MonkeyPatch, FastEmbedEmbedder, Call the underlying fastembed model and return a numpy array.          This bypa, Embed ``texts`` and return a ``(len(texts), dim)`` float32 array.          Args:, Return ``{"model": str, "dim": int}`` for the active model.          When ``EMBE, Return a deterministic ``(len(texts), dim)`` float32 array.          Vectors are, Embed a batch of texts and return a ``(len(texts), dim)`` float32 array., Lazy FastEmbed wrapper.      The underlying ``fastembed.TextEmbedding`` is only (+6 more)
+
+### Community 65 - "Community 65"
+Cohesion: 0.11
+Nodes (29): FakeEmbedder, ndarray, FaissBackend, make_backend(), turbovec-backed vector index (default).      Uses ``turbovec.IdMapIndex`` with 4, Construct without creating a new IdMapIndex (used by load)., FAISS-backed vector index (opt-in).      Wraps ``faiss.IndexIDMap(faiss.IndexFla, Factory: instantiate a :class:`VectorBackend` by name.      Raises ``ValueError` (+21 more)
+
 ### Community 66 - "Community 66"
-Cohesion: 0.33
-Nodes (8): RankedEntry, Engine, RankedEntry, Store, Tool, Ranking, New(), Semantic
+Cohesion: 0.25
+Nodes (10): RankedEntry, Engine, RankedEntry, Store, Tool, Filter, Ranking, New() (+2 more)
+
+### Community 67 - "Community 67"
+Cohesion: 0.17
+Nodes (12): ArgumentParser, _build_arg_parser(), main(), CLI entrypoint for the Ozy embedding sidecar.  Run as ``python -m sidecar``. The, Resolve the data dir from flag, env, or default., Configure stderr logging.      The Go side reads only stdout for protocol messag, _resolve_data_dir(), _setup_logging() (+4 more)
+
+### Community 68 - "Community 68"
+Cohesion: 0.11
+Nodes (22): driver, Bool, Context, Logger, Mutex, ReadCloser, WriteCloser, jsonlRequest (+14 more)
+
+### Community 69 - "Community 69"
+Cohesion: 0.06
+Nodes (41): Handler, Handler, install_default_stdio(), make_handler(), _parse_line(), Newline-delimited JSON dispatch loop for the embedding sidecar.  The protocol is, Parse one JSONL line, returning ``None`` on any error.      The dispatch loop tu, Run the JSONL dispatch loop until stdin reaches EOF.      Each input line produc (+33 more)
+
+### Community 70 - "Community 70"
+Cohesion: 0.13
+Nodes (14): Embedder, Protocol, Embedder, make_embedder(), Factory: return a :class:`FastEmbedEmbedder` for the named model.      Exists so, Protocol implemented by both the real and fake embedders.      The protocol is w, Return ``{"model": str, "dim": int}`` describing the active model., Store (+6 more)
+
+### Community 71 - "Community 71"
+Cohesion: 0.15
+Nodes (12): Daemon, New(), newSink(), sink, Broker, Client, Context, EmbedItem (+4 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.33
-Nodes (6): Requirement: Per-server isolation, Scenario: Disabled servers are skipped, Scenario: One unreachable server does not abort the others, Requirement: Per-server isolation, Scenario: Disabled servers are skipped, Scenario: One unreachable server does not abort the others
+Cohesion: 0.11
+Nodes (27): load_or_rebuild(), Per-operation orchestration for the embedding sidecar.  Each public method on :c, Load the persisted index or rebuild it from SQLite.      Triggers a rebuild when, FakeEmbedder, file_ext_for(), index_path(), Pluggable vector index behind the embedding sidecar.  Two backends share a singl, Return the persisted file extension for a given backend name. (+19 more)
+
+### Community 73 - "Community 73"
+Cohesion: 0.10
+Nodes (19): ADDED Requirements, Requirement: Embed-on-index ingestion of cataloged tools, Requirement: Embedding store does not own the authoritative catalog, Requirement: FastEmbed embeddings stamped with model and dimension, Requirement: Graceful degradation when the sidecar is unavailable, Requirement: Optional Python embedding sidecar over stdio, Requirement: Semantic query returns ranked tool references, Scenario: Catalog authority stays with Go (+11 more)
 
 ### Community 74 - "Community 74"
 Cohesion: 0.15
 Nodes (12): Context, Decisions, Extend two seams: `Session.CallTool` and the broker `Connector`, Goals / Non-Goals, Implement invocation in the live broker, not the skeleton, Map the downstream result onto the §9.3 envelope, Migration Plan, No adapter or CLI surface change (+4 more)
+
+### Community 75 - "Community 75"
+Cohesion: 0.18
+Nodes (19): Ops, Per-operation orchestration tests.  Covers: health, upsert (skip-unchanged, embe, test_delete_empty_list(), test_delete_rejects_missing_tool_refs(), test_delete_removes_tools(), test_health_returns_model_info(), test_query_facet_filter_no_match(), test_query_missing_text() (+11 more)
+
+### Community 76 - "Community 76"
+Cohesion: 0.11
+Nodes (18): Boundary: Go keeps lexical + fusion + authority; Python owns embeddings + vectors, Config: backend + model under `embedding`; semantic on by default, Context, Decision model: RRF orders; absolute component floors gate `no_good_match`, Decisions, Embed-on-index: index runs push upserts; reconcile deletes; persist once, Embeddings: FastEmbed, CPU/ONNX, model stamped per vector, Filtered search: SQLite resolves facets to an allowlist, the kernel filters (+10 more)
 
 ### Community 77 - "Community 77"
 Cohesion: 0.29
@@ -370,33 +455,129 @@ Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What C
 Cohesion: 0.29
 Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
+### Community 79 - "Community 79"
+Cohesion: 0.20
+Nodes (17): Store, Tests for the SQLite-backed embedding metadata store., test_all_vector_ids_sorted(), test_compute_skip_classifies(), test_delete_many_returns_vector_ids(), test_facet_allowlist_by_server_id(), test_facet_allowlist_by_tags(), test_get_by_vector_id_roundtrip() (+9 more)
+
 ### Community 80 - "Community 80"
-Cohesion: 0.22
-Nodes (8): Scenario: Loading a valid configuration file, ADDED Requirements, Requirement: Configuration discovery and loading, Requirement: Environment reference resolution, Scenario: Explicit config path override, Scenario: Missing configuration file, Scenario: Missing environment reference is diagnosable, Scenario: Resolving a present environment reference
+Cohesion: 0.25
+Nodes (7): Scenario: Loading a valid configuration file, ADDED Requirements, Requirement: Configuration discovery and loading, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, Scenario: Explicit config path override, Scenario: Missing configuration file
+
+### Community 81 - "Community 81"
+Cohesion: 0.20
+Nodes (12): Cmd, Context, Mutex, ReadCloser, WriteCloser, driver, logFunc, Logger (+4 more)
+
+### Community 82 - "Community 82"
+Cohesion: 0.18
+Nodes (11): Context, Duration, ReadCloser, WriteCloser, Once, PipeReader, PipeWriter, newFakeDriver() (+3 more)
 
 ### Community 83 - "Community 83"
 Cohesion: 0.40
 Nodes (4): 1. Seams and Test Coverage, 2. Live Invocation Implementation, 3. Adapter and CLI Parity, 4. Acceptance and Documentation
 
+### Community 84 - "Community 84"
+Cohesion: 0.14
+Nodes (13): ADDED Requirements, Requirement: Facet-scoped nearest-neighbor search, Requirement: FAISS is an opt-in alternative chosen before indexing, Requirement: Persistence and rebuild from the embedding store, Requirement: turbovec is the default vector backend, Requirement: Vector backend is immutable after the first index, Scenario: Allowlist restricts the search inside the backend, Scenario: Default remains turbovec when FAISS is not selected (+5 more)
+
+### Community 85 - "Community 85"
+Cohesion: 0.15
+Nodes (12): mcp-adapter, Purpose, Requirements, Requirement: Agent-facing tool registration, Requirement: MCP adapter shares the broker seam, Requirement: MCP callTool performs live brokered invocation, Scenario: Adapter advertises the three stable tools, Scenario: Adapter delegates to the shared broker (+4 more)
+
+### Community 86 - "Community 86"
+Cohesion: 0.15
+Nodes (12): Requirement: Ambiguous, no-match, and empty-catalog decisions are explicit, Requirement: Graceful degradation from semantic to lexical search, Requirement: Hybrid ranking over the persistent catalog, Scenario: An empty catalog yields catalog_empty, Scenario: Closely-ranked candidates yield an ambiguous decision, Scenario: Semantic disabled falls back to lexical ranking, Scenario: The most relevant cataloged tool ranks first, MODIFIED Requirements (+4 more)
+
+### Community 87 - "Community 87"
+Cohesion: 0.19
+Nodes (4): ndarray, Add ``vectors`` (shape ``(n, dim)``, ``float32``) to the index.          ``ids``, Return the top-``k`` nearest neighbors of ``query``.          ``query`` has shap, Remove the vectors identified by ``ids`` (1-D ``uint64``).
+
+### Community 88 - "Community 88"
+Cohesion: 0.17
+Nodes (11): Requirement: Embedding model selection, Requirement: Semantic search is enabled by default, Requirement: Vector backend selection, Scenario: Default backend is turbovec when unset, Scenario: Default model applied when unset, Scenario: Disabling semantic is honored, Scenario: Explicit model is honored, Scenario: FAISS backend is accepted (+3 more)
+
+### Community 89 - "Community 89"
+Cohesion: 0.15
+Nodes (16): Path, FakeEmbedder, data_dir(), fake_embedder(), ops(), Shared pytest fixtures for the Ozy embedding sidecar tests.  Every test gets a f, A fresh data dir for one test.      Returned as a string because that's the type, A deterministic embedder with the BGE-small default dim.      Query and document (+8 more)
+
+### Community 90 - "Community 90"
+Cohesion: 0.13
+Nodes (12): ADDED Requirements, MODIFIED Requirements, ADDED Requirements, MODIFIED Requirements, Requirement: Instructional placeholder responses conform to contracts, Requirement: MCP callTool performs live brokered invocation, Scenario: callTool does not enlarge the MCP surface, Scenario: callTool returns a live result or a contract-shaped failure (+4 more)
+
+### Community 91 - "Community 91"
+Cohesion: 0.20
+Nodes (9): MODIFIED Requirements, Requirement: Embedding sidecar supervision, Scenario: Runs lexical-only when the sidecar is enabled but unavailable, Scenario: Sidecar is shut down with the daemon, Scenario: Sidecar is started and health-checked when semantic is enabled, Scenario: Sidecar provisioning failure does not block readiness, ADDED Requirements, Requirement: Graceful degradation of optional subsystems (+1 more)
+
+### Community 92 - "Community 92"
+Cohesion: 0.20
+Nodes (9): 1. Configuration: vector backend and embedding model, 2. Python sidecar: scaffold, stdio protocol, embedding, SQLite store, 3. Python sidecar: pluggable vector backend (turbovec default, FAISS optional), 4. Go sidecar client and on-demand provisioning (`internal/sidecar`), 5. Search: ranked semantic seam, RRF fusion, component-floor decisions, 6. Index: embed-on-index sink, reconcile, persist, 7. Daemon: provision, supervise, wire, degrade, 8. CLI doctor surfaces the embedding subsystem (+1 more)
+
+### Community 93 - "Community 93"
+Cohesion: 0.20
+Nodes (10): Scenario: findTool returns a contract-shaped result, Requirement: Instructional placeholder responses conform to contracts, Scenario: callTool returns a contract-shaped failure, Requirement: Instructional placeholder responses conform to contracts, Scenario: callTool returns a contract-shaped failure, Scenario: findTool returns a live discovery result, Requirement: Instructional placeholder responses conform to contracts, Scenario: callTool returns a live result or a contract-shaped failure (+2 more)
+
+### Community 94 - "Community 94"
+Cohesion: 0.22
+Nodes (8): Architecture, Concurrency, Files, internal/sidecar — Go sidecar client, JSONL protocol, Request, Response, Testing
+
+### Community 95 - "Community 95"
+Cohesion: 0.18
+Nodes (9): cli-interface, Purpose, Requirement: Discover tools via tools/list, Requirement: Discovered tools carry freshness and runtime status, Requirement: Stable toolRef normalization, Scenario: A discovered tool gets a stable toolRef, Scenario: A freshly indexed tool is marked fresh, Scenario: Tools are retrieved from a connected server (+1 more)
+
+### Community 96 - "Community 96"
+Cohesion: 0.29
+Nodes (7): jsonlFilter, jsonlUpsertItem, jsonlFilter, jsonlHit, jsonlRequest, jsonlResponse, jsonlUpsertItem
+
+### Community 97 - "Community 97"
+Cohesion: 0.15
+Nodes (13): configuration, Purpose, Requirements, Requirement: Configuration initialization writes to user config home, Scenario: Init honors explicit config override, Scenario: Init refuses to overwrite config, Scenario: Init writes to default user config file, Requirement: Configuration initialization writes to user config home (+5 more)
+
+### Community 98 - "Community 98"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 99 - "Community 99"
+Cohesion: 0.29
+Nodes (6): Development, Install, Architecture, Operations, Ozy embedding sidecar, Run
+
+### Community 101 - "Community 101"
+Cohesion: 0.18
+Nodes (11): Requirements, Requirement: CLI command surface, Requirement: CLI mirrors broker operations, Requirement: Output formats, Requirement: Structured handling of unimplemented operations, Scenario: All MVP commands are registered, Scenario: CLI routes through the shared broker, Scenario: Command-specific help (+3 more)
+
+### Community 102 - "Community 102"
+Cohesion: 0.29
+Nodes (6): ADDED Requirements, Requirement: Agent-facing tool registration, Requirement: MCP adapter shares the broker seam, Scenario: Adapter advertises the three stable tools, Scenario: Adapter delegates to the shared broker, Scenario: Adapter starts over the MCP transport
+
+### Community 103 - "Community 103"
+Cohesion: 0.33
+Nodes (6): Requirement: List and describe reflect discovered tools, Scenario: describe returns a discovered tool's schema, Scenario: list shows indexed tools, Requirement: List and describe reflect discovered tools, Scenario: describe returns a discovered tool's schema, Scenario: list shows indexed tools
+
+### Community 104 - "Community 104"
+Cohesion: 0.33
+Nodes (6): Requirement: `ozy index` populates the catalog, Scenario: Indexing reports a summary, Scenario: Indexing with no reachable servers is instructional, Requirement: `ozy index` populates the catalog, Scenario: Indexing reports a summary, Scenario: Indexing with no reachable servers is instructional
+
+### Community 105 - "Community 105"
+Cohesion: 0.67
+Nodes (3): Requirement: Output formats, Scenario: Default human-readable output, Scenario: JSON output for agents
+
 ## Knowledge Gaps
-- **466 isolated node(s):** `Bool`, `ListToolsParams`, `ListToolsResult`, `CallToolParams`, `ServerConfig` (+461 more)
+- **581 isolated node(s):** `Bool`, `ListToolsParams`, `ListToolsResult`, `CallToolParams`, `ServerConfig` (+576 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `contains()` connect `Community 6` to `Community 0`, `Community 1`, `Community 2`, `Community 8`, `Community 9`, `Community 10`, `Community 17`, `Community 51`, `Community 56`, `Community 25`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **Why does `NewMemory()` connect `Community 56` to `Community 0`, `Community 6`, `Community 7`, `Community 10`, `Community 51`, `Community 23`, `Community 25`?**
-  _High betweenness centrality (0.059) - this node is a cross-community bridge._
-- **Why does `NewLive()` connect `Community 0` to `Community 6`, `Community 51`, `Community 56`, `Community 25`, `Community 31`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Are the 39 inferred relationships involving `contains()` (e.g. with `TestCallTool_DownstreamToolErrorReturnsDownstreamCallFailed()` and `TestCallTool_MalformedToolRefReturnsToolNotFound()`) actually correct?**
-  _`contains()` has 39 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 34 inferred relationships involving `NewMemory()` (e.g. with `newCallBroker()` and `newBrokerWithTools()`) actually correct?**
-  _`NewMemory()` has 34 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `NewMemory()` connect `Community 56` to `Community 0`, `Community 6`, `Community 7`, `Community 10`, `Community 51`, `Community 23`?**
+  _High betweenness centrality (0.066) - this node is a cross-community bridge._
+- **Why does `NewClient()` connect `Community 0` to `Community 68`, `Community 71`, `Community 8`, `Community 81`, `Community 51`, `Community 25`?**
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
+- **Why does `TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath()` connect `Community 51` to `Community 0`, `Community 8`, `Community 56`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Are the 44 inferred relationships involving `NewMemory()` (e.g. with `newCallBroker()` and `newBrokerWithTools()`) actually correct?**
+  _`NewMemory()` has 44 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 15 inferred relationships involving `Store` (e.g. with `ArgumentParser` and `Embedder`) actually correct?**
+  _`Store` has 15 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 13 inferred relationships involving `TurbovecBackend` (e.g. with `Embedder` and `Handler`) actually correct?**
+  _`TurbovecBackend` has 13 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Bool`, `ListToolsParams`, `ListToolsResult` to the rest of the system?**
-  _466 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08182349503214495 - nodes in this community are weakly interconnected._
+  _669 weakly-connected nodes found - possible documentation gaps or missing edges._

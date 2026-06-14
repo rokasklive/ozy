@@ -184,3 +184,80 @@ func TestRun_IndexingFailureStillReportsReady(t *testing.T) {
 		t.Errorf("daemon should report ready even on indexing failure: %q", out)
 	}
 }
+
+func TestRun_SemanticEnabledButNoSidecar_StillReadyDegraded(t *testing.T) {
+	t.Parallel()
+	store := catalog.NewMemory()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	cfg.Resolved.Search.Semantic.Enabled = true
+	d := NewWithStore(cfg, store)
+	if !d.SemanticDegraded() {
+		t.Error("SemanticDegraded() = false, want true when semantic enabled but no sidecar provisioned")
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	var status bytes.Buffer
+	if err := d.Run(ctx, &status); err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+	out := status.String()
+	if !strings.Contains(out, "ready") {
+		t.Errorf("daemon should report ready even with no sidecar: %q", out)
+	}
+	if !strings.Contains(out, "lexical baseline") {
+		t.Errorf("daemon should surface lexical-only degradation: %q", out)
+	}
+}
+
+func TestRun_SidecarShutDownWithDaemon(t *testing.T) {
+	t.Parallel()
+	store := catalog.NewMemory()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	cfg.Resolved.Search.Semantic.Enabled = true
+	d := NewWithStore(cfg, store)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var status bytes.Buffer
+	done := make(chan error, 1)
+	go func() { done <- d.Run(ctx, &status) }()
+
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("Run() error = %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("Run() did not return after cancel; shutdown may have hung")
+	}
+	out := status.String()
+	if !strings.Contains(out, "stopped") {
+		t.Errorf("daemon should report stopped: %q", out)
+	}
+	if d.SemanticDegraded() {
+		t.Log("semantic degraded after shutdown — expected (sidecar never provisioned)")
+	}
+}
+
+func TestSemanticDegraded_FalseWhenDisabled(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	cfg.Resolved.Search.Semantic.Enabled = false
+	d := NewWithStore(cfg, catalog.NewMemory())
+	if d.SemanticDegraded() {
+		t.Error("SemanticDegraded() = true when semantic disabled")
+	}
+}
+
+func TestSemanticDegraded_TrueWhenEnabledButUnavailable(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	cfg.Resolved.Search.Semantic.Enabled = true
+	d := NewWithStore(cfg, catalog.NewMemory())
+	if !d.SemanticDegraded() {
+		t.Error("SemanticDegraded() = false when semantic enabled but no sidecar")
+	}
+}

@@ -7,23 +7,34 @@ import (
 
 // Tunable fusion parameters — conservative defaults, calibrated by evals.
 const (
+	// RRFK is the RRF dampening constant. k=60 is the documented default
+	// (Cormack et al. 2009) and tolerates small ANN error from the sidecar.
+	RRFK = 60.0
+
 	// LexSatK is the saturation constant for lexical score → [0,1] mapping.
 	LexSatK = 6.0
 
-	// DefaultLexWeight is the lexical signal weight when semantic is present.
-	DefaultLexWeight = 0.6
+	// LexicalRelevanceFloor is the minimum normalized lexical score for the
+	// top tool to count as a "real" match. With s/(s+k), s=1.5 maps to ~0.2.
+	LexicalRelevanceFloor = 0.20
 
-	// DefaultSemWeight is the semantic signal weight when present.
-	DefaultSemWeight = 0.4
+	// SemanticRelevanceFloor is the minimum cosine similarity for the top
+	// tool to count as a "real" match on the semantic leg alone. Cosine is
+	// in [-1, 1]; 0.30 is a sensible threshold for short BGE embeddings.
+	SemanticRelevanceFloor = 0.30
 
-	// RelevanceFloor is the minimum fused score to consider any match.
-	RelevanceFloor = 0.25
+	// SeparationMargin is the minimum RRF gap between the top two entries
+	// for a confident `use` decision. With k=60, the natural gap between
+	// adjacent ranks is ~1/(k+1) - 1/(k+2) ≈ 0.00027, so a margin of 0.0001
+	// admits lex-rank-1 vs lex-rank-2 as confident while still flagging
+	// truly tied entries (gap = 0) as ambiguous.
+	SeparationMargin = 0.0001
 
-	// SeparationMargin is the minimum gap between top and second for a "use" decision.
-	SeparationMargin = 0.10
-
-	// HighConfidenceThreshold is the fused score above which confidence is "high".
-	HighConfidenceThreshold = 0.6
+	// HighConfidenceThreshold is the RRF score above which confidence is
+	// reported as "high". 0.030 is just below the max (1/61 + 1/61 ≈ 0.0328),
+	// so a tool at the top of both legs is "high" while a tool that only
+	// leads one leg is "medium".
+	HighConfidenceThreshold = 0.030
 )
 
 // normalizeLexical maps a raw BM25 score to [0,1] using saturating transform s/(s+k).
@@ -34,20 +45,9 @@ func normalizeLexical(score float64) float64 {
 	return score / (score + LexSatK)
 }
 
-// normalizeSemantic maps cosine similarity [-1,1] to [0,1] via (cos+1)/2.
-func normalizeSemantic(cos float64) float64 {
-	return (cos + 1) / 2
-}
-
-// fuseScores combines lexical and semantic scores into a single [0,1] fused score.
-// When hasSem is false, lexical weight is renormalized to 1.
-func fuseScores(lexRaw, semRaw float64, hasSem bool) float64 {
-	lexNorm := normalizeLexical(lexRaw)
-	if !hasSem {
-		return lexNorm
-	}
-	semNorm := normalizeSemantic(semRaw)
-	return DefaultLexWeight*lexNorm + DefaultSemWeight*semNorm
+// rrfScore returns the RRF sum for one entry given its ranks in the two lists.
+func rrfScore(lexRank, semRank int) float64 {
+	return 1.0/(RRFK+float64(lexRank)) + 1.0/(RRFK+float64(semRank))
 }
 
 // Decision values for the ranking outcome.
@@ -66,22 +66,21 @@ type Decision struct {
 	Confidence string
 }
 
-// Decide maps a Ranking to a Decision using floor, margin, and confidence thresholds.
+// Decide maps a Ranking to a Decision using:
+//
+//   - RRF orders the entries (the engine already sorted by FusedScore).
+//   - The top tool must clear LexicalRelevanceFloor OR SemanticRelevanceFloor
+//     on a component signal; otherwise the verdict is no_good_match. The RRF
+//     score is rank-based and intentionally does not carry absolute relevance.
+//   - use vs. ambiguous is decided by the RRF gap between top and runner-up.
+//   - catalog_empty is preserved unchanged.
 func Decide(ranking *Ranking) *Decision {
 	if len(ranking.Entries) == 0 {
 		return &Decision{Verdict: DecisionCatalogEmpty}
 	}
 
 	top := &ranking.Entries[0]
-	topScore := top.FusedScore
-
-	// No semantic? Apply normalization to fused scores.
-	if !ranking.SemanticAvailable || ranking.SemanticDegraded {
-		topScore = normalizeLexical(top.LexicalScore)
-		top.FusedScore = topScore
-	}
-
-	if topScore < RelevanceFloor {
+	if !passesComponentFloor(top) {
 		return &Decision{
 			Verdict:    DecisionNoGoodMatch,
 			Selected:   top,
@@ -93,15 +92,12 @@ func Decide(ranking *Ranking) *Decision {
 	var secondScore float64
 	if len(ranking.Entries) > 1 {
 		secondScore = ranking.Entries[1].FusedScore
-		if !ranking.SemanticAvailable || ranking.SemanticDegraded {
-			secondScore = normalizeLexical(ranking.Entries[1].LexicalScore)
-		}
 	}
 
-	gap := topScore - secondScore
+	gap := top.FusedScore - secondScore
 	if gap >= SeparationMargin {
 		conf := "medium"
-		if topScore >= HighConfidenceThreshold {
+		if top.FusedScore >= HighConfidenceThreshold {
 			conf = "high"
 		}
 		return &Decision{
@@ -117,6 +113,14 @@ func Decide(ranking *Ranking) *Decision {
 		Selected: top,
 		RunnerUp: runnerUp(ranking, 1),
 	}
+}
+
+// passesComponentFloor returns true if the entry clears either the lexical
+// relevance floor or the semantic cosine floor, so RRF — which is rank-based —
+// cannot declare a confident match on a low-relevance candidate.
+func passesComponentFloor(e *RankedEntry) bool {
+	return normalizeLexical(e.LexicalScore) >= LexicalRelevanceFloor ||
+		e.SemanticScore >= SemanticRelevanceFloor
 }
 
 func runnerUp(r *Ranking, idx int) *RankedEntry {

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ozy-sidecar"
+version = "0.1.0"
+description = "Python embedding + vector-storage sidecar for the Ozy daemon"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Ozy contributors" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Information Retrieval",
+]
+dependencies = [
+    "numpy>=1.24,<3",
+    "fastembed==0.8.0",
+    "turbovec==0.8.0",
+]
+
+[project.optional-dependencies]
+faiss = ["faiss-cpu==1.14.3"]
+dev = ["pytest>=8", "pytest-xdist>=3"]
+
+[project.scripts]
+ozy-sidecar = "sidecar.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sidecar*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra"
+markers = [
+    "slow: tests that require real FastEmbed model download (deselected by default)",
+]

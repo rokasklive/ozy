@@ -1,0 +1,3 @@
+{"intent": "search our source code", "category": "ambiguous", "acceptable": ["github.search_code", "opengrok.search_code"], "rationale": "Both GitHub and OpenGrok offer code search; either is a defensible pick, so a confident single choice or an ambiguous verdict is acceptable."}
+{"intent": "search for issues", "category": "ambiguous", "acceptable": ["jira.search_issues", "github.search_issues"], "rationale": "Issue search exists on both Jira and GitHub."}
+{"intent": "send a message to the team about the incident", "category": "ambiguous", "acceptable": ["slack.post_message", "gmail.send_email"], "rationale": "Reaching the team could be a Slack post or an email; both are acceptable targets."}

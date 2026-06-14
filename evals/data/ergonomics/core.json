@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "_note": "Agent-ergonomics cases: representative findTool / describeTool / callTool inputs exercised on BOTH the CLI (--format json) and the in-process MCP adapter. The harness applies structural §4.5/§9/§13 checks to the broker response (every result is an explicit decision with a grounded, actionable next step; every error carries a type and a retry disposition; responses stay within budget) and asserts CLI↔MCP parity (same decision, toolRef, and error type). `expectDecision`/`expectErrorType` are optional anchors documenting intent; the conformance checks run regardless. See evals/METHODOLOGY.md#agent-ergonomics-and-parity.",
+  "cases": [
+    {
+      "name": "find-broadcast-to-team",
+      "kind": "find",
+      "query": "let the whole team know the release shipped",
+      "expectDecision": "use",
+      "rationale": "A clear capability query should yield a confident decision with a describeTool next action."
+    },
+    {
+      "name": "find-search-wiki",
+      "kind": "find",
+      "query": "look up the deployment runbook in our wiki",
+      "expectDecision": "use",
+      "rationale": "Wiki lookup should select the Confluence search tool and instruct the agent to describe it next."
+    },
+    {
+      "name": "find-absent-capability",
+      "kind": "find",
+      "query": "translate this document into French",
+      "expectDecision": "no_good_match",
+      "rationale": "No translation tool exists; the refusal must still carry a grounded, actionable instruction (refine / index / doctor), not a bare restatement."
+    },
+    {
+      "name": "find-schedule-meeting",
+      "kind": "find",
+      "query": "book a 30 minute sync with the team tomorrow",
+      "expectDecision": "use",
+      "rationale": "Scheduling intent should resolve to the calendar create-event tool with a concrete next step."
+    },
+    {
+      "name": "describe-known-tool",
+      "kind": "describe",
+      "toolRef": "confluence.search_pages",
+      "rationale": "describeTool on a cataloged ref returns its schema; CLI and MCP must agree on the toolRef."
+    },
+    {
+      "name": "describe-unknown-tool",
+      "kind": "describe",
+      "toolRef": "confluence.nonexistent_tool",
+      "expectErrorType": "TOOL_NOT_FOUND",
+      "rationale": "An unknown ref must produce a structured TOOL_NOT_FOUND with a retry disposition, identically on both surfaces."
+    },
+    {
+      "name": "call-valid-post",
+      "kind": "call",
+      "toolRef": "slack.post_message",
+      "arguments": { "channel": "#releases", "text": "v2.1 is live" },
+      "rationale": "A valid brokered call should succeed and summarize on both surfaces."
+    },
+    {
+      "name": "call-unknown-server",
+      "kind": "call",
+      "toolRef": "ghost.do_thing",
+      "arguments": {},
+      "expectErrorType": "CONFIG_ERROR",
+      "rationale": "Calling a server absent from config must produce a structured CONFIG_ERROR with a next action, identically on CLI and MCP."
+    },
+    {
+      "name": "call-malformed-ref",
+      "kind": "call",
+      "toolRef": "noSeparatorHere",
+      "arguments": {},
+      "expectErrorType": "TOOL_NOT_FOUND",
+      "rationale": "A toolRef without the server.name separator must fail with TOOL_NOT_FOUND directing the agent back to findTool."
+    }
+  ]
+}

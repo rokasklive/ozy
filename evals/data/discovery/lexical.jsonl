@@ -1,0 +1,10 @@
+{"intent": "search confluence wiki pages", "category": "lexical", "acceptable": ["confluence.search_pages"], "rationale": "Direct term overlap with the Confluence page search tool."}
+{"intent": "github code search", "category": "lexical", "acceptable": ["github.search_code"], "rationale": "Names the server and the capability verbatim."}
+{"intent": "search jira issues with jql", "category": "lexical", "acceptable": ["jira.search_issues"], "rationale": "Mentions jira, issues, and jql which are all in the tool text."}
+{"intent": "post a message to a slack channel", "category": "lexical", "acceptable": ["slack.post_message"], "rationale": "Term overlap with the Slack post-message tool."}
+{"intent": "send an email", "category": "lexical", "acceptable": ["gmail.send_email"], "rationale": "Directly names the send-email capability."}
+{"intent": "list upcoming calendar events", "category": "lexical", "acceptable": ["gcalendar.list_events"], "rationale": "Term overlap with the calendar list-events tool."}
+{"intent": "read a file from disk", "category": "lexical", "acceptable": ["filesystem.read_file"], "rationale": "Directly names reading a file."}
+{"intent": "run a read-only sql query", "category": "lexical", "acceptable": ["postgres.run_query"], "rationale": "Names SQL query execution."}
+{"intent": "open a pull request on github", "category": "lexical", "acceptable": ["github.create_pull_request"], "rationale": "Names pull request creation on GitHub."}
+{"intent": "list the database tables", "category": "lexical", "acceptable": ["postgres.list_tables"], "rationale": "Term overlap with list-tables."}

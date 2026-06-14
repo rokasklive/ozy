@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "_note": "Invocation and repair scenarios exercising the SPEC.md §14.1 families against the corpus catalog. Each scenario declares its expectedOutcome (success | repair | error) and, for error/repair, the structured error the harness must observe. Argument validity is judged against the cataloged inputSchema in catalog/world.json. See evals/METHODOLOGY.md#invocation-and-repair-metrics for what runs through broker.CallTool vs. what models agent-side validation.",
+  "scenarios": [
+    {
+      "name": "confluence-search-valid",
+      "toolRef": "confluence.search_pages",
+      "arguments": { "query": "deployment runbook" },
+      "expectedOutcome": "success",
+      "rationale": "Required free-text query supplied; a healthy call should succeed on the first try."
+    },
+    {
+      "name": "postgres-query-valid",
+      "toolRef": "postgres.run_query",
+      "arguments": { "sql": "SELECT id, email FROM users LIMIT 10" },
+      "expectedOutcome": "success",
+      "rationale": "Required sql supplied; first-call success on a reachable server."
+    },
+    {
+      "name": "slack-post-valid",
+      "toolRef": "slack.post_message",
+      "arguments": { "channel": "#releases", "text": "v2.1 is live" },
+      "expectedOutcome": "success",
+      "rationale": "Both required fields (channel, text) present; first-call success."
+    },
+    {
+      "name": "jira-create-missing-summary",
+      "toolRef": "jira.create_issue",
+      "arguments": { "projectKey": "OPS" },
+      "expectedOutcome": "repair",
+      "expectedError": "ARGUMENT_VALIDATION_FAILED",
+      "corrected": { "projectKey": "OPS", "summary": "Pager rotation is stale" },
+      "rationale": "Omitting the required summary must fail validation; supplying it repairs the call."
+    },
+    {
+      "name": "github-pr-missing-base",
+      "toolRef": "github.create_pull_request",
+      "arguments": { "owner": "acme", "repo": "api", "head": "feature/x", "title": "Add X" },
+      "expectedOutcome": "repair",
+      "expectedError": "ARGUMENT_VALIDATION_FAILED",
+      "corrected": { "owner": "acme", "repo": "api", "head": "feature/x", "base": "main", "title": "Add X" },
+      "rationale": "Missing required base branch fails validation; adding base repairs it."
+    },
+    {
+      "name": "gmail-send-wrong-type-to",
+      "toolRef": "gmail.send_email",
+      "arguments": { "to": "ops@acme.com", "subject": "Status", "body": "All green." },
+      "expectedOutcome": "repair",
+      "expectedError": "ARGUMENT_VALIDATION_FAILED",
+      "corrected": { "to": ["ops@acme.com"], "subject": "Status", "body": "All green." },
+      "rationale": "`to` is an array of strings; passing a bare string is a type error that the corrected array fixes."
+    },
+    {
+      "name": "slack-post-offline",
+      "toolRef": "slack.post_message",
+      "arguments": { "channel": "#releases", "text": "v2.1 is live" },
+      "expectedOutcome": "error",
+      "expectedError": "DOWNSTREAM_SERVER_OFFLINE",
+      "rationale": "When the Slack server is offline the broker must surface DOWNSTREAM_SERVER_OFFLINE, not a fabricated success."
+    },
+    {
+      "name": "filesystem-read-offline",
+      "toolRef": "filesystem.read_file",
+      "arguments": { "path": "/etc/hosts" },
+      "expectedOutcome": "error",
+      "expectedError": "DOWNSTREAM_SERVER_OFFLINE",
+      "rationale": "A valid call to an offline server is still an offline error, scored (not crashed) with a non-amplifying retry disposition."
+    },
+    {
+      "name": "gmail-send-schema-drift",
+      "toolRef": "gmail.send_email",
+      "arguments": { "to": ["ops@acme.com"], "subject": "Status", "body": "All green." },
+      "expectedOutcome": "error",
+      "expectedError": "TOOL_SCHEMA_CHANGED",
+      "liveSchema": {
+        "type": "object",
+        "required": ["to", "subject", "html"],
+        "properties": {
+          "to": { "type": "array", "items": { "type": "string" } },
+          "subject": { "type": "string" },
+          "html": { "type": "string" }
+        }
+      },
+      "rationale": "Cataloged schema requires `body` but the live tool renamed it to `html`; arguments valid against the catalog are invalid against the live schema, which is drift."
+    },
+    {
+      "name": "confluence-search-schema-drift",
+      "toolRef": "confluence.search_pages",
+      "arguments": { "query": "deployment runbook" },
+      "expectedOutcome": "error",
+      "expectedError": "TOOL_SCHEMA_CHANGED",
+      "liveSchema": {
+        "type": "object",
+        "required": ["cql"],
+        "properties": {
+          "cql": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "rationale": "The live tool replaced free-text `query` with a structured `cql` field; the cataloged call no longer matches the downstream schema."
+    }
+  ]
+}

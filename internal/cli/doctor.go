@@ -84,7 +84,7 @@ func newSidecarProbe(emb config.EmbeddingConfig) SidecarInspector {
 		if err != nil {
 			return SidecarStatus{Available: false, Reason: "start: " + err.Error()}
 		}
-		defer client.Close()
+		defer func() { _ = client.Close() }()
 
 		hr := client.Health(ctx)
 		if !hr.OK {

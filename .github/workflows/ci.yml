@@ -22,6 +22,29 @@ jobs:
       - name: Test
         run: make test
 
+  # The installer's PATH edits, shell rc handling, and filesystem/permission
+  # behavior are platform-specific, so the installer + paths packages run
+  # natively on each OS. Linux covers the state machine, dependency mocks,
+  # non-TTY/dry-run, and retry paths; macOS and Windows add the native
+  # PATH/rc/filesystem coverage. No real installs run — every test uses fakes.
+  installer:
+    name: installer (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: true
+
+      - name: Installer + paths tests
+        run: go test ./internal/installer/... ./internal/paths/...
+
   lint:
     runs-on: ubuntu-latest
     steps:

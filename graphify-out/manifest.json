@@ -45,23 +45,23 @@
     "semantic_hash": ""
   },
   "internal/cli/cli.go": {
-    "mtime": 1781291288.0,
-    "ast_hash": "70e7b42bc536e7093afd2dc80eda5056",
+    "mtime": 1781466961.4648552,
+    "ast_hash": "d0f56e5b3a30153ebe95002491c2f88e",
     "semantic_hash": ""
   },
   "internal/cli/cli_test.go": {
-    "mtime": 1781448412.6520338,
-    "ast_hash": "c04632ccaee168c86f62edcc397677f1",
+    "mtime": 1781455387.7124405,
+    "ast_hash": "381dc9f7f4f2cb69f8aedeb06a584914",
     "semantic_hash": ""
   },
   "internal/cli/commands.go": {
-    "mtime": 1781431749.9302845,
+    "mtime": 1781449289.4234807,
     "ast_hash": "316ff866e06f7d5b2b0b255e2b9d72d1",
     "semantic_hash": ""
   },
   "internal/cli/doctor.go": {
-    "mtime": 1781428607.0562725,
-    "ast_hash": "95248277fbc1e07c18a2fdc0705ef4d4",
+    "mtime": 1781469605.8837793,
+    "ast_hash": "e43d275206e2123662e1fb745ac438a1",
     "semantic_hash": ""
   },
   "internal/config/config.go": {
@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "internal/config/scaffold.go": {
-    "mtime": 1781291288.0,
-    "ast_hash": "1520ec37f7628994dbd5519fa4f95c8d",
+    "mtime": 1781466995.3506386,
+    "ast_hash": "3ec3e39cba816d15092e8c91a181ceeb",
     "semantic_hash": ""
   },
   "internal/contract/errors.go": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1781256874.0,
-    "ast_hash": "91658a3e99406c0e9f0ad4ccfccebb80",
+    "mtime": 1781467180.8923156,
+    "ast_hash": "57328e6afe354b3d5314e4a607054f17",
     "semantic_hash": ""
   },
   ".golangci.yml": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1781430968.5575485,
-    "ast_hash": "57ec4e0edbe3f33df86f899fbec0614b",
+    "mtime": 1781467042.6011462,
+    "ast_hash": "6dacd9b4df54659c408c7644ba1c2ad5",
     "semantic_hash": ""
   },
   "SPEC.md": {
@@ -535,7 +535,7 @@
     "semantic_hash": ""
   },
   "internal/sidecar/provision.go": {
-    "mtime": 1781431987.6815999,
+    "mtime": 1781449289.4276044,
     "ast_hash": "465c65d58e7a29f2ff471a39eeb31457",
     "semantic_hash": ""
   },
@@ -685,193 +685,383 @@
     "semantic_hash": ""
   },
   "evals/data/catalog/world.json": {
-    "mtime": 1781429905.2500026,
+    "mtime": 1781449289.4058762,
     "ast_hash": "261841c3402a9d2373da90ff8d582c79",
     "semantic_hash": ""
   },
   "evals/data/ergonomics/core.json": {
-    "mtime": 1781447628.8428519,
+    "mtime": 1781449289.4069407,
     "ast_hash": "aa3cc279a8c0aefc03737c60ef2e9bf8",
     "semantic_hash": ""
   },
   "evals/data/invocation/core.json": {
-    "mtime": 1781447610.4820662,
+    "mtime": 1781449289.4071348,
     "ast_hash": "2779d60e31d57573d8d14501a3374a53",
     "semantic_hash": ""
   },
   "evals/data/thresholds.json": {
-    "mtime": 1781448233.2796955,
+    "mtime": 1781449289.407338,
     "ast_hash": "df7788faa200c989b811dc4c9ab8017f",
     "semantic_hash": ""
   },
   "evals/embed.go": {
-    "mtime": 1781430010.4156141,
+    "mtime": 1781449289.4075246,
     "ast_hash": "9f3ea0af78afa1836789ec3d4df63f95",
     "semantic_hash": ""
   },
   "internal/cli/eval_semantic.go": {
-    "mtime": 1781448676.450848,
+    "mtime": 1781449289.4236138,
     "ast_hash": "2734774f274601e51c5b26c34ee594ef",
     "semantic_hash": ""
   },
   "internal/cli/eval_semantic_test.go": {
-    "mtime": 1781432193.9476688,
+    "mtime": 1781449289.4237597,
     "ast_hash": "3dcce74179131293f801b78254125c07",
     "semantic_hash": ""
   },
   "internal/eval/dataset.go": {
-    "mtime": 1781447656.2608469,
+    "mtime": 1781449289.423959,
     "ast_hash": "ddcfb920d78b7bde57562e477bedefe6",
     "semantic_hash": ""
   },
   "internal/eval/discovery.go": {
-    "mtime": 1781430171.6708868,
+    "mtime": 1781449289.424084,
     "ast_hash": "1b5e234cae250281f753368944d16b9c",
     "semantic_hash": ""
   },
   "internal/eval/economy.go": {
-    "mtime": 1781448045.4095588,
+    "mtime": 1781449289.4242246,
     "ast_hash": "6366df83230fe65cbc2d8d44b2b21112",
     "semantic_hash": ""
   },
   "internal/eval/economy_test.go": {
-    "mtime": 1781448375.5899858,
+    "mtime": 1781449289.4243388,
     "ast_hash": "4ceeab55000265163995e52372a9aab6",
     "semantic_hash": ""
   },
   "internal/eval/ergonomics.go": {
-    "mtime": 1781448569.5439065,
+    "mtime": 1781449289.4245062,
     "ast_hash": "2ecaf1fad4f5d087f625683f3ec9641a",
     "semantic_hash": ""
   },
   "internal/eval/ergonomics_test.go": {
-    "mtime": 1781448361.3143027,
+    "mtime": 1781449289.4246476,
     "ast_hash": "80ac1b8f5656dba53f55ac3808b07aa7",
     "semantic_hash": ""
   },
   "internal/eval/eval_test.go": {
-    "mtime": 1781448702.4956725,
+    "mtime": 1781449289.424873,
     "ast_hash": "144e1e6f1aefbe9201587a19fef494c3",
     "semantic_hash": ""
   },
   "internal/eval/gate.go": {
-    "mtime": 1781448262.8485653,
+    "mtime": 1781449289.4250546,
     "ast_hash": "4bc1e378ada0f4957fc1d2b12946acb2",
     "semantic_hash": ""
   },
   "internal/eval/hygiene.go": {
-    "mtime": 1781430186.342991,
+    "mtime": 1781449289.4252205,
     "ast_hash": "220d9d620bf48c82c9c2eaf2dc11e4b2",
     "semantic_hash": ""
   },
   "internal/eval/invocation.go": {
-    "mtime": 1781448569.544387,
+    "mtime": 1781449289.4256458,
     "ast_hash": "6781a0b34a895c5a2f3fb6c08b2f7670",
     "semantic_hash": ""
   },
   "internal/eval/invocation_test.go": {
-    "mtime": 1781448350.8067226,
+    "mtime": 1781449289.4257843,
     "ast_hash": "0f44a81fabd8970c0ee81b4b13f51fb2",
     "semantic_hash": ""
   },
   "internal/eval/latency.go": {
-    "mtime": 1781448063.6105006,
+    "mtime": 1781449289.4259067,
     "ast_hash": "764ade7679bb481042ae2cece60af14d",
     "semantic_hash": ""
   },
   "internal/eval/latency_test.go": {
-    "mtime": 1781448384.9505901,
+    "mtime": 1781449289.4261334,
     "ast_hash": "daffd01770d9a112c6824fade05f388f",
     "semantic_hash": ""
   },
   "internal/eval/load.go": {
-    "mtime": 1781448721.0440576,
+    "mtime": 1781449289.4263492,
     "ast_hash": "556233768f2ee6f610562b7080381352",
     "semantic_hash": ""
   },
   "internal/eval/parity.go": {
-    "mtime": 1781447900.644262,
+    "mtime": 1781449289.426511,
     "ast_hash": "6932fc2cafd8b94ea9c4b0251f29695b",
     "semantic_hash": ""
   },
   "internal/eval/perf_test.go": {
-    "mtime": 1781431045.5976496,
+    "mtime": 1781449289.4266355,
     "ast_hash": "746b09b963211c3d7a7710c4aa96498c",
     "semantic_hash": ""
   },
   "internal/eval/report.go": {
-    "mtime": 1781448696.37479,
+    "mtime": 1781449289.4268193,
     "ast_hash": "f1de0fe5de532d65dbdc4cb86495997a",
     "semantic_hash": ""
   },
   "internal/eval/result.go": {
-    "mtime": 1781448170.4302697,
+    "mtime": 1781449289.426953,
     "ast_hash": "4ba53ab74307dd34cd4b0cb347436325",
     "semantic_hash": ""
   },
   "internal/eval/run.go": {
-    "mtime": 1781448734.660247,
+    "mtime": 1781449289.4270809,
     "ast_hash": "194ee02277c4e2dc7edd2bac5819ee2e",
     "semantic_hash": ""
   },
   "internal/eval/schema.go": {
-    "mtime": 1781447722.7255037,
+    "mtime": 1781449289.4271874,
     "ast_hash": "8dfa1dc87ad4cb9a1bdea8b81b300354",
     "semantic_hash": ""
   },
   "evals/BENCHMARKS.md": {
-    "mtime": 1781448763.8994133,
+    "mtime": 1781449289.4048035,
     "ast_hash": "6f24c9b7ab51d98d0dd706294a208baa",
     "semantic_hash": ""
   },
   "evals/METHODOLOGY.md": {
-    "mtime": 1781448488.7788115,
+    "mtime": 1781449289.4051678,
     "ast_hash": "bc2efba75a36cf422eeeb9fa748a7253",
     "semantic_hash": ""
   },
   "evals/README.md": {
-    "mtime": 1781448460.552386,
+    "mtime": 1781449289.4054549,
     "ast_hash": "66b42e01ce09bf8a0324b67347eff712",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/.openspec.yaml": {
-    "mtime": 1781429072.8845603,
+    "mtime": 1781449289.4277763,
     "ast_hash": "d3f3cdfce511e197472e6dee42eaf5d8",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/design.md": {
-    "mtime": 1781429409.0180547,
+    "mtime": 1781449289.4279265,
     "ast_hash": "305fd4f89db20bf7e8dabbe0d05fdbbc",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/proposal.md": {
-    "mtime": 1781429160.4521153,
+    "mtime": 1781449289.428063,
     "ast_hash": "3d4372d8659e1a8bb76faddc4f69ad82",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/specs/cli-interface/spec.md": {
-    "mtime": 1781429307.9826663,
+    "mtime": 1781449289.4282436,
     "ast_hash": "114a169d6e70d4f50377effe28e63ab3",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/specs/eval-benchmarks/spec.md": {
-    "mtime": 1781429504.2249656,
+    "mtime": 1781449289.4284248,
     "ast_hash": "6ce76678f3af0b64633f6425733c01d5",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/specs/eval-datasets/spec.md": {
-    "mtime": 1781429266.4916193,
+    "mtime": 1781449289.4286613,
     "ast_hash": "387acf5d8296a1981d58050f60295786",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/specs/eval-harness/spec.md": {
-    "mtime": 1781429242.493284,
+    "mtime": 1781449289.4289007,
     "ast_hash": "3f6f62465de16d322f60a01b7b73cdac",
     "semantic_hash": ""
   },
   "openspec/changes/comprehensive-eval-suite/tasks.md": {
-    "mtime": 1781448551.5984874,
-    "ast_hash": "8c5fb4002cf11aa8fdd61fab6b4d0bf3",
+    "mtime": 1781449289.429086,
+    "ast_hash": "94a577923d9eafbd4c9da2602947adec",
+    "semantic_hash": ""
+  },
+  "cmd/ozy-install/main.go": {
+    "mtime": 1781466798.375766,
+    "ast_hash": "507faff509ed5fa7314c60c06185295a",
+    "semantic_hash": ""
+  },
+  "internal/cli/uninstall.go": {
+    "mtime": 1781466957.4405854,
+    "ast_hash": "932d63aeeec720e383cea174a6f0f707",
+    "semantic_hash": ""
+  },
+  "internal/installer/config.go": {
+    "mtime": 1781469494.7228527,
+    "ast_hash": "8e225249ac096e0cc7f67537726a5b67",
+    "semantic_hash": ""
+  },
+  "internal/installer/config_test.go": {
+    "mtime": 1781466129.1535203,
+    "ast_hash": "bf03850f7709096b8160884969fd7161",
+    "semantic_hash": ""
+  },
+  "internal/installer/consent.go": {
+    "mtime": 1781469497.642778,
+    "ast_hash": "0a0ec61a38d6c18230e1c3a7d89084b8",
+    "semantic_hash": ""
+  },
+  "internal/installer/consent_test.go": {
+    "mtime": 1781458145.3309524,
+    "ast_hash": "7d33ca59da638e64f046096bfcaa2510",
+    "semantic_hash": ""
+  },
+  "internal/installer/deps.go": {
+    "mtime": 1781469513.2605867,
+    "ast_hash": "8e051f2fa73e8ec0374abb64fffd7593",
+    "semantic_hash": ""
+  },
+  "internal/installer/deps_test.go": {
+    "mtime": 1781466144.7463832,
+    "ast_hash": "058b836ed2ae7d4956a60aa23e243e3e",
+    "semantic_hash": ""
+  },
+  "internal/installer/errors.go": {
+    "mtime": 1781465429.078504,
+    "ast_hash": "b19908026dc7f6e89e5e03f72844e213",
+    "semantic_hash": ""
+  },
+  "internal/installer/install.go": {
+    "mtime": 1781469484.5191557,
+    "ast_hash": "975a5c987d8b130a19e6aa588bf16fa5",
+    "semantic_hash": ""
+  },
+  "internal/installer/install_test.go": {
+    "mtime": 1781467150.6831133,
+    "ast_hash": "e15e21ec7c4edd52c340af6a646eea82",
+    "semantic_hash": ""
+  },
+  "internal/installer/logger.go": {
+    "mtime": 1781465608.6541014,
+    "ast_hash": "510045d7b7e19b5199f28b14046fcabf",
+    "semantic_hash": ""
+  },
+  "internal/installer/logger_test.go": {
+    "mtime": 1781458261.2220538,
+    "ast_hash": "11bdcb313ca79ea67c5f4e7833effc2e",
+    "semantic_hash": ""
+  },
+  "internal/installer/pathconfig.go": {
+    "mtime": 1781469487.341975,
+    "ast_hash": "7222bfbba530ce2b640945a6cce427da",
+    "semantic_hash": ""
+  },
+  "internal/installer/pathconfig_test.go": {
+    "mtime": 1781467170.121196,
+    "ast_hash": "eb1b12edec4fbf213e672bcb22295db7",
+    "semantic_hash": ""
+  },
+  "internal/installer/plan.go": {
+    "mtime": 1781469488.1669493,
+    "ast_hash": "1b9f956bf7ff8f7d101ef7434364e3f7",
+    "semantic_hash": ""
+  },
+  "internal/installer/plan_test.go": {
+    "mtime": 1781466086.1940057,
+    "ast_hash": "ae204bb545f10d4b9d21c3b1bed389bc",
+    "semantic_hash": ""
+  },
+  "internal/installer/platform.go": {
+    "mtime": 1781465847.3786333,
+    "ast_hash": "c5aed52821645bc9816e0eb2a06a3170",
+    "semantic_hash": ""
+  },
+  "internal/installer/progress.go": {
+    "mtime": 1781469523.0233326,
+    "ast_hash": "5f4813339adc891b6d303f6cc5f0e55b",
+    "semantic_hash": ""
+  },
+  "internal/installer/progress_test.go": {
+    "mtime": 1781466448.1892025,
+    "ast_hash": "c5b15a845cfb1660254afae371b13495",
+    "semantic_hash": ""
+  },
+  "internal/installer/state.go": {
+    "mtime": 1781469524.6532307,
+    "ast_hash": "63b48cc1829622e96fb778799865239e",
+    "semantic_hash": ""
+  },
+  "internal/installer/state_test.go": {
+    "mtime": 1781458083.0736108,
+    "ast_hash": "c907a066ce837ba96e837c879c2cc217",
+    "semantic_hash": ""
+  },
+  "internal/installer/steps.go": {
+    "mtime": 1781467826.9888747,
+    "ast_hash": "204fb38e8babacecdc7c3ad8795c25e3",
+    "semantic_hash": ""
+  },
+  "internal/installer/steps_test.go": {
+    "mtime": 1781467868.6162925,
+    "ast_hash": "5d7e0695c2215107e8adf15494f9e5cf",
+    "semantic_hash": ""
+  },
+  "internal/installer/uninstall.go": {
+    "mtime": 1781469485.9418533,
+    "ast_hash": "5325bd13a7169d0d5e0b28e5f4fa3b33",
+    "semantic_hash": ""
+  },
+  "internal/installer/uninstall_test.go": {
+    "mtime": 1781467145.4112923,
+    "ast_hash": "1005c0806e20a1e94f17fce362693d59",
+    "semantic_hash": ""
+  },
+  "internal/paths/paths.go": {
+    "mtime": 1781457984.9579933,
+    "ast_hash": "c259db7cf989fc537ff385a6b7e96c11",
+    "semantic_hash": ""
+  },
+  "internal/paths/paths_test.go": {
+    "mtime": 1781458004.019239,
+    "ast_hash": "2ed743896d38704f62e7197bf06578e7",
+    "semantic_hash": ""
+  },
+  "CONTRIBUTING.md": {
+    "mtime": 1781467065.186863,
+    "ast_hash": "6bc7b2fa4f8f98b980e71d41a7832ee1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/.openspec.yaml": {
+    "mtime": 1781457047.1193688,
+    "ast_hash": "d3f3cdfce511e197472e6dee42eaf5d8",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/design.md": {
+    "mtime": 1781457394.0816994,
+    "ast_hash": "64a38777d9e81f00b565cbccd4b2f16e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/proposal.md": {
+    "mtime": 1781457184.3235502,
+    "ast_hash": "a121f85b9202e2eb46d1702e400274fa",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/specs/cli-interface/spec.md": {
+    "mtime": 1781457328.9296384,
+    "ast_hash": "ffc54363057b9e35446516804147e676",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/specs/install-paths/spec.md": {
+    "mtime": 1781457230.524595,
+    "ast_hash": "973874ab9bac46a464bb2eac1f603bf2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/specs/installer/spec.md": {
+    "mtime": 1781457289.5017166,
+    "ast_hash": "682fdc368c56bd0f345a95d790b933fb",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/specs/uninstaller/spec.md": {
+    "mtime": 1781457314.8189068,
+    "ast_hash": "e16eecabd7cb8c8490249b9d7f505f32",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ozy-installer/tasks.md": {
+    "mtime": 1781467302.1315954,
+    "ast_hash": "917c3c6a24831666b3749e0a98af3787",
+    "semantic_hash": ""
+  },
+  "assets/ozy.png": {
+    "mtime": 1781449701.9282901,
+    "ast_hash": "d635da8772d6243e7901c9f2fdca02fb",
     "semantic_hash": ""
   }
 }

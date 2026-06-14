@@ -104,7 +104,7 @@ func Provision(ctx context.Context, opts ProvisionOptions) (*Resolved, error) {
 	}
 	logger := opts.Logger
 
-	python, err := resolvePython(ctx, opts, lookPath, runner, logger)
+	python, err := resolvePython(ctx, opts, lookPath, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func Provision(ctx context.Context, opts ProvisionOptions) (*Resolved, error) {
 // any PATH check. Otherwise the order is: cached venv interpreter,
 // `uv run --python <ver>` if uv is on PATH, then `python3`, then
 // `py -3` on Windows.
-func resolvePython(ctx context.Context, opts ProvisionOptions, lookPath func(string) (string, error), runner func(context.Context, string, ...string) error, logger Logger) (string, error) {
+func resolvePython(ctx context.Context, opts ProvisionOptions, lookPath func(string) (string, error), logger Logger) (string, error) {
 	if override := opts.PythonOverride; override != "" {
 		return override, nil
 	}

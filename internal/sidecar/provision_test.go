@@ -98,11 +98,8 @@ func TestProvision_NoToolchain(t *testing.T) {
 	lookPath := func(name string) (string, error) {
 		return "", errors.New("not found")
 	}
-	runner := func(ctx context.Context, name string, args ...string) error {
-		return errors.New("should not be called")
-	}
 
-	_, err := resolvePython(context.Background(), ProvisionOptions{}, lookPath, runner, nil)
+	_, err := resolvePython(context.Background(), ProvisionOptions{}, lookPath, nil)
 	if !errors.Is(err, ErrNoToolchain) {
 		t.Fatalf("resolvePython() = %v, want ErrNoToolchain", err)
 	}
@@ -113,13 +110,10 @@ func TestProvision_ResolvePython_Override(t *testing.T) {
 	lookPath := func(name string) (string, error) {
 		return "", errors.New("not found")
 	}
-	runner := func(ctx context.Context, name string, args ...string) error {
-		return errors.New("should not be called")
-	}
 
 	python, err := resolvePython(context.Background(), ProvisionOptions{
 		PythonOverride: "/usr/bin/python3",
-	}, lookPath, runner, nil)
+	}, lookPath, nil)
 	if err != nil {
 		t.Fatalf("resolvePython(override) = %v", err)
 	}
@@ -134,11 +128,8 @@ func TestProvision_ResolvePython_EnvVar(t *testing.T) {
 	lookPath := func(name string) (string, error) {
 		return "", errors.New("not found")
 	}
-	runner := func(ctx context.Context, name string, args ...string) error {
-		return errors.New("should not be called")
-	}
 
-	python, err := resolvePython(context.Background(), ProvisionOptions{}, lookPath, runner, nil)
+	python, err := resolvePython(context.Background(), ProvisionOptions{}, lookPath, nil)
 	if err != nil {
 		t.Fatalf("resolvePython(env) = %v", err)
 	}
@@ -179,11 +170,8 @@ func TestProvision_ResolvePython_Python3Available(t *testing.T) {
 		}
 		return "", errors.New("not found")
 	}
-	runner := func(ctx context.Context, name string, args ...string) error {
-		return errors.New("should not be called")
-	}
 
-	python, err := resolvePython(context.Background(), ProvisionOptions{}, lookPath, runner, nil)
+	python, err := resolvePython(context.Background(), ProvisionOptions{}, lookPath, nil)
 	if err != nil {
 		t.Fatalf("resolvePython(python3) = %v", err)
 	}

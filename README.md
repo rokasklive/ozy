@@ -1,98 +1,101 @@
-# ozy
+<div align="center">
 
-My name is Ozy, King of Context: Look on my MCP registry, ye Scrub, and despair!
+<img src="assets/ozy.png" alt="Ozy" width="180" />
 
-Ozy is a local **agent tool broker**. You configure many downstream MCP servers
+# Ozy
+
+**The local agent tool broker.**
+
+*My name is Ozy, Thing of Things. Look on my MCP setup, ye Agent, and vibe!* — Ozymandias, probably.
+
+<br/>
+
+[![License](https://img.shields.io/github/license/rokasklive/ozy?style=for-the-badge&color=blue)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white)](go.mod)
+[![CI](https://img.shields.io/github/actions/workflow/status/rokasklive/ozy/ci.yml?style=for-the-badge&label=CI)](.github/workflows/ci.yml)
+
+<br/>
+
+[![MCP](https://img.shields.io/badge/MCP-Server-1f6feb?style=for-the-badge)](SPEC.md)
+[![Evals](https://img.shields.io/badge/Evals-Tracked-success?style=for-the-badge)](evals/BENCHMARKS.md)
+
+</div>
+
+---
+
+## What is Ozy?
+
+Ozy is a local **agent tool broker**. Configure your downstream MCP servers
 once; Ozy discovers and indexes their tools into a persistent, searchable
-capability catalog. Agents connect only to Ozy and use a small, stable interface
-to discover, understand, and invoke the right downstream tool — without loading
-the entire downstream tool universe into context. See [SPEC.md](SPEC.md) for the
-full product specification.
+catalog. Agents connect to Ozy and use a small, stable interface — `findTool`,
+`describeTool`, `callTool` — to discover and invoke the right downstream tool
+**without loading the entire downstream tool universe into context**.
 
-> **Status:** early implementation. Ozy can load `ozy.jsonc`, connect to
-> configured downstream MCP servers, run `ozy index`, and persist discovered
-> tool metadata for offline `list` and `describe`. `findTool` ranks the
-> **persistent catalog** with a hybrid (lexical + optional semantic) search
-> engine and returns the single best tool plus one runner-up with confidence
-> and a reason — no live discovery needed. The lexical and semantic
-> rankings are fused with **Reciprocal Rank Fusion (RRF)**, so they are
-> combined by rank rather than by mixing their incomparable raw scores. The
-> semantic leg is produced by an integrated **Python embedding sidecar** that
-> the Go daemon launches over stdio (newline-delimited JSON), embeds with
-> **FastEmbed** (ONNX, CPU-only), and serves an ANN search over **turbovec**
-> by default (4-bit quantization, kernel-level allowlist filtering). **FAISS**
-> is an opt-in alternative. The sidecar environment is auto-provisioned on
-> demand via `uv` (with a `python -m venv` + `pip` fallback) and the env is
-> cached under XDG state. The daemon indexes the catalog **on startup** when
-> it is stale (never indexed, or configured servers changed), and serves the
-> existing catalog gracefully even when downstream servers are offline.
-> `callTool` remains live-gated: invocation connects to the target server at
-> call time. `describeTool` returns the exact schema from the catalog.
-> Semantic search is **enabled by default**; when Python or the sidecar is
-> absent, fails to provision, crashes, or a query times out, the daemon
-> marks semantic unavailable, continues serving `findTool` from the lexical
-> baseline, and surfaces the degraded mode rather than failing.
+## Why?
 
-## Build
+Connecting an agent to many MCP servers usually means stuffing every tool
+description into the model's context. That does not scale, and it does not
+degrade gracefully when a server is offline.
+
+Ozy fixes that by acting as a single, brokered entry point:
+
+- **One stable agent interface** — three tools, always, regardless of how
+  many downstream servers you wire up.
+- **Persistent catalog** — tools are indexed once and queried offline; no live
+  re-discovery on every agent turn.
+- **Hybrid search** — lexical + optional semantic ranking fused with
+  Reciprocal Rank Fusion. Semantic falls back to lexical gracefully if the
+  embedding sidecar is unavailable.
+- **Live-gated invocation** — `callTool` connects to a single downstream
+  server at call time; the catalog is served even when servers are down.
+
+## Quick start
 
 ```bash
-make build          # produces ./ozy
-make test           # go test ./...
-make tools          # install the pinned golangci-lint
-make lint           # go vet + gofmt check
-make install-hooks  # run make lint before git push
-```
+# 1. Install
+go install github.com/rokasklive/ozy/cmd/ozy@latest
 
-Requires a recent Go toolchain (see `go.mod`). Run `make install-hooks` once per
-clone to enable the tracked pre-push hook.
+# 2. Scaffold a config (one-time)
+ozy init
+
+# 3. Declare your downstream MCP servers in ~/.config/ozy/ozy.jsonc
+#    (copy-paste your existing mcp.json entries — the shape is opencode-compatible)
+
+# 4. Index, then run
+ozy index                # connect, discover, persist the catalog
+ozy search "confluence"  # find the right tool
+ozy mcp                  # expose Ozy to your agent
+```
 
 ## Usage
 
 ```bash
 ozy init                       # scaffold a starter config
 ozy doctor                     # diagnose config, env, catalog, and server health
-ozy index                      # connect to configured MCP servers and persist tools
+ozy index                      # connect to MCP servers and persist tools
 ozy list                       # list indexed tools
 ozy search "search confluence wiki"
 ozy describe atlassian.confluence_search
-ozy call atlassian.confluence_search --json '{"query":"billing migration","limit":5}'
+ozy call  atlassian.confluence_search --json '{"query":"billing migration","limit":5}'
 ozy daemon                     # run the daemon
 ozy mcp                        # serve the MCP adapter over stdio
 ozy eval run                   # run the eval suite over the committed corpus
 ```
 
-Every command accepts a global `--format` flag with `human` (default), `json`
-(a single machine-readable document for agents and evals), or `concise`.
-
-`ozy eval run` exercises the evaluation suite (`SPEC.md` §14) — discovery
-accuracy, and (as they land) invocation, agent ergonomics, and search
-performance — against a committed test corpus, writes a tracked benchmark
-snapshot, and exits non-zero if a gate fails. The public scoreboard lives in
-[evals/BENCHMARKS.md](evals/BENCHMARKS.md); see [evals/README.md](evals/README.md)
-to run it or add cases.
+Every command accepts a global `--format` flag: `human` (default), `json`
+(single machine-readable document for agents and evals), or `concise`.
 
 ## Configuration
 
-Ozy reads a single JSONC/JSON config using the opencode `mcp` shape. Path
-precedence is:
+Ozy reads a single JSONC config at one of:
 
-1. `--config <path>` or `OZY_CONFIG`
-2. `$XDG_CONFIG_HOME/ozy/ozy.jsonc`, or `~/.config/ozy/ozy.jsonc` when
-   `XDG_CONFIG_HOME` is unset
-3. the OS user-config equivalent on Windows, for example
-   `%AppData%\ozy\ozy.jsonc`
+1. `--config <path>` or `$OZY_CONFIG`
+2. `$XDG_CONFIG_HOME/ozy/ozy.jsonc` (or `~/.config/ozy/ozy.jsonc`)
+3. `%AppData%\ozy\ozy.jsonc` on Windows
 
-Run `ozy init` to scaffold a commented `ozy.jsonc` at the default user config
-path. Project-local configs are still supported explicitly, e.g.
-`ozy --config ./ozy.jsonc index`.
-
-Downstream servers are declared under `mcp`; Ozy supports opencode-compatible
-`mcp` entries only, so common MCP snippets can be copied into Ozy config without
-reshaping. Local servers support `type`, `command`, `cwd`, `environment`,
-`enabled`, and `timeout`. Remote servers support `type`, `url`, `headers`,
-`oauth`, `enabled`, and `timeout`. Omitted `enabled` means enabled; `timeout` is
-milliseconds and defaults to `5000`. Ozy's own `search`, `embedding`, and
-`budgets` sections are top-level siblings:
+Run `ozy init` to scaffold a fully commented starter at the default path. The
+shape is **opencode-compatible**, so existing `mcp.json` entries can be copied
+in unchanged.
 
 ```jsonc
 {
@@ -101,80 +104,37 @@ milliseconds and defaults to `5000`. Ozy's own `search`, `embedding`, and
       "type": "local",
       "command": ["filesystem-mcp", "--root", "."],
       "cwd": "/path/to/workspace",
-      "environment": {
-        "OZY_ROOT": "{env:OZY_ROOT}"
-      },
+      "environment": { "OZY_ROOT": "{env:OZY_ROOT}" },
       "enabled": true,
       "timeout": 5000
     },
     "atlassian": {
       "type": "remote",
       "url": "https://mcp.example.com/v1/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}"
-      },
+      "headers": { "Authorization": "Bearer {env:ATLASSIAN_MCP_TOKEN}" },
       "oauth": false,
       "enabled": true
     }
   },
-  "search": {
-    "lexical": {"enabled": true},
-    "semantic": {"enabled": true, "required": false}
-  },
-  "embedding": {
-    "provider": "python-local",
-    "vectorBackend": "turbovec",
-    "model": "BAAI/bge-small-en-v1.5",
-    "required": false
-  },
-  "budgets": {
-    "findTool": {"maxResults": 5, "includeFullSchemas": false},
-    "describeTool": {"includeExamples": true},
-    "callTool": {"maxResultBytes": 65536}
-  }
+  "search":     { "lexical": { "enabled": true }, "semantic": { "enabled": true } },
+  "embedding":  { "provider": "python-local", "vectorBackend": "turbovec" },
+  "budgets":    { "findTool": { "maxResults": 5 }, "callTool": { "maxResultBytes": 65536 } }
 }
 ```
 
-Semantic search is **on by default** (omit `search.semantic.enabled` for the
-out-of-the-box hybrid experience, or set it `false` to opt back into
-lexical-only). The vector backend is `turbovec` by default; set
-`embedding.vectorBackend` to `faiss` **before the first index is built** to
-opt into FAISS (`faiss-cpu` is installed on that path only). The embedding
-model is the FastEmbed `BAAI/bge-small-en-v1.5` by default; override via
-`embedding.model` to use a different model (the sidecar rebuilds the index
-when the model changes). The vector dimension is derived from the model at
-runtime — it is not configured. The Python sidecar is **auto-provisioned on
-demand** (the daemon resolves a Python interpreter and creates a pinned
-isolated environment under XDG state via `uv` with a `python -m venv` +
-`pip` fallback, then launches the sidecar over stdio). If Python or the
-sidecar is unavailable, the daemon continues to serve lexical-only `findTool`
-results and surfaces the degraded mode rather than failing.
+**Secrets** belong in `{env:NAME}` references — `ozy doctor` reports
+unresolved variables by name and never prints resolved secret values. The
+catalog is stored at `$XDG_STATE_HOME/ozy/catalog.json` (override with
+`$OZY_CATALOG` for tests).
 
-Secrets should be supplied through `{env:NAME}` references rather than literals.
-`ozy doctor` reports unresolved references by variable name and never prints
-resolved secret values.
+Semantic search is on by default. The Python embedding sidecar is
+**auto-provisioned on demand** via `uv` (with a `python -m venv` + `pip`
+fallback); if it is unavailable, Ozy falls back to lexical-only `findTool`
+and surfaces the degraded mode rather than failing.
 
-The discovered catalog is stored at `$XDG_STATE_HOME/ozy/catalog.json` by
-default, falling back to `~/.local/state/ozy/catalog.json`. Override it with
-`OZY_CATALOG` for tests or isolated runs.
+## Use Ozy as an MCP server
 
-To verify the checked-in real MCP examples against your local environment,
-ensure the commands in `examples/test_mcp_examples.jsonc` are available and run:
-
-```bash
-OZY_RUN_REAL_MCP_EXAMPLES=1 make check-real-mcp-examples
-```
-
-## Using Ozy as an MCP server
-
-Ozy can be configured as an MCP server in opencode or any MCP-compatible agent
-harness. An agent that connects to Ozy sees exactly three tools (`findTool`,
-`describeTool`, `callTool`) and can discover all downstream tools by calling
-`findTool` — no `ozy index` required beforehand.
-
-### Minimal opencode configuration
-
-Add Ozy to your opencode `mcp.json` (or equivalent MCP client config):
+Add Ozy to your agent's MCP config:
 
 ```jsonc
 {
@@ -188,54 +148,36 @@ Add Ozy to your opencode `mcp.json` (or equivalent MCP client config):
 }
 ```
 
-Ozy reads its own downstream server list from `~/.config/ozy/ozy.jsonc` (or
-`$OZY_CONFIG`). On startup `ozy mcp` loads this config once; when an agent
-calls `findTool`, Ozy connects to every enabled downstream server, calls
-`tools/list`, and returns the complete live-discovered tool list as
-`choose_from_candidates` with stable `toolRef`s (e.g.
-`atlassian.confluence_search`), each carrying `title`, `description`, and
-`inputSchema`. The end-to-end flow is: the agent calls `findTool` first,
-picks a candidate's `toolRef`, and then calls `callTool` with that
-`toolRef` and the arguments described in the candidate's `inputSchema`.
-`callTool` resolves the `toolRef` against `ozy.jsonc`, connects to that
-single downstream server, and runs `tools/call` — no `ozy index` required.
+On startup `ozy mcp` loads `~/.config/ozy/ozy.jsonc`. When the agent calls
+`findTool`, Ozy connects to every enabled downstream server, runs `tools/list`,
+and returns stable `toolRef`s (e.g. `atlassian.confluence_search`) with
+`title`, `description`, and `inputSchema`. The agent then calls `callTool`
+with that `toolRef` and the arguments from the candidate's `inputSchema` —
+no `ozy index` required beforehand.
 
-`describeTool` remains catalog-backed by design and is **not** part of the
-live flow: it serves indexed tools from the persisted catalog and returns
-`TOOL_NOT_FOUND` for tools that have only been discovered live. The agent
-should use the `inputSchema` returned in the `findTool` candidate as the
-authoritative schema when planning a call.
+## The three tools
 
-### Quick start
+Ozy exposes exactly three stable MCP tools (see [SPEC.md](SPEC.md) §9):
 
-```bash
-# 1. Scaffold a config (one-time)
-ozy init
+| Tool           | Purpose                                                                            |
+| -------------- | ---------------------------------------------------------------------------------- |
+| `findTool`     | Find the best known tool for a capability query — a decision, not just a list.     |
+| `describeTool` | Return the exact schema and usage guidance for one tool (catalog-backed).          |
+| `callTool`     | Invoke a downstream tool through Ozy with budget-bounded results.                 |
 
-# 2. Edit ~/.config/ozy/ozy.jsonc to declare your downstream MCP servers
-#    (copy-paste from your existing opencode mcp.json entries)
+The CLI mirrors these operations through the same in-process broker, so the
+CLI and MCP paths cannot drift.
 
-# 3. Verify configuration
-ozy doctor
+## Documentation
 
-# 4. Run the MCP adapter (open-code or other harness connects to this)
-ozy mcp
-```
+- [**SPEC.md**](SPEC.md) — the living product specification. Start here for
+  the full architecture, contract, and design.
+- [**evals/BENCHMARKS.md**](evals/BENCHMARKS.md) — public discovery / invocation
+  scoreboard over the committed corpus.
+- [**examples/ozy.jsonc**](examples/ozy.jsonc) — annotated starter config.
+- [**CONTRIBUTING.md**](CONTRIBUTING.md) — build, test, lint, and how to
+  contribute.
 
-All three Ozy tools are advertised immediately; `findTool` discovers downstream
-tools live without requiring `ozy index`.
+## License
 
-## Agent interface
-
-Ozy exposes exactly three stable MCP tools (SPEC.md §9):
-
-- `findTool` — find the best known tool for a capability query (returns a
-  decision, not just a list);
-- `describeTool` — return the exact schema and usage guidance for one tool;
-- `callTool` — invoke a downstream tool through Ozy. It performs live
-  brokered invocation: one configured downstream server is contacted per
-  call, the result is normalized to the `SPEC.md` §9.3 envelope, and
-  `budgets.callTool.maxResultBytes` bounds the returned result.
-
-The CLI mirrors these operations through the same in-process broker, so the CLI
-and MCP paths cannot drift.
+[Apache License 2.0](LICENSE).

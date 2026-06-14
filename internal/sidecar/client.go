@@ -225,13 +225,7 @@ func (c *Client) Upsert(ctx context.Context, items []UpsertItem) (UpsertResult, 
 	}
 	wire := make([]jsonlUpsertItem, len(items))
 	for i, it := range items {
-		wire[i] = jsonlUpsertItem{
-			ToolRef:     it.ToolRef,
-			Text:        it.Text,
-			ContentHash: it.ContentHash,
-			ServerID:    it.ServerID,
-			Tags:        it.Tags,
-		}
+		wire[i] = jsonlUpsertItem(it)
 	}
 	resp, err := c.call(ctx, opUpsert, &jsonlRequest{Items: wire})
 	if err != nil {
@@ -272,7 +266,7 @@ func (c *Client) Query(ctx context.Context, text string, k int, filter SearchFil
 	}
 	hits := make([]QueryHit, len(resp.Hits))
 	for i, h := range resp.Hits {
-		hits[i] = QueryHit{ToolRef: h.ToolRef, Score: h.Score}
+		hits[i] = QueryHit(h)
 	}
 	return QueryResult{Hits: hits}, nil
 }
@@ -407,7 +401,7 @@ func (c *Client) writeRequest(req *jsonlRequest) error {
 		return err
 	}
 	data = append(data, '\n')
-	if _, err := io.WriteString(c.stdin, string(data)); err != nil {
+	if _, err := c.stdin.Write(data); err != nil {
 		return err
 	}
 	if f, ok := c.stdin.(interface{ Sync() error }); ok {

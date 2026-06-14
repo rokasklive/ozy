@@ -166,7 +166,7 @@ func resolvePython(ctx context.Context, opts ProvisionOptions, lookPath func(str
 
 	if uvPath, err := lookPath("uv"); err == nil && uvPath != "" {
 		logf(logger, "sidecar: resolving Python via uv at %s", uvPath)
-		if out, err := uvResolvePython(ctx, uvPath, defaultPythonVers, runner); err == nil && out != "" {
+		if out, err := uvResolvePython(ctx, uvPath, defaultPythonVers); err == nil && out != "" {
 			return out, nil
 		}
 	}
@@ -189,8 +189,8 @@ func basePythonNames() []string {
 
 // uvResolvePython invokes `uv run --python <ver> python -c 'import sys;
 // print(sys.executable)'` and returns the printed path.
-func uvResolvePython(ctx context.Context, uvPath, pyVersion string, runner func(context.Context, string, ...string) error) (string, error) {
-	cmd := exec.CommandContext(ctx, uvPath, "run", "--python", pyVersion, "python", "-c", "import sys; print(sys.executable)")
+func uvResolvePython(ctx context.Context, uvPath, pyVersion string) (string, error) {
+	cmd := exec.CommandContext(ctx, uvPath, "run", "--python", pyVersion, "python", "-c", "import sys; print(sys.executable)") //nolint:gosec
 	out, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -274,7 +274,7 @@ func ensureVenv(ctx context.Context, python, venv string, lookPath func(string) 
 	if venvHasPython(venv) {
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(venv), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(venv), 0o700); err != nil {
 		return fmt.Errorf("sidecar: mkdir venv parent: %w", err)
 	}
 	if uvPath, err := lookPath("uv"); err == nil && uvPath != "" {
@@ -310,7 +310,7 @@ func installDeps(ctx context.Context, venv, backend string, lookPath func(string
 }
 
 func readMarker(path string) (marker, bool) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec
 	if err != nil {
 		return marker{}, false
 	}
@@ -326,14 +326,14 @@ func markerMatches(have, want marker) bool {
 }
 
 func writeMarker(path string, m marker) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
 	data, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+	return os.WriteFile(path, data, 0o600)
 }
 
 func venvHasPython(venv string) bool {
@@ -352,12 +352,12 @@ func fileExists(path string) bool {
 	if path == "" {
 		return false
 	}
-	_, err := os.Stat(path)
+	_, err := os.Stat(path) //nolint:gosec
 	return err == nil
 }
 
 func defaultRunner(ctx context.Context, name string, args ...string) error {
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

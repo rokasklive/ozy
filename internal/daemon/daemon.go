@@ -186,9 +186,7 @@ func (d *Daemon) shutdownSidecar() {
 	if d.sidecarClient == nil {
 		return
 	}
-	if err := d.sidecarClient.Close(); err != nil {
-		// stderr already drained; best-effort
-	}
+	_ = d.sidecarClient.Close()
 	d.sidecarClient = nil
 	d.sidecarAdapter = nil
 }

@@ -23,12 +23,6 @@ type Logger interface {
 	Log(line string)
 }
 
-// logFunc adapts a plain function to the Logger interface so callers
-// can pass a closure such as func(line string) { log.Print(line) }.
-type logFunc func(line string)
-
-func (f logFunc) Log(line string) { f(line) }
-
 // ProcessOptions configures a realDriver — the subprocess that actually
 // runs the Python sidecar. A zero ProcessOptions is invalid: at minimum
 // PythonPath must be set.
@@ -100,7 +94,7 @@ func (d *realDriver) Start(ctx context.Context) (io.WriteCloser, io.ReadCloser, 
 		"--backend", d.opts.Backend,
 		"--model", d.opts.Model,
 	}
-	cmd := exec.CommandContext(ctx, d.opts.PythonPath, args...)
+	cmd := exec.CommandContext(ctx, d.opts.PythonPath, args...) //nolint:gosec
 	cmd.Dir = d.opts.SourceDir
 	if len(d.opts.ExtraEnv) > 0 {
 		cmd.Env = append(os.Environ(), d.opts.ExtraEnv...)

@@ -106,6 +106,7 @@ type StdLogger struct {
 	L *log.Logger
 }
 
+// Log writes one line to the standard library logger.
 func (s StdLogger) Log(line string) {
 	if s.L == nil {
 		defaultStdLogger.Print(line)

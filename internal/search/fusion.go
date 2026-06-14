@@ -45,11 +45,6 @@ func normalizeLexical(score float64) float64 {
 	return score / (score + LexSatK)
 }
 
-// rrfScore returns the RRF sum for one entry given its ranks in the two lists.
-func rrfScore(lexRank, semRank int) float64 {
-	return 1.0/(RRFK+float64(lexRank)) + 1.0/(RRFK+float64(semRank))
-}
-
 // Decision values for the ranking outcome.
 const (
 	DecisionUse          = "use"

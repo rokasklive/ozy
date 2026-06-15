@@ -39,6 +39,7 @@ type RunResult struct {
 	Ergonomics   *ErgonomicsReport    `json:"ergonomics,omitempty"`
 	TokenEconomy *TokenEconomyMetrics `json:"tokenEconomy,omitempty"`
 	Performance  *LatencyReport       `json:"performance,omitempty"`
+	Cache        *CacheEffectivenessMetrics `json:"cache,omitempty"`
 	Hygiene      []HygieneFinding     `json:"hygiene,omitempty"`
 	Gates        []GateResult         `json:"gates"`
 	Verdict      string               `json:"verdict"`
@@ -90,6 +91,10 @@ func (r *RunResult) Render(format string) string {
 	}
 	if r.TokenEconomy != nil {
 		fmt.Fprintf(&b, "tokens: startup %d→%d (−%.0f%%)\n", r.TokenEconomy.DirectStartupTokens, r.TokenEconomy.OzyStartupTokens, r.TokenEconomy.StartupReductionRatio*100)
+	}
+	if r.Cache != nil {
+		fmt.Fprintf(&b, "cache: redundant-call reduction %.1f%% (%d/%d served), %d tokens avoided\n",
+			r.Cache.RedundantCallReduction*100, r.Cache.ServedFromCache, r.Cache.CacheableOps, r.Cache.TokensAvoided)
 	}
 	fmt.Fprintf(&b, "gates: %d passed, %d failed, %d skipped", passed, failed, skipped)
 	if len(r.Hygiene) > 0 {

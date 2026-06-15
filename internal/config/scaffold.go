@@ -71,6 +71,16 @@ const starterConfig = `{
     "callTool": {
       "maxResultBytes": 65536
     }
+  },
+
+  // The result cache memoizes findTool/describeTool results and read-only
+  // callTool results within a TTL to cut redundant work. callTool is cached
+  // ONLY for tools whose downstream readOnlyHint is true — write tools always
+  // run live. On by default; set "enabled": false to disable.
+  "cache": {
+    "enabled": true,
+    "ttlSeconds": 300,
+    "maxEntries": 1024
   }
 }
 `

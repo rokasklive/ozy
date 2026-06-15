@@ -20,6 +20,7 @@ const (
 	FamilyErgonomics  = "ergonomics"
 	FamilyTokens      = "tokens"
 	FamilyPerformance = "performance"
+	FamilyCache       = "cache"
 )
 
 // knownFamilies is the set of runnable scenario families.
@@ -29,6 +30,7 @@ var knownFamilies = map[string]bool{
 	FamilyErgonomics:  true,
 	FamilyTokens:      true,
 	FamilyPerformance: true,
+	FamilyCache:       true,
 }
 
 // SemanticBuilder constructs a semantic provider over the corpus store for the
@@ -163,6 +165,14 @@ func Run(ctx context.Context, opts Options) (*RunResult, error) {
 		result.Performance = RunLatency(ctx, search.New(store, nil), lexBroker, semEngine)
 	}
 
+	if opts.wantFamily(FamilyCache) {
+		cache, cerr := RunCacheEffectiveness(ctx, corpus, opts.Estimator)
+		if cerr != nil {
+			return nil, cerr
+		}
+		result.Cache = cache
+	}
+
 	thresholds, err := LoadThresholds(opts.Data)
 	if err != nil {
 		return nil, err
@@ -178,6 +188,9 @@ func Run(ctx context.Context, opts Options) (*RunResult, error) {
 	}
 	if result.TokenEconomy != nil {
 		result.Gates = append(result.Gates, thresholds.EvaluateTokens(result.TokenEconomy)...)
+	}
+	if result.Cache != nil {
+		result.Gates = append(result.Gates, thresholds.EvaluateCache(result.Cache)...)
 	}
 	result.Verdict = verdict(result.Gates)
 

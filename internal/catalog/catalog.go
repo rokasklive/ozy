@@ -48,7 +48,11 @@ type Tool struct {
 	CapabilityText     []string
 	ServerStatus       ServerStatus
 	CallableNow        bool
-	LastIndexedAt      time.Time
+	// ReadOnly is the downstream tool's readOnlyHint annotation. It gates
+	// result caching: only positively read-only tools may be cached so a cache
+	// hit can never substitute for a side-effecting invocation.
+	ReadOnly      bool
+	LastIndexedAt time.Time
 	SchemaHash         string
 	Freshness          Freshness
 }

@@ -1,0 +1,26 @@
+services:
+  bench-runner:
+    build:
+      context: ..
+      dockerfile: bench/Dockerfile
+    image: ozy-bench-runner:latest
+    env_file:
+      - ../.env
+    environment:
+      - OZY_BENCH_FIXTURE_DIR=/fixture
+      - OZY_BENCH_BIN=/usr/local/bin/ozy-bench
+    volumes:
+      - ./runs:/bench/runs
+      - ./scenarios:/bench/scenarios
+      - ./configs:/bench/configs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        echo "=== Generating fixture ==="
+        rm -rf /fixture
+        ozy-bench fixture --scenario "$${SCENARIO:-suspended-account-invoice-regression}" --out /fixture
+        export OZY_BENCH_FIXTURE_DIR=/fixture
+        echo "=== Running benchmark ==="
+        ozy-bench run --scenario "$${SCENARIO:-suspended-account-invoice-regression}" --mode "$${MODE:-direct}" --runs "$${BENCH_RUNS:-1}"

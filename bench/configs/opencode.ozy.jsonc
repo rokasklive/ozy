@@ -1,0 +1,11 @@
+{
+  // OpenCode config for OZY mode — only the broker MCP server exposed.
+  "mcp": {
+    "ozy": {
+      "type": "local",
+      "command": ["ozy", "mcp"],
+      "cwd": "{env:OZY_BENCH_FIXTURE_DIR}",
+      "enabled": true
+    }
+  }
+}

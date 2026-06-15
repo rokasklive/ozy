@@ -1,0 +1,10 @@
+# Build context is the repo root (bench/docker-compose.yml uses context: ..).
+# Keep secrets, prior run output, and host binaries out of the image layers.
+.git
+.env
+*.env
+bench/runs/
+ozy
+ozy-bench
+graphify-out/
+**/.DS_Store

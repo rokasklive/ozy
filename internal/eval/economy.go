@@ -1,6 +1,10 @@
 package eval
 
-import "context"
+import (
+	"context"
+
+	ozymcp "github.com/rokasklive/ozy/internal/mcp"
+)
 
 // TokenEconomyMetrics are the SPEC.md §13 token-economy numbers, computed
 // deterministically from captured schemas and payloads with a documented,
@@ -97,7 +101,7 @@ func ozyToolDefs() []map[string]any {
 	return []map[string]any{
 		{
 			"name":        "findTool",
-			"description": "Find the best known downstream tool for a capability query. Returns a decision, not just a list.",
+			"description": ozymcp.OzyFindDescription,
 			"inputSchema": map[string]any{
 				"type":       "object",
 				"required":   []any{"query"},
@@ -106,7 +110,7 @@ func ozyToolDefs() []map[string]any {
 		},
 		{
 			"name":        "describeTool",
-			"description": "Return the exact schema, usage guidance, and recommended call shape for one known toolRef.",
+			"description": ozymcp.OzyDescribeDescription,
 			"inputSchema": map[string]any{
 				"type":       "object",
 				"required":   []any{"toolRef"},
@@ -115,7 +119,7 @@ func ozyToolDefs() []map[string]any {
 		},
 		{
 			"name":        "callTool",
-			"description": "Invoke a selected downstream tool through Ozy. Invocation is live-gated.",
+			"description": ozymcp.OzyCallDescription,
 			"inputSchema": map[string]any{
 				"type":     "object",
 				"required": []any{"toolRef"},

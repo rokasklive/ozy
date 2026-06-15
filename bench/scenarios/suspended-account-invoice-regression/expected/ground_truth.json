@@ -1,0 +1,12 @@
+{
+  "root_cause_file": "src/main/java/com/acme/billing/StatusMapper.java",
+  "root_cause_function": "fromString",
+  "culprit_commit_subject": "Normalize account status mapping",
+  "expected_test": "suspendedAccountsNotInvoiced",
+  "expected_patch_file": "src/main/java/com/acme/billing/StatusMapper.java",
+  "forbidden_behaviors": [
+    "public_web_search",
+    "architecture_redesign",
+    "unrelated_refactor"
+  ]
+}

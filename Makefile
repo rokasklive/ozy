@@ -1,14 +1,25 @@
 BINARY := ozy
+BENCH_BINARY := ozy-bench
 PKG := ./...
 GOLANGCI_LINT_VERSION := v2.12.2
 GOLANGCI_LINT := $(shell command -v golangci-lint 2>/dev/null || echo $(shell go env GOPATH)/bin/golangci-lint)
 OZY_EXAMPLE_CATALOG ?= /tmp/ozy-example-catalog.json
+# Prefer the compose v2 plugin; fall back to the standalone docker-compose.
+COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 
 .DEFAULT_GOAL := build
 
 .PHONY: build
 build: ## Build the ozy binary
 	go build -o $(BINARY) ./cmd/ozy
+
+.PHONY: bench
+bench: ## Build the ozy-bench binary
+	go build -o $(BENCH_BINARY) ./cmd/ozy-bench
+
+.PHONY: bench-run
+bench-run: ## Run the scenario benchmark in Docker (config from .env)
+	$(COMPOSE) -f bench/docker-compose.yml up --build --abort-on-container-exit
 
 .PHONY: test
 test: ## Run the test suite

@@ -8,8 +8,10 @@
 *.so
 *.dylib
 
-# Compiled ozy binary
+# Compiled binaries
 /ozy
+/ozy-bench
+/ozy-install
 
 # Test binary, built with `go test -c`
 *.test
@@ -42,6 +44,13 @@ go.work.sum
 # Eval run snapshots — keep only the committed baseline; timestamped runs are local.
 /evals/snapshots/*
 !/evals/snapshots/baseline.json
+
+# Bench run artifacts — keep only the directory structure; timestamped runs are local.
+/bench/runs/*
+!/bench/runs/.gitkeep
+
+# Local ContextSpy proxy state (DB + config) — host-side, not part of the harness.
+/bench/.contextspy/
 
 # Editor/IDE
 # .idea/

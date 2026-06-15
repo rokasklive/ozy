@@ -136,7 +136,8 @@ in unchanged.
   },
   "search":     { "lexical": { "enabled": true }, "semantic": { "enabled": true } },
   "embedding":  { "provider": "python-local", "vectorBackend": "turbovec" },
-  "budgets":    { "findTool": { "maxResults": 5 }, "callTool": { "maxResultBytes": 65536 } }
+  "budgets":    { "findTool": { "maxResults": 5 }, "callTool": { "maxResultBytes": 65536 } },
+  "cache":      { "enabled": true, "ttlSeconds": 300, "maxEntries": 1024 }
 }
 ```
 

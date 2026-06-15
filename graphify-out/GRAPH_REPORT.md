@@ -1,16 +1,16 @@
-# Graph Report - ozy  (2026-06-14)
+# Graph Report - ozy  (2026-06-15)
 
 ## Corpus Check
-- 192 files · ~185,112 words
+- 201 files · ~190,855 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2770 nodes · 4610 edges · 146 communities (141 shown, 5 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 442 edges (avg confidence: 0.75)
+- 2904 nodes · 4799 edges · 166 communities (161 shown, 5 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 448 edges (avg confidence: 0.75)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `72087530`
+- Built from commit: `377b5e44`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -160,12 +160,32 @@
 - [[_COMMUNITY_Community 143|Community 143]]
 - [[_COMMUNITY_Community 144|Community 144]]
 - [[_COMMUNITY_Community 145|Community 145]]
+- [[_COMMUNITY_Community 146|Community 146]]
+- [[_COMMUNITY_Community 147|Community 147]]
+- [[_COMMUNITY_Community 148|Community 148]]
+- [[_COMMUNITY_Community 149|Community 149]]
+- [[_COMMUNITY_Community 150|Community 150]]
+- [[_COMMUNITY_Community 151|Community 151]]
+- [[_COMMUNITY_Community 152|Community 152]]
+- [[_COMMUNITY_Community 153|Community 153]]
+- [[_COMMUNITY_Community 154|Community 154]]
+- [[_COMMUNITY_Community 155|Community 155]]
+- [[_COMMUNITY_Community 156|Community 156]]
+- [[_COMMUNITY_Community 157|Community 157]]
+- [[_COMMUNITY_Community 158|Community 158]]
+- [[_COMMUNITY_Community 159|Community 159]]
+- [[_COMMUNITY_Community 160|Community 160]]
+- [[_COMMUNITY_Community 161|Community 161]]
+- [[_COMMUNITY_Community 162|Community 162]]
+- [[_COMMUNITY_Community 163|Community 163]]
+- [[_COMMUNITY_Community 164|Community 164]]
+- [[_COMMUNITY_Community 165|Community 165]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `NewMemory()` - 44 edges
-2. `Store` - 38 edges
-3. `TurbovecBackend` - 37 edges
-4. `Config` - 36 edges
+1. `NewMemory()` - 46 edges
+2. `Config` - 39 edges
+3. `Store` - 38 edges
+4. `TurbovecBackend` - 37 edges
 5. `Client` - 33 edges
 6. `Ops` - 33 edges
 7. `execContext` - 32 edges
@@ -188,7 +208,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (146 total, 5 thin omitted)
+## Communities (166 total, 5 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
@@ -199,8 +219,8 @@ Cohesion: 0.09
 Nodes (32): CancelFunc, ergoAcc, budgetFor(), cliSurface(), groundedNextStep(), hasActionableVerb(), isQueryRestating(), knownDecision() (+24 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.05
-Nodes (64): BudgetsConfig, CallToolBudget, BudgetsConfig, CallToolBudget, Config, applyDefaults(), cloneConfig(), cloneServerConfig() (+56 more)
+Cohesion: 0.11
+Nodes (26): BudgetsConfig, cacheConfigJSON, CallToolBudget, Config, applyDefaults(), configError(), Load(), resolveEnv() (+18 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.41
@@ -251,8 +271,8 @@ Cohesion: 0.25
 Nodes (8): File, fileDocument, Context, RWMutex, Server, Stats, Time, Tool
 
 ### Community 15 - "Community 15"
-Cohesion: 0.13
-Nodes (21): Connector, EmbeddingSink, EmbedItem, buildEmbedItem(), New(), normalizeSchema(), normalizeTool(), scrub() (+13 more)
+Cohesion: 0.12
+Nodes (23): Connector, EmbeddingSink, EmbedItem, buildEmbedItem(), New(), normalizeSchema(), normalizeTool(), scrub() (+15 more)
 
 ### Community 16 - "Community 16"
 Cohesion: 0.10
@@ -415,8 +435,8 @@ Cohesion: 0.17
 Nodes (11): MODIFIED Requirements, Requirement: Environment reference resolution, Requirement: Redaction in diagnostics, Scenario: Diagnostics show redacted configuration, Scenario: Missing environment reference is diagnosable, Scenario: Resolving a present environment reference, ADDED Requirements, MODIFIED Requirements (+3 more)
 
 ### Community 59 - "Community 59"
-Cohesion: 0.13
-Nodes (40): Context, Logger, T, marker, basePythonNames(), defaultRunner(), ensureVenv(), fileExists() (+32 more)
+Cohesion: 0.06
+Nodes (62): WriteStarter(), BackupConfig(), NewConfigManager(), mustMkConfig(), TestBackupConfig(), TestEnsureDoesNotClobberInvalid(), TestEnsurePreservesExistingValid(), TestEnsureWritesFreshConfig() (+54 more)
 
 ### Community 60 - "Community 60"
 Cohesion: 0.12
@@ -432,15 +452,15 @@ Nodes (15): configuration, Purpose, Requirements, Scenario: Invalid configuratio
 
 ### Community 63 - "Community 63"
 Cohesion: 0.07
-Nodes (19): Row, ndarray, SQLite-backed embedding metadata store.      The store owns its own connection (, Return the meta value for ``key`` or None when missing., Insert-or-replace the meta value for ``key``., Return the row for ``tool_ref`` or None when missing., Return the row for ``vector_id`` or None when missing., Yield every tool row in insertion order of ``vector_id``.          Used by the r (+11 more)
+Nodes (22): Path, Row, ndarray, SQLite-backed embedding metadata store.      The store owns its own connection (, Return the meta value for ``key`` or None when missing., Insert-or-replace the meta value for ``key``., Return the row for ``tool_ref`` or None when missing., Return the row for ``vector_id`` or None when missing. (+14 more)
 
 ### Community 64 - "Community 64"
-Cohesion: 0.06
-Nodes (31): MonkeyPatch, Path, FakeEmbedder, FastEmbedEmbedder, _needs_bge_query_prefix(), Call the underlying fastembed model and return a numpy array.          This bypa, Embed ``texts`` and return a ``(len(texts), dim)`` float32 array.          Args:, Return ``{"model": str, "dim": int}`` for the active model.          When ``EMBE (+23 more)
+Cohesion: 0.07
+Nodes (28): MonkeyPatch, FakeEmbedder, FastEmbedEmbedder, _needs_bge_query_prefix(), Call the underlying fastembed model and return a numpy array.          This bypa, Embed ``texts`` and return a ``(len(texts), dim)`` float32 array.          Args:, Return ``{"model": str, "dim": int}`` for the active model.          When ``EMBE, Deterministic embedder used in tests.      Generates a stable unit vector per te (+20 more)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.09
-Nodes (37): load_or_rebuild(), Load the persisted index or rebuild it from SQLite.      Triggers a rebuild when, FakeEmbedder, ndarray, FaissBackend, make_backend(), turbovec-backed vector index (default).      Uses ``turbovec.IdMapIndex`` with 4, Construct without creating a new IdMapIndex (used by load). (+29 more)
+Cohesion: 0.11
+Nodes (23): FakeEmbedder, ndarray, FaissBackend, turbovec-backed vector index (default).      Uses ``turbovec.IdMapIndex`` with 4, Construct without creating a new IdMapIndex (used by load)., FAISS-backed vector index (opt-in).      Wraps ``faiss.IndexIDMap(faiss.IndexFla, TurbovecBackend, Generate n unit-normalised float32 vectors of shape (n, dim). (+15 more)
 
 ### Community 66 - "Community 66"
 Cohesion: 0.25
@@ -459,16 +479,16 @@ Cohesion: 0.09
 Nodes (26): Handler, _make_handler(), Protocol dispatch-loop tests.  Covers: framed round-trips, unknown-op error is n, Flat args: all keys except id/op are operation args., Backward compat: nested 'args' key also works., Query with filter using the flat args format., Filter that matches nothing returns empty hits., Full dispatch loop processes multiple requests. (+18 more)
 
 ### Community 70 - "Community 70"
-Cohesion: 0.09
-Nodes (23): Embedder, Protocol, Embedder, make_embedder(), FastEmbed wrapper for the Ozy embedding sidecar.  The embedder is the only place, Factory: return a :class:`FastEmbedEmbedder` for the named model.      Exists so, Protocol implemented by both the real and fake embedders.      The protocol is w, Return ``{"model": str, "dim": int}`` describing the active model. (+15 more)
+Cohesion: 0.08
+Nodes (18): Embedder, Protocol, Embedder, make_embedder(), Factory: return a :class:`FastEmbedEmbedder` for the named model.      Exists so, Protocol implemented by both the real and fake embedders.      The protocol is w, Return ``{"model": str, "dim": int}`` describing the active model., Store (+10 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.15
-Nodes (12): Daemon, New(), newSink(), sink, Broker, Client, Context, EmbedItem (+4 more)
+Cohesion: 0.14
+Nodes (15): Daemon, New(), newSink(), wireBroker(), sink, Broker, Client, Config (+7 more)
 
 ### Community 72 - "Community 72"
-Cohesion: 0.06
-Nodes (53): WriteStarter(), BackupConfig(), NewConfigManager(), mustMkConfig(), TestBackupConfig(), TestEnsureDoesNotClobberInvalid(), TestEnsurePreservesExistingValid(), TestEnsureWritesFreshConfig() (+45 more)
+Cohesion: 0.22
+Nodes (20): appendBlockOnce(), configureUnixPath(), configureWindowsPath(), homeDir(), pathBlock(), pathExportLine(), printPathInstructions(), rcFileFor() (+12 more)
 
 ### Community 73 - "Community 73"
 Cohesion: 0.10
@@ -539,8 +559,8 @@ Cohesion: 0.18
 Nodes (12): FakeEmbedder, fake_embedder(), ops(), A deterministic embedder with the BGE-small default dim.      Query and document, A tiny-dim FakeEmbedder for vector backend tests.      Using a small dim keeps t, A :class:`Store` rooted in ``data_dir``; closed at teardown., A turbovec backend at the test dim.      Tests that need a FAISS backend constru, A wired :class:`Ops` with a turbovec backend and the fake embedder.      Mirrors (+4 more)
 
 ### Community 90 - "Community 90"
-Cohesion: 0.06
-Nodes (57): File, DepChecker, Dependency, firstVersion(), majorMinor(), mustOut(), NewDepChecker(), semanticFrom() (+49 more)
+Cohesion: 0.16
+Nodes (20): DepChecker, Dependency, firstVersion(), majorMinor(), mustOut(), NewDepChecker(), semanticFrom(), statusFor() (+12 more)
 
 ### Community 91 - "Community 91"
 Cohesion: 0.20
@@ -559,8 +579,8 @@ Cohesion: 0.22
 Nodes (8): Architecture, Concurrency, Files, internal/sidecar — Go sidecar client, JSONL protocol, Request, Response, Testing
 
 ### Community 95 - "Community 95"
-Cohesion: 0.06
-Nodes (51): execContext, Progress, NewProgress(), TestProgressColorOnTTY(), TestProgressPlainNoANSI(), step, boolLabel(), buildLocalOzy() (+43 more)
+Cohesion: 0.10
+Nodes (34): execContext, step, boolLabel(), buildLocalOzy(), dirExists(), installDirs(), installPublishedOzy(), localOzySource() (+26 more)
 
 ### Community 96 - "Community 96"
 Cohesion: 0.29
@@ -703,8 +723,8 @@ Cohesion: 0.15
 Nodes (12): ADDED Requirements, Requirement: PATH reachability detection, Requirement: Platform-appropriate directory rules, Requirement: Single platform-paths abstraction, Scenario: Binary already on PATH, Scenario: Binary not on PATH, Scenario: Config and venv match existing resolution, Scenario: Linux falls back to home defaults (+4 more)
 
 ### Community 132 - "Community 132"
-Cohesion: 0.19
-Nodes (4): ndarray, Add ``vectors`` (shape ``(n, dim)``, ``float32``) to the index.          ``ids``, Return the top-``k`` nearest neighbors of ``query``.          ``query`` has shap, Remove the vectors identified by ``ids`` (1-D ``uint64``).
+Cohesion: 0.08
+Nodes (36): cacheKey(), NewCaching(), mustPut(), newTestCache(), TestCachingBroker_FailuresNotCached(), TestCachingBroker_FindAndDescribeCached(), TestCachingBroker_ListPassthrough(), TestCachingBroker_ReadOnlyCallCachedDistinctArgs() (+28 more)
 
 ### Community 133 - "Community 133"
 Cohesion: 0.17
@@ -750,25 +770,105 @@ Nodes (6): Requirement: `ozy index` populates the catalog, Scenario: Indexing re
 Cohesion: 0.50
 Nodes (4): firstAcceptableRank(), Hygiene(), HygieneFinding, Corpus
 
+### Community 146 - "Community 146"
+Cohesion: 0.12
+Nodes (23): FastEmbed wrapper for the Ozy embedding sidecar.  The embedder is the only place, load_or_rebuild(), Per-operation orchestration for the embedding sidecar.  Each public method on :c, Load the persisted index or rebuild it from SQLite.      Triggers a rebuild when, SQLite-backed embedding metadata store.  The store is the sidecar's source of tr, file_ext_for(), make_backend(), Pluggable vector index behind the embedding sidecar.  Two backends share a singl (+15 more)
+
+### Community 147 - "Community 147"
+Cohesion: 0.09
+Nodes (21): ADDED Requirements, Requirement: Broker result caching on the shared seam, Requirement: Cache configuration and toggle, Requirement: Content-hash invalidation, Requirement: Failures are never cached, Requirement: Read-only write-tool exclusion is default-deny, Requirement: TTL expiry, Scenario: Cache decorator preserves the broker contract (+13 more)
+
+### Community 148 - "Community 148"
+Cohesion: 0.27
+Nodes (18): TestEmbeddingConfig_DefaultsWhenEmbeddingOmitted(), TestEmbeddingConfig_FAISSOptIn(), TestEmbeddingConfig_UnknownBackendRejected(), TestLoad_CacheConfigDefaultsAndToggle(), TestLoad_CacheNegativeValuesRejected(), TestLoad_ExampleMCPFixture(), TestLoad_MissingEnvVarIsDiagnostic(), TestLoad_MissingFile() (+10 more)
+
+### Community 149 - "Community 149"
+Cohesion: 0.21
+Nodes (12): State, freshState(), NewStateStore(), TestLoadMissingIsFresh(), TestSaveLoadRoundTripResumes(), TestSchemaMismatchStartsFresh(), StateStore, StepState (+4 more)
+
+### Community 150 - "Community 150"
+Cohesion: 0.13
+Nodes (14): Scenario: Cached findTool is invalidated by re-index, Scenario: Write tool always invokes live despite caching, MODIFIED Requirements, Requirement: MCP callTool performs live brokered invocation, Requirement: MCP findTool performs live downstream discovery, Scenario: callTool does not enlarge the MCP surface, Scenario: callTool stays behind the broker seam, Scenario: findTool keeps downstream tools as data (+6 more)
+
+### Community 151 - "Community 151"
+Cohesion: 0.27
+Nodes (13): Plan, BuildPlan(), fileExists(), ozyVersion(), releaseVersion(), renderDeps(), RenderPlan(), semanticAvailable() (+5 more)
+
+### Community 152 - "Community 152"
+Cohesion: 0.19
+Nodes (8): CacheConfig, cloneConfig(), cloneServerConfig(), cloneStringMap(), ServerConfig, serverConfigJSON, Duration, RawMessage
+
+### Community 153 - "Community 153"
+Cohesion: 0.26
+Nodes (12): execute(), printIntro(), printManualChecklist(), retryCommand(), Run(), Options, installSteps(), stepNames() (+4 more)
+
+### Community 154 - "Community 154"
+Cohesion: 0.26
+Nodes (7): Progress, NewProgress(), TestProgressColorOnTTY(), TestProgressPlainNoANSI(), Platform, Writer, T
+
+### Community 155 - "Community 155"
+Cohesion: 0.17
+Nodes (11): Context, Decision: A decorator over `Broker`, not logic inside `live` or the adapter, Decision: `cache` config section, default on, Decision: Content-hash key folded with a generation/schema token, Decision: In-process map with lazy TTL + capped size, Decision: Write-tool exclusion via captured `readOnlyHint`, default-deny, Decisions, Goals / Non-Goals (+3 more)
+
+### Community 156 - "Community 156"
+Cohesion: 0.47
+Nodes (9): fakeDeps(), tempPaths(), TestBuildPlanDetectsExistingConfig(), TestBuildPlanLexicalOnlyWarns(), TestBuildPlanSemanticAvailable(), TestRenderPlanEndsWithNothingChanged(), DepChecker, Paths (+1 more)
+
+### Community 157 - "Community 157"
+Cohesion: 0.25
+Nodes (7): Scenario: Cache section defaults are applied when omitted, MODIFIED Requirements, Requirement: Configuration discovery and loading, Scenario: Explicit config path override, Scenario: Loading a valid default user configuration file, Scenario: Missing configuration file, Scenario: Project-local config is not discovered implicitly
+
+### Community 158 - "Community 158"
+Cohesion: 0.54
+Nodes (7): newTestCtx(), TestAllowConsentBoundary(), TestExecuteResumesAndRevalidates(), TestInstallOzyBinaryLocalBuild(), TestInstallStepsHappyPath(), execContext, T
+
+### Community 159 - "Community 159"
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 160 - "Community 160"
+Cohesion: 0.29
+Nodes (6): 1. Capture read-only intent at discovery, 2. Cache configuration, 3. Caching broker decorator, 4. Wire into the daemon, 5. Config surface and docs, 6. Verify
+
+### Community 161 - "Community 161"
+Cohesion: 0.60
+Nodes (6): ConfigHome(), configHomeFor(), DefaultPath(), Home(), TestConfigHomeFallbacks(), TestDefaultPathPrecedence()
+
+### Community 162 - "Community 162"
+Cohesion: 0.67
+Nodes (5): File, Platform, DetectPlatform(), isTerminal(), termWidth()
+
+### Community 163 - "Community 163"
+Cohesion: 0.40
+Nodes (3): redactValue(), Config, Loaded
+
+### Community 164 - "Community 164"
+Cohesion: 0.50
+Nodes (4): SearchConfig, searchConfigJSON, LexicalSearch, SemanticSearch
+
+### Community 165 - "Community 165"
+Cohesion: 0.50
+Nodes (4): CallToolBudget, BudgetsConfig, DescribeToolBudget, FindToolBudget
+
 ## Knowledge Gaps
-- **882 isolated node(s):** `FS`, `Bool`, `ListToolsParams`, `ListToolsResult`, `CallToolParams` (+877 more)
+- **952 isolated node(s):** `FS`, `Duration`, `Mutex`, `cacheEntry`, `Time` (+947 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `NewMemory()` connect `Community 105` to `Community 6`, `Community 7`, `Community 103`, `Community 9`, `Community 10`, `Community 139`, `Community 51`, `Community 117`, `Community 23`, `Community 125`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
+- **Why does `NewMemory()` connect `Community 105` to `Community 132`, `Community 6`, `Community 7`, `Community 103`, `Community 9`, `Community 10`, `Community 139`, `Community 51`, `Community 117`, `Community 23`, `Community 125`?**
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Why does `NewClient()` connect `Community 103` to `Community 1`, `Community 68`, `Community 71`, `Community 8`, `Community 81`, `Community 51`, `Community 25`, `Community 60`?**
-  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
 - **Why does `Run()` connect `Community 112` to `Community 0`, `Community 1`, `Community 128`, `Community 107`, `Community 108`, `Community 109`, `Community 145`, `Community 115`, `Community 118`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Are the 43 inferred relationships involving `NewMemory()` (e.g. with `newCallBroker()` and `newBrokerWithTools()`) actually correct?**
-  _`NewMemory()` has 43 INFERRED edges - model-reasoned connections that need verification._
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Are the 45 inferred relationships involving `NewMemory()` (e.g. with `newTestCache()` and `TestCachingBroker_TTLExpiry()`) actually correct?**
+  _`NewMemory()` has 45 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 15 inferred relationships involving `Store` (e.g. with `ArgumentParser` and `Embedder`) actually correct?**
   _`Store` has 15 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 13 inferred relationships involving `TurbovecBackend` (e.g. with `Embedder` and `Handler`) actually correct?**
   _`TurbovecBackend` has 13 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `FS`, `Bool`, `ListToolsParams` to the rest of the system?**
-  _970 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `FS`, `Duration`, `Mutex` to the rest of the system?**
+  _1040 weakly-connected nodes found - possible documentation gaps or missing edges._

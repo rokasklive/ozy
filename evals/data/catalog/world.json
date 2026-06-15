@@ -27,7 +27,8 @@
           "spaceKey": { "type": "string", "description": "Restrict to a single space." },
           "limit": { "type": "integer", "default": 10 }
         }
-      }
+      },
+      "readOnly": true
     },
     {
       "toolRef": "confluence.get_page",

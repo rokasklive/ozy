@@ -763,7 +763,19 @@ budgets:
     includeExamples: true
   callTool:
     maxResultBytes: 65536
+
+cache:
+  enabled: true       # on by default; false for a pure pass-through
+  ttlSeconds: 300     # entry lifetime
+  maxEntries: 1024    # bound on stored entries
 ```
+
+The `cache` section toggles the broker result cache. It memoizes
+`findTool`/`describeTool` results and read-only `callTool` results within the
+TTL, keyed by a content hash of the request folded with the catalog generation
+(findTool) or the target tool's schema hash (describe/call). `callTool` is cached
+only for tools whose downstream `readOnlyHint` is true — write tools and tools of
+unknown intent always invoke live, and failures are never cached.
 
 Configuration requirements:
 

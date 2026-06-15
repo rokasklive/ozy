@@ -43,10 +43,10 @@ Commands whose broker behavior is deferred to later changes SHALL return a struc
 
 #### Scenario: Unimplemented command returns an instructional result
 
-- **WHEN** a user runs a command whose behavior is not yet implemented (e.g. `ozy index --format json` or `ozy eval run`)
+- **WHEN** a user runs a command whose behavior is deferred to a later change
 - **THEN** the output is a structured result with a `NOT_IMPLEMENTED` marker and an `agentInstruction` stating that the capability is pending implementation and what to do next, and the process exits with a non-zero status
 
-Note: broker-backed commands that are wired (e.g. `ozy search`) return their real instructional decision such as `catalog_empty`, not `NOT_IMPLEMENTED`.
+Note: broker-backed commands that are wired (e.g. `ozy search`) return their real instructional decision such as `catalog_empty`, not `NOT_IMPLEMENTED`. `ozy eval run` is now wired to the eval harness and no longer returns `NOT_IMPLEMENTED`.
 
 ### Requirement: CLI mirrors broker operations
 
@@ -56,6 +56,37 @@ The CLI SHALL invoke the same in-process broker seam used by the MCP adapter, so
 
 - **WHEN** a broker-backed command runs
 - **THEN** it calls the shared broker interface rather than a CLI-private code path
+
+### Requirement: Eval command runs the eval suite
+
+The `ozy eval` command SHALL execute the eval harness rather than returning
+`NOT_IMPLEMENTED`. `ozy eval run [scenario]` SHALL run the suite (optionally
+scoped to a named scenario family) and `ozy eval report` SHALL emit the latest
+benchmark summary, both honoring the shared `--format` modes so agents and CI can
+consume `--format json`. A run whose gated metrics fall below their thresholds
+SHALL exit with a non-zero status. The command MUST route through the same broker
+seam the rest of the CLI and the MCP adapter use, so evaluating the system cannot
+diverge from the system being evaluated.
+
+#### Scenario: eval run executes the harness
+
+- **WHEN** a user runs `ozy eval run --format json`
+- **THEN** the harness runs over the committed corpus and emits a single JSON result containing the computed metrics and an overall pass/fail verdict
+
+#### Scenario: eval run can scope to one family
+
+- **WHEN** a user runs `ozy eval run discovery`
+- **THEN** only the named scenario family is evaluated and reported
+
+#### Scenario: Gate failure sets a non-zero exit status
+
+- **WHEN** an `ozy eval run` invocation produces metrics that fall below the configured thresholds
+- **THEN** the process exits with a non-zero status so CI can gate on it
+
+#### Scenario: eval report emits the latest benchmark
+
+- **WHEN** a user runs `ozy eval report --format json` after a run
+- **THEN** the command emits the latest benchmark snapshot with its provenance
 
 ### Requirement: CLI exposes tools from explicit MCP configuration
 
@@ -80,3 +111,36 @@ The Ozy CLI SHALL load an explicit opencode-shaped MCP config path, index reacha
 
 - **WHEN** at least one tool has been indexed from an explicit MCP config path and a user runs `ozy --config examples/test_mcp_examples.jsonc search <query> --format json`
 - **THEN** the CLI returns a broker decision derived from the populated catalog rather than the `catalog_empty` decision
+
+### Requirement: Uninstall command
+
+The `ozy` CLI SHALL provide an `uninstall` subcommand wired through the same app
+and render plumbing as the other commands. It SHALL support `--dry-run`,
+`--keep-config`, `--keep-data`, and `--purge`, and SHALL be plan-first and
+consent-based per the uninstaller capability. Destructive removals (config,
+data/models/vector stores, user MCP definitions, PATH edits) MUST require
+explicit confirmation and MUST NOT be performed by `--yes` alone.
+
+#### Scenario: Uninstall command is available
+
+- **WHEN** the user runs `ozy uninstall`
+- **THEN** the uninstall flow starts with detection and a removal plan, honoring
+  the conservative default scope
+
+#### Scenario: Uninstall dry-run
+
+- **WHEN** the user runs `ozy uninstall --dry-run`
+- **THEN** the removal plan is printed and nothing is deleted
+
+### Requirement: Installer bootstrap is a separate entrypoint
+
+The one-command setup bootstrap SHALL ship as a separate binary at
+`cmd/ozy-install`, not as an `ozy` subcommand, so it can run before `ozy` exists.
+The main CLI documentation SHALL reference `go run …/cmd/ozy-install@<version>`
+as the install entrypoint alongside the existing commands.
+
+#### Scenario: Bootstrap documented alongside CLI
+
+- **WHEN** a user reads the CLI command surface documentation
+- **THEN** it points to `go run …/cmd/ozy-install@<version>` for installation and
+  `ozy uninstall` for removal

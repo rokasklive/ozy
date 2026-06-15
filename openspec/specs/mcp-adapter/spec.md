@@ -51,7 +51,7 @@ The MCP adapter SHALL route every tool invocation through the shared broker inte
 
 ### Requirement: MCP findTool performs live downstream discovery
 
-The MCP adapter SHALL provide a working `findTool` path that discovers tools from enabled downstream MCP servers configured in Ozy's resolved configuration when an MCP client calls `findTool`.
+The MCP adapter SHALL provide a working `findTool` path that discovers tools from enabled downstream MCP servers configured in Ozy's resolved configuration when an MCP client calls `findTool`. When result caching is enabled, a `findTool` response MAY be served from the broker-level result cache within its TTL; the cache SHALL be invalidated when the catalog is re-indexed so a cached result never masks a newly indexed or removed tool.
 
 #### Scenario: Harness sees findTool on Ozy MCP
 
@@ -88,9 +88,14 @@ The MCP adapter SHALL provide a working `findTool` path that discovers tools fro
 - **THEN** the response is a structured failure or failure decision with per-server diagnostics and repair-oriented agent instruction
 - **AND** the response does not report `catalog_empty`
 
+#### Scenario: Cached findTool is invalidated by re-index
+
+- **WHEN** result caching is enabled, a `findTool` query is served from cache, and the catalog is then re-indexed
+- **THEN** the next identical `findTool` call is recomputed against the freshly indexed catalog rather than served from the stale entry
+
 ### Requirement: MCP callTool performs live brokered invocation
 
-The MCP adapter SHALL provide a working `callTool` path that, when an MCP client calls `callTool`, resolves the `toolRef` against Ozy's resolved configuration, invokes the downstream tool via MCP `tools/call`, and returns the normalized §9.3 result — without requiring `ozy index` to have been run first. The adapter SHALL route the invocation through the shared broker interface and SHALL NOT expose downstream tools as top-level MCP tools.
+The MCP adapter SHALL provide a working `callTool` path that, when an MCP client calls `callTool`, resolves the `toolRef` against Ozy's resolved configuration, invokes the downstream tool via MCP `tools/call`, and returns the normalized §9.3 result — without requiring `ozy index` to have been run first. The adapter SHALL route the invocation through the shared broker interface and SHALL NOT expose downstream tools as top-level MCP tools. When result caching is enabled, a tool whose `readOnlyHint` is positively `true` MAY have its result served from the broker-level result cache within its TTL instead of repeating the downstream `tools/call`; a tool whose read-only intent is `false`, absent, or otherwise unknown SHALL always be invoked live.
 
 #### Scenario: Harness invokes a discovered tool through Ozy
 
@@ -106,3 +111,8 @@ The MCP adapter SHALL provide a working `callTool` path that, when an MCP client
 
 - **WHEN** a client lists Ozy's tools while live invocation is available
 - **THEN** it still sees exactly `findTool`, `describeTool`, and `callTool`, and no downstream tools are registered as top-level MCP tools
+
+#### Scenario: Write tool always invokes live despite caching
+
+- **WHEN** result caching is enabled and an agent calls `callTool` twice for a tool whose `readOnlyHint` is not positively `true`
+- **THEN** each call performs a live downstream `tools/call` and no result is served from the cache

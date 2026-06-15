@@ -395,3 +395,36 @@ func TestSemanticSearch_ExplicitFalseDisables(t *testing.T) {
 		t.Errorf("Semantic.Enabled = true, want false when explicitly disabled")
 	}
 }
+
+func TestLoad_CacheConfigDefaultsAndToggle(t *testing.T) {
+	cases := []struct {
+		name        string
+		content     string
+		wantEnabled bool
+		wantTTL     int
+		wantMax     int
+	}{
+		{"omitted section defaults on", `{}`, true, DefaultCacheTTLSeconds, DefaultCacheMaxEntries},
+		{"explicit disable keeps defaults", `{"cache":{"enabled":false}}`, false, DefaultCacheTTLSeconds, DefaultCacheMaxEntries},
+		{"explicit tuning is preserved", `{"cache":{"enabled":true,"ttlSeconds":60,"maxEntries":10}}`, true, 60, 10},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			loaded, cerr := Load(writeTemp(t, "ozy.jsonc", tt.content))
+			if cerr != nil {
+				t.Fatalf("Load() error = %v", cerr)
+			}
+			got := loaded.Resolved.Cache
+			if got.Enabled != tt.wantEnabled || got.TTLSeconds != tt.wantTTL || got.MaxEntries != tt.wantMax {
+				t.Errorf("Cache = %+v, want enabled=%v ttl=%d max=%d", got, tt.wantEnabled, tt.wantTTL, tt.wantMax)
+			}
+		})
+	}
+}
+
+func TestLoad_CacheNegativeValuesRejected(t *testing.T) {
+	_, cerr := Load(writeTemp(t, "ozy.jsonc", `{"cache":{"ttlSeconds":-1}}`))
+	if cerr == nil || cerr.Type != contract.ErrTypeConfigError || !strings.Contains(cerr.Message, "cache.ttlSeconds") {
+		t.Fatalf("Load() error = %v, want CONFIG_ERROR naming cache.ttlSeconds", cerr)
+	}
+}

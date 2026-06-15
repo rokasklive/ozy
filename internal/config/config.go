@@ -33,6 +33,7 @@ type Config struct {
 	Embedding EmbeddingConfig         `json:"embedding,omitempty"`
 	Search    SearchConfig            `json:"search,omitempty"`
 	Budgets   BudgetsConfig           `json:"budgets,omitempty"`
+	Cache     CacheConfig             `json:"cache,omitempty"`
 }
 
 // ServerConfig describes one downstream MCP server using the opencode shape.
@@ -256,6 +257,50 @@ type CallToolBudget struct {
 	MaxResultBytes int `json:"maxResultBytes"`
 }
 
+// Cache defaults applied when the `cache` section omits a field.
+const (
+	DefaultCacheTTLSeconds = 300
+	DefaultCacheMaxEntries = 1024
+)
+
+// cacheConfigJSON is the raw form of CacheConfig so an omitted `enabled` can
+// default to true (cache-on by default) while an explicit `false` disables it.
+type cacheConfigJSON struct {
+	Enabled    *bool `json:"enabled"`
+	TTLSeconds int   `json:"ttlSeconds"`
+	MaxEntries int   `json:"maxEntries"`
+}
+
+// CacheConfig toggles and tunes the broker result cache. When `enabled` is
+// omitted it defaults to true. TTLSeconds and MaxEntries default via
+// applyDefaults when left at zero.
+type CacheConfig struct {
+	Enabled    bool `json:"enabled"`
+	TTLSeconds int  `json:"ttlSeconds"`
+	MaxEntries int  `json:"maxEntries"`
+}
+
+// UnmarshalJSON applies the default-on cache semantics.
+func (c *CacheConfig) UnmarshalJSON(data []byte) error {
+	var raw cacheConfigJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Enabled == nil {
+		c.Enabled = true
+	} else {
+		c.Enabled = *raw.Enabled
+	}
+	c.TTLSeconds = raw.TTLSeconds
+	c.MaxEntries = raw.MaxEntries
+	return nil
+}
+
+// TTL returns the configured cache entry lifetime.
+func (c CacheConfig) TTL() time.Duration {
+	return time.Duration(c.TTLSeconds) * time.Second
+}
+
 // MissingRef records an unresolved {env:NAME} reference found during loading.
 type MissingRef struct {
 	Var    string `json:"var"`
@@ -347,7 +392,7 @@ func Load(path string) (*Loaded, *contract.Error) {
 		return nil, cerr
 	}
 
-	applyDefaults(&raw, sectionPresent(data, "search"))
+	applyDefaults(&raw, sectionPresent(data, "search"), sectionPresent(data, "cache"))
 
 	resolved := cloneConfig(raw)
 	missing := resolveEnv(&resolved)
@@ -375,7 +420,7 @@ func sectionPresent(data []byte, key string) bool {
 // UnmarshalJSON handles per-section omission of optional fields; this catches
 // the case where the entire section (e.g. `embedding` or `search.semantic`) is
 // missing from the JSON document.
-func applyDefaults(c *Config, searchPresent bool) {
+func applyDefaults(c *Config, searchPresent, cachePresent bool) {
 	if c.Embedding.VectorBackend == "" {
 		c.Embedding.VectorBackend = DefaultVectorBackend
 	}
@@ -386,6 +431,16 @@ func applyDefaults(c *Config, searchPresent bool) {
 	// the lexical-only escape hatch; treat the default as default-on semantic.
 	if !searchPresent {
 		c.Search.Semantic.Enabled = true
+	}
+	// Same default-on treatment for the result cache when the section is omitted.
+	if !cachePresent {
+		c.Cache.Enabled = true
+	}
+	if c.Cache.TTLSeconds == 0 {
+		c.Cache.TTLSeconds = DefaultCacheTTLSeconds
+	}
+	if c.Cache.MaxEntries == 0 {
+		c.Cache.MaxEntries = DefaultCacheMaxEntries
 	}
 }
 
@@ -433,6 +488,16 @@ func validate(c *Config) *contract.Error {
 		return configError("", "embedding.vectorBackend",
 			fmt.Sprintf("embedding.vectorBackend %q is not a known backend", c.Embedding.VectorBackend),
 			fmt.Sprintf("Set embedding.vectorBackend to %q or %q.", VectorBackendTurbovec, VectorBackendFAISS))
+	}
+	if c.Cache.TTLSeconds < 0 {
+		return configError("", "cache.ttlSeconds",
+			fmt.Sprintf("cache.ttlSeconds %d must not be negative", c.Cache.TTLSeconds),
+			"Set cache.ttlSeconds to a non-negative number of seconds, or omit it for the default.")
+	}
+	if c.Cache.MaxEntries < 0 {
+		return configError("", "cache.maxEntries",
+			fmt.Sprintf("cache.maxEntries %d must not be negative", c.Cache.MaxEntries),
+			"Set cache.maxEntries to a non-negative count, or omit it for the default.")
 	}
 	return nil
 }

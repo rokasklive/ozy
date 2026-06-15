@@ -53,8 +53,19 @@ func NewWithStore(cfg *config.Loaded, store catalog.Store) *Daemon {
 	return &Daemon{
 		cfg:    cfg,
 		store:  store,
-		broker: broker.NewLive(store, resolved, downstream.New(), search.New(store, nil)),
+		broker: wireBroker(store, resolved, search.New(store, nil)),
 	}
+}
+
+// wireBroker builds the shared broker, wrapping it with the result cache when the
+// resolved config enables caching. A disabled cache is the unwrapped broker, so
+// behavior is identical to not caching at all.
+func wireBroker(store catalog.Store, resolved *config.Config, engine *search.Engine) broker.Broker {
+	b := broker.NewLive(store, resolved, downstream.New(), engine)
+	if resolved != nil && resolved.Cache.Enabled {
+		b = broker.NewCaching(b, store, resolved.Cache)
+	}
+	return b
 }
 
 // Broker returns the shared broker used by all adapters.
@@ -178,8 +189,7 @@ func (d *Daemon) reWireBroker() {
 	if d.cfg != nil {
 		resolved = d.cfg.Resolved
 	}
-	d.broker = broker.NewLive(d.store, resolved, downstream.New(),
-		search.New(d.store, d.sidecarAdapter))
+	d.broker = wireBroker(d.store, resolved, search.New(d.store, d.sidecarAdapter))
 }
 
 func (d *Daemon) shutdownSidecar() {

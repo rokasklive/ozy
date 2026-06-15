@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "internal/catalog/catalog.go": {
-    "mtime": 1781389302.147488,
-    "ast_hash": "ea2ab4ebaca19a06b7c68243d618937b",
+    "mtime": 1781505502.7203534,
+    "ast_hash": "467cab08720389caf6d292143c550ebd",
     "semantic_hash": ""
   },
   "internal/catalog/file.go": {
@@ -45,7 +45,7 @@
     "semantic_hash": ""
   },
   "internal/cli/cli.go": {
-    "mtime": 1781466961.4648552,
+    "mtime": 1781504607.4522383,
     "ast_hash": "d0f56e5b3a30153ebe95002491c2f88e",
     "semantic_hash": ""
   },
@@ -60,18 +60,18 @@
     "semantic_hash": ""
   },
   "internal/cli/doctor.go": {
-    "mtime": 1781469605.8837793,
+    "mtime": 1781504607.452631,
     "ast_hash": "e43d275206e2123662e1fb745ac438a1",
     "semantic_hash": ""
   },
   "internal/config/config.go": {
-    "mtime": 1781428607.0565736,
-    "ast_hash": "e83d0fefb313b616636f9902079291b3",
+    "mtime": 1781505553.7472353,
+    "ast_hash": "12cacd16fe826292f95be74f88e11a93",
     "semantic_hash": ""
   },
   "internal/config/config_test.go": {
-    "mtime": 1781428607.0567641,
-    "ast_hash": "39eab3f4befdea82c71472453199cefc",
+    "mtime": 1781505798.6205091,
+    "ast_hash": "0e0a3bcb6570a248fd3653da0e14efbd",
     "semantic_hash": ""
   },
   "internal/config/redact.go": {
@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "internal/config/scaffold.go": {
-    "mtime": 1781466995.3506386,
-    "ast_hash": "3ec3e39cba816d15092e8c91a181ceeb",
+    "mtime": 1781505665.263555,
+    "ast_hash": "9bfe9c6dd77bb0703e3c09a864112f22",
     "semantic_hash": ""
   },
   "internal/contract/errors.go": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "internal/daemon/daemon.go": {
-    "mtime": 1781428607.0571125,
-    "ast_hash": "b7ed616fbef9f4c7c5ed3ee9cae44452",
+    "mtime": 1781505627.832047,
+    "ast_hash": "495241d7c6b46b990b4dd7c72855462d",
     "semantic_hash": ""
   },
   "internal/daemon/daemon_test.go": {
@@ -120,8 +120,8 @@
     "semantic_hash": ""
   },
   "internal/index/index.go": {
-    "mtime": 1781428607.0575488,
-    "ast_hash": "965229ffaff23a51efd33d36d77391ed",
+    "mtime": 1781505504.1988611,
+    "ast_hash": "04df7835498686a901cb1def16073d01",
     "semantic_hash": ""
   },
   "internal/index/index_test.go": {
@@ -155,7 +155,7 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1781467180.8923156,
+    "mtime": 1781504607.4326055,
     "ast_hash": "57328e6afe354b3d5314e4a607054f17",
     "semantic_hash": ""
   },
@@ -165,13 +165,13 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1781467042.6011462,
-    "ast_hash": "6dacd9b4df54659c408c7644ba1c2ad5",
+    "mtime": 1781505688.4099293,
+    "ast_hash": "870fa8f131fc8c573233b134e9d603ed",
     "semantic_hash": ""
   },
   "SPEC.md": {
-    "mtime": 1781428607.0299096,
-    "ast_hash": "dc692c0b58244c52bd4f51780d748eb6",
+    "mtime": 1781505686.4655468,
+    "ast_hash": "0d4db3fc1ea959695473a3608da2c3c8",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-06-12-init-project-skeleton/.openspec.yaml": {
@@ -875,193 +875,243 @@
     "semantic_hash": ""
   },
   "cmd/ozy-install/main.go": {
-    "mtime": 1781466798.375766,
+    "mtime": 1781504607.4338124,
     "ast_hash": "507faff509ed5fa7314c60c06185295a",
     "semantic_hash": ""
   },
   "internal/cli/uninstall.go": {
-    "mtime": 1781466957.4405854,
+    "mtime": 1781504607.4527452,
     "ast_hash": "932d63aeeec720e383cea174a6f0f707",
     "semantic_hash": ""
   },
   "internal/installer/config.go": {
-    "mtime": 1781469494.7228527,
+    "mtime": 1781504607.4533966,
     "ast_hash": "8e225249ac096e0cc7f67537726a5b67",
     "semantic_hash": ""
   },
   "internal/installer/config_test.go": {
-    "mtime": 1781466129.1535203,
+    "mtime": 1781504607.4535189,
     "ast_hash": "bf03850f7709096b8160884969fd7161",
     "semantic_hash": ""
   },
   "internal/installer/consent.go": {
-    "mtime": 1781469497.642778,
+    "mtime": 1781504607.4537952,
     "ast_hash": "0a0ec61a38d6c18230e1c3a7d89084b8",
     "semantic_hash": ""
   },
   "internal/installer/consent_test.go": {
-    "mtime": 1781458145.3309524,
+    "mtime": 1781504607.4543982,
     "ast_hash": "7d33ca59da638e64f046096bfcaa2510",
     "semantic_hash": ""
   },
   "internal/installer/deps.go": {
-    "mtime": 1781469513.2605867,
+    "mtime": 1781504607.4545496,
     "ast_hash": "8e051f2fa73e8ec0374abb64fffd7593",
     "semantic_hash": ""
   },
   "internal/installer/deps_test.go": {
-    "mtime": 1781466144.7463832,
+    "mtime": 1781504607.454762,
     "ast_hash": "058b836ed2ae7d4956a60aa23e243e3e",
     "semantic_hash": ""
   },
   "internal/installer/errors.go": {
-    "mtime": 1781465429.078504,
+    "mtime": 1781504607.4551587,
     "ast_hash": "b19908026dc7f6e89e5e03f72844e213",
     "semantic_hash": ""
   },
   "internal/installer/install.go": {
-    "mtime": 1781469484.5191557,
+    "mtime": 1781504607.4552872,
     "ast_hash": "975a5c987d8b130a19e6aa588bf16fa5",
     "semantic_hash": ""
   },
   "internal/installer/install_test.go": {
-    "mtime": 1781467150.6831133,
+    "mtime": 1781504607.455388,
     "ast_hash": "e15e21ec7c4edd52c340af6a646eea82",
     "semantic_hash": ""
   },
   "internal/installer/logger.go": {
-    "mtime": 1781465608.6541014,
+    "mtime": 1781504607.455493,
     "ast_hash": "510045d7b7e19b5199f28b14046fcabf",
     "semantic_hash": ""
   },
   "internal/installer/logger_test.go": {
-    "mtime": 1781458261.2220538,
+    "mtime": 1781504607.4556928,
     "ast_hash": "11bdcb313ca79ea67c5f4e7833effc2e",
     "semantic_hash": ""
   },
   "internal/installer/pathconfig.go": {
-    "mtime": 1781469487.341975,
+    "mtime": 1781504607.4558296,
     "ast_hash": "7222bfbba530ce2b640945a6cce427da",
     "semantic_hash": ""
   },
   "internal/installer/pathconfig_test.go": {
-    "mtime": 1781467170.121196,
+    "mtime": 1781504607.455945,
     "ast_hash": "eb1b12edec4fbf213e672bcb22295db7",
     "semantic_hash": ""
   },
   "internal/installer/plan.go": {
-    "mtime": 1781469488.1669493,
+    "mtime": 1781504607.4560764,
     "ast_hash": "1b9f956bf7ff8f7d101ef7434364e3f7",
     "semantic_hash": ""
   },
   "internal/installer/plan_test.go": {
-    "mtime": 1781466086.1940057,
+    "mtime": 1781504607.4561882,
     "ast_hash": "ae204bb545f10d4b9d21c3b1bed389bc",
     "semantic_hash": ""
   },
   "internal/installer/platform.go": {
-    "mtime": 1781465847.3786333,
+    "mtime": 1781504607.456307,
     "ast_hash": "c5aed52821645bc9816e0eb2a06a3170",
     "semantic_hash": ""
   },
   "internal/installer/progress.go": {
-    "mtime": 1781469523.0233326,
+    "mtime": 1781504607.4564064,
     "ast_hash": "5f4813339adc891b6d303f6cc5f0e55b",
     "semantic_hash": ""
   },
   "internal/installer/progress_test.go": {
-    "mtime": 1781466448.1892025,
-    "ast_hash": "c5b15a845cfb1660254afae371b13495",
+    "mtime": 1781504607.4565942,
+    "ast_hash": "0cbed9de077397263ce811ffce6936e4",
     "semantic_hash": ""
   },
   "internal/installer/state.go": {
-    "mtime": 1781469524.6532307,
+    "mtime": 1781504607.4566972,
     "ast_hash": "63b48cc1829622e96fb778799865239e",
     "semantic_hash": ""
   },
   "internal/installer/state_test.go": {
-    "mtime": 1781458083.0736108,
+    "mtime": 1781504607.456793,
     "ast_hash": "c907a066ce837ba96e837c879c2cc217",
     "semantic_hash": ""
   },
   "internal/installer/steps.go": {
-    "mtime": 1781467826.9888747,
+    "mtime": 1781504607.4570115,
     "ast_hash": "204fb38e8babacecdc7c3ad8795c25e3",
     "semantic_hash": ""
   },
   "internal/installer/steps_test.go": {
-    "mtime": 1781467868.6162925,
+    "mtime": 1781504607.4571416,
     "ast_hash": "5d7e0695c2215107e8adf15494f9e5cf",
     "semantic_hash": ""
   },
   "internal/installer/uninstall.go": {
-    "mtime": 1781469485.9418533,
+    "mtime": 1781504607.4572763,
     "ast_hash": "5325bd13a7169d0d5e0b28e5f4fa3b33",
     "semantic_hash": ""
   },
   "internal/installer/uninstall_test.go": {
-    "mtime": 1781467145.4112923,
+    "mtime": 1781504607.457406,
     "ast_hash": "1005c0806e20a1e94f17fce362693d59",
     "semantic_hash": ""
   },
   "internal/paths/paths.go": {
-    "mtime": 1781457984.9579933,
+    "mtime": 1781504607.4575622,
     "ast_hash": "c259db7cf989fc537ff385a6b7e96c11",
     "semantic_hash": ""
   },
   "internal/paths/paths_test.go": {
-    "mtime": 1781458004.019239,
-    "ast_hash": "2ed743896d38704f62e7197bf06578e7",
+    "mtime": 1781504607.4577913,
+    "ast_hash": "180590e824eaa9f30e02125c1254814c",
     "semantic_hash": ""
   },
   "CONTRIBUTING.md": {
-    "mtime": 1781467065.186863,
+    "mtime": 1781504607.4331145,
     "ast_hash": "6bc7b2fa4f8f98b980e71d41a7832ee1",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/.openspec.yaml": {
-    "mtime": 1781457047.1193688,
+    "mtime": 1781504607.4580255,
     "ast_hash": "d3f3cdfce511e197472e6dee42eaf5d8",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/design.md": {
-    "mtime": 1781457394.0816994,
+    "mtime": 1781504607.458234,
     "ast_hash": "64a38777d9e81f00b565cbccd4b2f16e",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/proposal.md": {
-    "mtime": 1781457184.3235502,
+    "mtime": 1781504607.4583795,
     "ast_hash": "a121f85b9202e2eb46d1702e400274fa",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/specs/cli-interface/spec.md": {
-    "mtime": 1781457328.9296384,
+    "mtime": 1781504607.4585557,
     "ast_hash": "ffc54363057b9e35446516804147e676",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/specs/install-paths/spec.md": {
-    "mtime": 1781457230.524595,
+    "mtime": 1781504607.4586928,
     "ast_hash": "973874ab9bac46a464bb2eac1f603bf2",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/specs/installer/spec.md": {
-    "mtime": 1781457289.5017166,
+    "mtime": 1781504607.458904,
     "ast_hash": "682fdc368c56bd0f345a95d790b933fb",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/specs/uninstaller/spec.md": {
-    "mtime": 1781457314.8189068,
+    "mtime": 1781504607.459057,
     "ast_hash": "e16eecabd7cb8c8490249b9d7f505f32",
     "semantic_hash": ""
   },
   "openspec/changes/ozy-installer/tasks.md": {
-    "mtime": 1781467302.1315954,
+    "mtime": 1781504607.4592857,
     "ast_hash": "917c3c6a24831666b3749e0a98af3787",
     "semantic_hash": ""
   },
   "assets/ozy.png": {
     "mtime": 1781449701.9282901,
     "ast_hash": "d635da8772d6243e7901c9f2fdca02fb",
+    "semantic_hash": ""
+  },
+  "internal/broker/cache.go": {
+    "mtime": 1781505614.4206047,
+    "ast_hash": "66a13e1344fc3361d86881e58907161b",
+    "semantic_hash": ""
+  },
+  "internal/broker/cache_test.go": {
+    "mtime": 1781505829.8894708,
+    "ast_hash": "26f96ca9287a4995ce73d1d096b480e9",
+    "semantic_hash": ""
+  },
+  "internal/index/readonly_test.go": {
+    "mtime": 1781505805.5215073,
+    "ast_hash": "417b19cecccf559cbf5c1aad2322448b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/.openspec.yaml": {
+    "mtime": 1781504663.314894,
+    "ast_hash": "0ac7f81219e0206f87bbee5da5020dcc",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/design.md": {
+    "mtime": 1781505080.224254,
+    "ast_hash": "65f0b7240505986454abadcc7347c46d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/proposal.md": {
+    "mtime": 1781504926.7771206,
+    "ast_hash": "2f414e164f578d3c85c7c404a7aab6b1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/specs/configuration/spec.md": {
+    "mtime": 1781504984.507448,
+    "ast_hash": "0405ad143c7b5fd058f256c7b2d22938",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/specs/mcp-adapter/spec.md": {
+    "mtime": 1781505013.537719,
+    "ast_hash": "88c09a415c3aed88733ff74fb8f0287b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/specs/result-cache/spec.md": {
+    "mtime": 1781504970.341631,
+    "ast_hash": "5f59b7c36e7109baf2df8887494ea1e0",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cache-calltool-results/tasks.md": {
+    "mtime": 1781505867.7028995,
+    "ast_hash": "935fa220b43842acd8879aad7c13b689",
     "semantic_hash": ""
   }
 }

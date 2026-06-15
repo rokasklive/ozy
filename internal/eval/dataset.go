@@ -50,6 +50,10 @@ type CatalogTool struct {
 	Title       string         `json:"title"`
 	Description string         `json:"description"`
 	InputSchema map[string]any `json:"inputSchema"`
+	// ReadOnly mirrors the downstream readOnlyHint annotation. It gates result
+	// caching of callTool in the cache-effectiveness family; omitted defaults to
+	// false (write-safe).
+	ReadOnly bool `json:"readOnly,omitempty"`
 }
 
 // Discovery categories. Each labeled intent declares one so metrics can be
@@ -222,6 +226,7 @@ func (c *Corpus) Store() (catalog.Store, error) {
 			InputSchema:        t.InputSchema,
 			ServerStatus:       st,
 			CallableNow:        st == catalog.ServerOnline,
+			ReadOnly:           t.ReadOnly,
 			Freshness:          catalog.FreshnessFresh,
 			LastIndexedAt:      time.Now(),
 		}); err != nil {

@@ -406,6 +406,7 @@ func normalizeTool(serverID string, tool *mcpsdk.Tool, now time.Time) (catalog.T
 		CapabilityText:     []string{tool.Title, tool.Description},
 		ServerStatus:       catalog.ServerOnline,
 		CallableNow:        true,
+		ReadOnly:           tool.Annotations != nil && tool.Annotations.ReadOnlyHint,
 		LastIndexedAt:      now,
 		SchemaHash:         schemaHash,
 		Freshness:          catalog.FreshnessFresh,

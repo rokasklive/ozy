@@ -96,6 +96,9 @@ func Scoreboard(r *RunResult) string {
 	if r.Performance != nil {
 		writePerformanceSection(&b, r.Performance)
 	}
+	if r.Cache != nil {
+		writeCacheSection(&b, r.Cache)
+	}
 	writeGatesSection(&b, r.Gates)
 
 	if len(r.Hygiene) > 0 {
@@ -198,6 +201,19 @@ func writeLatencyRow(b *strings.Builder, name string, s *LatencyStats) {
 		return
 	}
 	fmt.Fprintf(b, "| %s | %.2f | %.2f | %.0f |\n", name, s.P50Micros, s.P95Micros, s.OpsPerSec)
+}
+
+func writeCacheSection(b *strings.Builder, m *CacheEffectivenessMetrics) {
+	fmt.Fprintln(b, "## Result cache effectiveness")
+	fmt.Fprintln(b)
+	fmt.Fprintf(b, "Over a fixed repeated-call workload, **%.0f%%** of cacheable broker operations were served from cache (%d of %d), avoiding **%d** tokens of re-fetched downstream/search payload. _Reduction = served / cacheable; reported, write tools are never cached._\n\n",
+		m.RedundantCallReduction*100, m.ServedFromCache, m.CacheableOps, m.TokensAvoided)
+	fmt.Fprintln(b, "| Cacheable ops | Served from cache | Delegated | Reduction | Response tokens (executed/total) |")
+	fmt.Fprintln(b, "| ---: | ---: | ---: | ---: | ---: |")
+	fmt.Fprintf(b, "| %d | %d | %d | %s | %d / %d |\n",
+		m.CacheableOps, m.ServedFromCache, m.DelegatedOps, num(m.RedundantCallReduction),
+		m.ExecutedResponseTokens, m.WorkloadResponseTokens)
+	fmt.Fprintln(b)
 }
 
 func writeGatesSection(b *strings.Builder, gates []GateResult) {

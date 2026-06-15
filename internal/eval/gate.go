@@ -17,6 +17,7 @@ type Thresholds struct {
 	Invocation *InvocationGate          `json:"invocation,omitempty"`
 	Ergonomics *ErgonomicsGate          `json:"ergonomics,omitempty"`
 	Tokens     *TokenGate               `json:"tokens,omitempty"`
+	Cache      *CacheGate               `json:"cache,omitempty"`
 }
 
 // InvocationGate is the set of gated invocation metrics. All *Min fields gate
@@ -42,6 +43,11 @@ type ErgonomicsGate struct {
 // TokenGate gates the token-economy headline (startup reduction ratio).
 type TokenGate struct {
 	StartupReductionMin *float64 `json:"startupReductionMin,omitempty"`
+}
+
+// CacheGate gates the cache-effectiveness headline (redundant-call reduction).
+type CacheGate struct {
+	RedundantCallReductionMin *float64 `json:"redundantCallReductionMin,omitempty"`
 }
 
 // DiscoveryGate is the set of gated metrics for one discovery scope (a category
@@ -180,6 +186,16 @@ func (t *Thresholds) EvaluateTokens(m *TokenEconomyMetrics) []GateResult {
 	}
 	var out []GateResult
 	addMinGate(&out, "tokens.startupReduction", t.Tokens.StartupReductionMin, m.StartupReductionRatio)
+	return out
+}
+
+// EvaluateCache turns the cache-effectiveness threshold into a gate result.
+func (t *Thresholds) EvaluateCache(m *CacheEffectivenessMetrics) []GateResult {
+	if t.Cache == nil || m == nil {
+		return nil
+	}
+	var out []GateResult
+	addMinGate(&out, "cache.redundantCallReduction", t.Cache.RedundantCallReductionMin, m.RedundantCallReduction)
 	return out
 }
 

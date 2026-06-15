@@ -31,17 +31,18 @@ type Provenance struct {
 // metric, the provenance, the gate outcomes, and the overall verdict. It is both
 // the JSON snapshot and the source the Markdown scoreboard is generated from.
 type RunResult struct {
-	Schema       string               `json:"schema"`
-	GeneratedAt  time.Time            `json:"generatedAt"`
-	Provenance   Provenance           `json:"provenance"`
-	Discovery    *DiscoveryReport     `json:"discovery,omitempty"`
-	Invocation   *InvocationReport    `json:"invocation,omitempty"`
-	Ergonomics   *ErgonomicsReport    `json:"ergonomics,omitempty"`
-	TokenEconomy *TokenEconomyMetrics `json:"tokenEconomy,omitempty"`
-	Performance  *LatencyReport       `json:"performance,omitempty"`
-	Hygiene      []HygieneFinding     `json:"hygiene,omitempty"`
-	Gates        []GateResult         `json:"gates"`
-	Verdict      string               `json:"verdict"`
+	Schema       string                     `json:"schema"`
+	GeneratedAt  time.Time                  `json:"generatedAt"`
+	Provenance   Provenance                 `json:"provenance"`
+	Discovery    *DiscoveryReport           `json:"discovery,omitempty"`
+	Invocation   *InvocationReport          `json:"invocation,omitempty"`
+	Ergonomics   *ErgonomicsReport          `json:"ergonomics,omitempty"`
+	TokenEconomy *TokenEconomyMetrics       `json:"tokenEconomy,omitempty"`
+	Performance  *LatencyReport             `json:"performance,omitempty"`
+	Cache        *CacheEffectivenessMetrics `json:"cache,omitempty"`
+	Hygiene      []HygieneFinding           `json:"hygiene,omitempty"`
+	Gates        []GateResult               `json:"gates"`
+	Verdict      string                     `json:"verdict"`
 }
 
 // Failed reports whether the run's verdict is fail (used for the process exit
@@ -90,6 +91,10 @@ func (r *RunResult) Render(format string) string {
 	}
 	if r.TokenEconomy != nil {
 		fmt.Fprintf(&b, "tokens: startup %d→%d (−%.0f%%)\n", r.TokenEconomy.DirectStartupTokens, r.TokenEconomy.OzyStartupTokens, r.TokenEconomy.StartupReductionRatio*100)
+	}
+	if r.Cache != nil {
+		fmt.Fprintf(&b, "cache: redundant-call reduction %.1f%% (%d/%d served), %d tokens avoided\n",
+			r.Cache.RedundantCallReduction*100, r.Cache.ServedFromCache, r.Cache.CacheableOps, r.Cache.TokensAvoided)
 	}
 	fmt.Fprintf(&b, "gates: %d passed, %d failed, %d skipped", passed, failed, skipped)
 	if len(r.Hygiene) > 0 {

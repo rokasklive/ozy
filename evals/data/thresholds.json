@@ -25,5 +25,8 @@
   },
   "tokens": {
     "startupReductionMin": 0.5
+  },
+  "cache": {
+    "redundantCallReductionMin": 0.40
   }
 }

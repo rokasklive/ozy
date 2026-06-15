@@ -31,18 +31,18 @@ type Provenance struct {
 // metric, the provenance, the gate outcomes, and the overall verdict. It is both
 // the JSON snapshot and the source the Markdown scoreboard is generated from.
 type RunResult struct {
-	Schema       string               `json:"schema"`
-	GeneratedAt  time.Time            `json:"generatedAt"`
-	Provenance   Provenance           `json:"provenance"`
-	Discovery    *DiscoveryReport     `json:"discovery,omitempty"`
-	Invocation   *InvocationReport    `json:"invocation,omitempty"`
-	Ergonomics   *ErgonomicsReport    `json:"ergonomics,omitempty"`
-	TokenEconomy *TokenEconomyMetrics `json:"tokenEconomy,omitempty"`
-	Performance  *LatencyReport       `json:"performance,omitempty"`
+	Schema       string                     `json:"schema"`
+	GeneratedAt  time.Time                  `json:"generatedAt"`
+	Provenance   Provenance                 `json:"provenance"`
+	Discovery    *DiscoveryReport           `json:"discovery,omitempty"`
+	Invocation   *InvocationReport          `json:"invocation,omitempty"`
+	Ergonomics   *ErgonomicsReport          `json:"ergonomics,omitempty"`
+	TokenEconomy *TokenEconomyMetrics       `json:"tokenEconomy,omitempty"`
+	Performance  *LatencyReport             `json:"performance,omitempty"`
 	Cache        *CacheEffectivenessMetrics `json:"cache,omitempty"`
-	Hygiene      []HygieneFinding     `json:"hygiene,omitempty"`
-	Gates        []GateResult         `json:"gates"`
-	Verdict      string               `json:"verdict"`
+	Hygiene      []HygieneFinding           `json:"hygiene,omitempty"`
+	Gates        []GateResult               `json:"gates"`
+	Verdict      string                     `json:"verdict"`
 }
 
 // Failed reports whether the run's verdict is fail (used for the process exit

@@ -53,8 +53,8 @@ type Tool struct {
 	// hit can never substitute for a side-effecting invocation.
 	ReadOnly      bool
 	LastIndexedAt time.Time
-	SchemaHash         string
-	Freshness          Freshness
+	SchemaHash    string
+	Freshness     Freshness
 }
 
 // Stats is lightweight catalog health used to drive instructional responses.

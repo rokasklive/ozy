@@ -31,9 +31,9 @@ type CacheEffectivenessMetrics struct {
 // (the second of each must hit), plus a write tool's call twice (must always be
 // invoked live). Constant so the metric is reproducible.
 const (
-	cacheQuery      = "search the wiki for the deployment runbook"
-	cacheReadOnly   = "confluence.search_pages"
-	cacheWriteRef   = "jira.create_issue"
+	cacheQuery    = "search the wiki for the deployment runbook"
+	cacheReadOnly = "confluence.search_pages"
+	cacheWriteRef = "jira.create_issue"
 )
 
 var (

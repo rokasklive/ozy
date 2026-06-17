@@ -13,16 +13,16 @@ import (
 
 // EnvironmentRecord captures the model and runtime provenance for a benchmark run.
 type EnvironmentRecord struct {
-	ModelName      string `json:"modelName"`
-	ModelBaseURL   string `json:"modelBaseURL"`
-	Temperature    string `json:"temperature"`
-	MaxTokens      int    `json:"maxTokens"`
-	ContextWindow  int    `json:"contextWindow"`
-	Timestamp      string `json:"timestamp"`
-	OzyGitSHA      string `json:"ozyGitSHA"`
-	ScenarioHash   string `json:"scenarioHash"`
-	Modes          []string `json:"modes"`
-	RunCount       int      `json:"runCount"`
+	ModelName     string   `json:"modelName"`
+	ModelBaseURL  string   `json:"modelBaseURL"`
+	Temperature   string   `json:"temperature"`
+	MaxTokens     int      `json:"maxTokens"`
+	ContextWindow int      `json:"contextWindow"`
+	Timestamp     string   `json:"timestamp"`
+	OzyGitSHA     string   `json:"ozyGitSHA"`
+	ScenarioHash  string   `json:"scenarioHash"`
+	Modes         []string `json:"modes"`
+	RunCount      int      `json:"runCount"`
 }
 
 // SanitizeBaseURL strips path and query components, keeping only scheme://host[:port].
@@ -67,7 +67,7 @@ func WriteProvenance(path string, record *EnvironmentRecord) error {
 	if err != nil {
 		return fmt.Errorf("write provenance: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")

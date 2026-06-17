@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -42,8 +43,9 @@ func safePath(fixtureDir, relPath string) (string, error) {
 func execOutput(cmd *exec.Cmd) (string, error) {
 	out, err := cmd.Output()
 	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return "", fmt.Errorf("%s: %s", err, string(exitErr.Stderr))
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return "", fmt.Errorf("%w: %s", err, string(exitErr.Stderr))
 		}
 		return "", err
 	}
@@ -54,15 +56,17 @@ func execOutput(cmd *exec.Cmd) (string, error) {
 // ripgrep exits 1 when there are no matches — a valid empty result, not an
 // error; only exit code >= 2 is a real failure.
 func runRg(dir string, args ...string) (string, error) {
+	//nolint:gosec // G204: ripgrep is invoked intentionally for bench code search.
 	cmd := exec.Command("rg", args...)
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
 			if exitErr.ExitCode() == 1 {
 				return "", nil
 			}
-			return "", fmt.Errorf("%s: %s", err, string(exitErr.Stderr))
+			return "", fmt.Errorf("%w: %s", err, string(exitErr.Stderr))
 		}
 		return "", err
 	}
@@ -342,13 +346,13 @@ func registerIncidentDB(srv *mcpsdk.Server, fixtureDir string) {
 		if err != nil {
 			return jsonResult(map[string]any{"error": fmt.Sprintf("open db: %v", err)}), nil, nil
 		}
-		defer db.Close()
+		defer func() { _ = db.Close() }()
 
 		rows, err := db.QueryContext(ctx, "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
 		if err != nil {
 			return jsonResult(map[string]any{"error": fmt.Sprintf("query tables: %v", err)}), nil, nil
 		}
-		defer rows.Close()
+		defer func() { _ = rows.Close() }()
 
 		var tables []string
 		for rows.Next() {
@@ -373,13 +377,13 @@ func registerIncidentDB(srv *mcpsdk.Server, fixtureDir string) {
 		if err != nil {
 			return jsonResult(map[string]any{"error": fmt.Sprintf("open db: %v", err)}), nil, nil
 		}
-		defer db.Close()
+		defer func() { _ = db.Close() }()
 
 		rows, err := db.QueryContext(ctx, fmt.Sprintf("PRAGMA table_info(%s)", in.TableName))
 		if err != nil {
 			return jsonResult(map[string]any{"error": fmt.Sprintf("describe table: %v", err), "tableName": in.TableName}), nil, nil
 		}
-		defer rows.Close()
+		defer func() { _ = rows.Close() }()
 
 		cols, err := rows.Columns()
 		if err != nil {
@@ -429,13 +433,13 @@ func registerIncidentDB(srv *mcpsdk.Server, fixtureDir string) {
 		if err != nil {
 			return jsonResult(map[string]any{"error": fmt.Sprintf("open db: %v", err)}), nil, nil
 		}
-		defer db.Close()
+		defer func() { _ = db.Close() }()
 
 		rows, err := db.QueryContext(ctx, in.Query)
 		if err != nil {
 			return jsonResult(map[string]any{"error": fmt.Sprintf("query: %v", err), "query": in.Query}), nil, nil
 		}
-		defer rows.Close()
+		defer func() { _ = rows.Close() }()
 
 		cols, err := rows.Columns()
 		if err != nil {
@@ -606,12 +610,12 @@ func parseTzOffset(tz string) int {
 		if len(parts) == 2 {
 			h := 0
 			m := 0
-			fmt.Sscanf(parts[0], "%d", &h)
-			fmt.Sscanf(parts[1], "%d", &m)
+			_, _ = fmt.Sscanf(parts[0], "%d", &h)
+			_, _ = fmt.Sscanf(parts[1], "%d", &m)
 			return sign * h
 		}
 		h := 0
-		fmt.Sscanf(cleanTz, "%d", &h)
+		_, _ = fmt.Sscanf(cleanTz, "%d", &h)
 		return sign * h
 	}
 
@@ -686,9 +690,9 @@ func registerNotes(srv *mcpsdk.Server) {
 		Description: "Create a formatted plan with a title and ordered steps.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in createPlanInput) (*mcpsdk.CallToolResult, any, error) {
 		var sb strings.Builder
-		sb.WriteString(fmt.Sprintf("# %s\n\n", in.Title))
+		fmt.Fprintf(&sb, "# %s\n\n", in.Title)
 		for i, step := range in.Steps {
-			sb.WriteString(fmt.Sprintf("%d. %s\n", i+1, step))
+			fmt.Fprintf(&sb, "%d. %s\n", i+1, step)
 		}
 		return jsonResult(map[string]any{
 			"plan":  sb.String(),

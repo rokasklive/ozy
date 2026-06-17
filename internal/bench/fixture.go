@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	_ "modernc.org/sqlite"
+	_ "modernc.org/sqlite" // SQLite driver for incident-db benchmark fixture
 )
 
 // FixtureMeta holds resolved metadata after generating the acme-billing fixture.
@@ -20,6 +20,8 @@ type FixtureMeta struct {
 
 // GenerateIncidentDB creates the read-only incident SQLite database with rows
 // for suspended accounts incorrectly invoiced on 2026-06-14.
+//
+//nolint:gosec // G301: 0755 permissions are intentional for fixture directories.
 func GenerateIncidentDB(targetDir string) error {
 	dbPath := targetDir + "/db/incident.sqlite"
 	if err := os.MkdirAll(targetDir+"/db", 0o755); err != nil {
@@ -30,7 +32,7 @@ func GenerateIncidentDB(targetDir string) error {
 	if err != nil {
 		return fmt.Errorf("open incident db: %w", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	statements := []string{
 		`CREATE TABLE IF NOT EXISTS invoices (
@@ -82,6 +84,8 @@ func fixedGitEnv(date string) []string {
 
 // git runs "git" with args and optional env in dir. It inherits PATH from the
 // parent but overrides env vars listed in extraEnv.
+//
+//nolint:gosec // G204: git subprocess is intentional for fixture generation.
 func git(dir string, extraEnv []string, args ...string) error {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
@@ -94,6 +98,8 @@ func git(dir string, extraEnv []string, args ...string) error {
 }
 
 // gitString runs "git" and returns the trimmed first line of stdout.
+//
+//nolint:gosec // G204: git subprocess is intentional for fixture generation.
 func gitString(dir string, extraEnv []string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
@@ -105,23 +111,10 @@ func gitString(dir string, extraEnv []string, args ...string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-// srcDir returns the path to the Java source tree under targetDir.
-func srcDir(targetDir string) string {
-	return filepath.Join(targetDir, "src", "main", "java", "com", "acme", "billing")
-}
-
-// testDir returns the path to the Java test tree under targetDir.
-func testDir(targetDir string) string {
-	return filepath.Join(targetDir, "src", "test", "java", "com", "acme", "billing")
-}
-
-// docsDir returns the path to the docs directory under targetDir.
-func docsDir(targetDir string) string {
-	return filepath.Join(targetDir, "docs")
-}
-
 // writeFile creates a file with content under targetDir. It creates parent
 // directories as needed.
+//
+//nolint:gosec // G301,G306: broad permissions are intentional for fixture data.
 func writeFile(targetDir, relPath, content string) error {
 	full := filepath.Join(targetDir, relPath)
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
@@ -137,6 +130,8 @@ func writeFile(targetDir, relPath, content string) error {
 // It writes Java source files, documentation, initializes a git repository,
 // creates a multi-commit history, resolves the culprit commit hash, and
 // returns FixtureMeta.
+//
+//nolint:gosec // G301: 0755 permissions are intentional for fixture directories.
 func GenerateFixture(targetDir string) (*FixtureMeta, error) {
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
 		return nil, fmt.Errorf("mkdir targetDir: %w", err)

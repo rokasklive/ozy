@@ -404,7 +404,7 @@ func realEmbeddingWarmUp(c *execContext) *StepError {
 	hr := client.Health(lctx)
 	lcancel()
 	if !hr.OK {
-		return c.embeddingStepError(fmt.Errorf("sidecar liveness check failed: %v", hr.Err))
+		return c.embeddingStepError(fmt.Errorf("sidecar liveness check failed: %w", hr.Err))
 	}
 	// Warm-up gets its own generous deadline so a cold model download is not
 	// aborted by the short liveness budget above.

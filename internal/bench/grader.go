@@ -93,7 +93,7 @@ func WriteGradingResult(path string, result *GradingResult) error {
 	if err != nil {
 		return fmt.Errorf("write grading result: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")

@@ -11,21 +11,21 @@ import (
 
 // ToolSurface describes a single advertised tool at startup.
 type ToolSurface struct {
-	Name        string `json:"name"`
-	Server      string `json:"server"`
-	Description string `json:"description"`
-	SchemaBytes int    `json:"schemaBytes"`
-	SchemaTokens int   `json:"schemaTokens"`
+	Name         string `json:"name"`
+	Server       string `json:"server"`
+	Description  string `json:"description"`
+	SchemaBytes  int    `json:"schemaBytes"`
+	SchemaTokens int    `json:"schemaTokens"`
 }
 
 // SurfaceMetrics captures the startup tool surface for one mode.
 type SurfaceMetrics struct {
-	Mode                  string        `json:"mode"`
-	ToolsVisible          int           `json:"toolsVisible"`
-	SchemaBytes           int           `json:"schemaBytes"`
-	SchemaTokens          int           `json:"schemaTokens"`
-	IrrelevantSchemaTokens int          `json:"irrelevantSchemaTokens"`
-	Tools                 []ToolSurface `json:"tools"`
+	Mode                   string        `json:"mode"`
+	ToolsVisible           int           `json:"toolsVisible"`
+	SchemaBytes            int           `json:"schemaBytes"`
+	SchemaTokens           int           `json:"schemaTokens"`
+	IrrelevantSchemaTokens int           `json:"irrelevantSchemaTokens"`
+	Tools                  []ToolSurface `json:"tools"`
 }
 
 // SurfaceComparison compares the startup surfaces of direct and ozy modes.
@@ -33,9 +33,9 @@ type SurfaceComparison struct {
 	Direct    SurfaceMetrics `json:"direct"`
 	Ozy       SurfaceMetrics `json:"ozy"`
 	Reduction struct {
-		ToolCount     int     `json:"toolCount"`
-		SchemaTokens  int     `json:"schemaTokens"`
-		Ratio         float64 `json:"ratio"`
+		ToolCount    int     `json:"toolCount"`
+		SchemaTokens int     `json:"schemaTokens"`
+		Ratio        float64 `json:"ratio"`
 	} `json:"reduction"`
 }
 
@@ -126,10 +126,10 @@ func WriteComparison(dir string, c *SurfaceComparison) error {
 	enc := json.NewEncoder(fj)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(c); err != nil {
-		fj.Close()
+		_ = fj.Close()
 		return fmt.Errorf("encode comparison: %w", err)
 	}
-	fj.Close()
+	_ = fj.Close()
 
 	// Markdown
 	mdPath := filepath.Join(dir, "comparison.md")
@@ -137,7 +137,7 @@ func WriteComparison(dir string, c *SurfaceComparison) error {
 	if err != nil {
 		return fmt.Errorf("create comparison.md: %w", err)
 	}
-	defer fm.Close()
+	defer func() { _ = fm.Close() }()
 
 	fmt.Fprintf(fm, "# Benchmark Comparison: %s vs %s\n\n", c.Direct.Mode, c.Ozy.Mode)
 	fmt.Fprintf(fm, "## Startup Surface\n\n")

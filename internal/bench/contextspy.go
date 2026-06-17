@@ -205,6 +205,7 @@ func (c *ContextSpy) do(ctx context.Context, method, path string, body, out any)
 		}
 		rdr = bytes.NewReader(b)
 	}
+	//nolint:gosec // G704: SSRF is intentional — bench connects to its own local ContextSpy proxy.
 	req, err := http.NewRequestWithContext(ctx, method, c.api+path, rdr)
 	if err != nil {
 		return err
@@ -212,11 +213,12 @@ func (c *ContextSpy) do(ctx context.Context, method, path string, body, out any)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	//nolint:gosec // G704: SSRF is intentional — bench connects to its own local ContextSpy proxy.
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode/100 != 2 {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
 		return fmt.Errorf("%s %s: %s: %s", method, path, resp.Status, strings.TrimSpace(string(b)))
@@ -242,11 +244,12 @@ func addTokens(dst *CategoryTokens, s CategoryTokens) {
 
 // WriteBreakdown writes a context breakdown as indented JSON.
 func WriteBreakdown(path string, bd *ContextBreakdown) error {
+	//nolint:gosec // G304: path is a controlled artifact path in bench, not user input.
 	f, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("create breakdown file: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
 	return enc.Encode(bd)

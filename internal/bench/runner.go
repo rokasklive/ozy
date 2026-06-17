@@ -81,6 +81,7 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 	if err := os.MkdirAll(workspaceDir, 0o755); err != nil {
 		return nil, fmt.Errorf("create workspace dir: %w", err)
 	}
+	//nolint:gosec // G306: 0644 is intentional for agent instructions in bench workspace.
 	if err := os.WriteFile(filepath.Join(workspaceDir, "AGENTS.md"), []byte(remoteSystemInstruction), 0o644); err != nil {
 		return nil, fmt.Errorf("write agent instructions: %w", err)
 	}
@@ -104,6 +105,7 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 	}
 
 	// Write the task prompt for reference (in the artifact dir).
+	//nolint:gosec // G306: 0644 is intentional for bench artifact files.
 	_ = os.WriteFile(filepath.Join(absWork, "task.md"), []byte(taskPrompt), 0o644)
 
 	cmd := exec.CommandContext(ctx,
@@ -130,7 +132,7 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 	if err != nil {
 		return nil, fmt.Errorf("create transcript file: %w", err)
 	}
-	defer tf.Close()
+	defer func() { _ = tf.Close() }()
 
 	// Use a pipe to capture combined stdout+stderr.
 	pr, pw := io.Pipe()
@@ -181,7 +183,7 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 	// Wait for process to finish, then close the write end so the tee goroutine
 	// drains and finishes.
 	_ = cmd.Wait()
-	pw.Close()
+	_ = pw.Close()
 	<-teeDone
 	close(done)
 
@@ -264,34 +266,6 @@ func parseTranscript(path string) (string, []ToolCallLog) {
 		}
 	}
 	return strings.TrimSpace(answer.String()), calls
-}
-func parseToolCalls(workDir string) []ToolCallLog {
-	var calls []ToolCallLog
-
-	path := filepath.Join(workDir, "tool-calls.jsonl")
-	f, err := os.Open(path)
-	if err != nil {
-		return calls
-	}
-	defer f.Close()
-
-	dec := json.NewDecoder(f)
-	var call struct {
-		Tool   string `json:"tool"`
-		Server string `json:"server,omitempty"`
-	}
-	for {
-		if err := dec.Decode(&call); err == io.EOF {
-			break
-		} else if err != nil {
-			break
-		}
-		calls = append(calls, ToolCallLog{
-			Tool:   call.Tool,
-			Server: call.Server,
-		})
-	}
-	return calls
 }
 
 // Orchestrator manages the full benchmark lifecycle.
@@ -400,9 +374,9 @@ func (o *Orchestrator) Run(ctx context.Context) error {
 			if err == nil {
 				enc := json.NewEncoder(tf)
 				for _, tc := range result.ToolCalls {
-					enc.Encode(tc)
+					_ = enc.Encode(tc)
 				}
-				tf.Close()
+				_ = tf.Close()
 			}
 
 			fmt.Fprintf(os.Stderr, "mode=%s %d/%d: done (%.1fs, pass=%v, timed_out=%v)\n",
@@ -540,8 +514,8 @@ func setupOzy(ctx context.Context, fixtureDir, dir string) error {
 		return fmt.Errorf("write ozy config: %w", err)
 	}
 
-	os.Setenv("OZY_CONFIG", cfgPath)
-	os.Setenv("OZY_CATALOG", catalogPath)
+	_ = os.Setenv("OZY_CONFIG", cfgPath)
+	_ = os.Setenv("OZY_CATALOG", catalogPath)
 
 	ozyBin := os.Getenv("OZY_BIN")
 	if ozyBin == "" {

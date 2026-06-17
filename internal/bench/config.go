@@ -14,9 +14,9 @@ import (
 
 // ScenarioConfig is the typed JSONC configuration for a benchmark scenario.
 type ScenarioConfig struct {
-	Name      string `json:"name"`
-	TaskFile  string `json:"taskFile"`
-	Fixture   string `json:"fixture"`
+	Name     string `json:"name"`
+	TaskFile string `json:"taskFile"`
+	Fixture  string `json:"fixture"`
 
 	Model struct {
 		NameEnv       string `json:"nameEnv"`
@@ -33,14 +33,14 @@ type ScenarioConfig struct {
 	} `json:"agentConfigs"`
 
 	Limits struct {
-		Runs            int `json:"runs"`
-		TimeoutSeconds  int `json:"timeoutSeconds"`
+		Runs           int `json:"runs"`
+		TimeoutSeconds int `json:"timeoutSeconds"`
 	} `json:"limits"`
 
 	GroundTruth string `json:"groundTruth"`
 
-	ForbiddenTools      []string `json:"forbiddenTools"`
-	ForbiddenBehaviors  []string `json:"forbiddenBehaviors"`
+	ForbiddenTools     []string `json:"forbiddenTools"`
+	ForbiddenBehaviors []string `json:"forbiddenBehaviors"`
 
 	// BaseDir is the directory containing the scenario config file.
 	// All relative paths (TaskFile, Fixture, GroundTruth) are resolved
@@ -59,20 +59,21 @@ func (cfg *ScenarioConfig) ResolvePath(rel string) string {
 // scenarioConfigJSON is the raw JSON form used to resolve env references
 // during unmarshaling.
 type scenarioConfigJSON struct {
-	Name      string           `json:"name"`
-	TaskFile  string           `json:"taskFile"`
-	Fixture   string           `json:"fixture"`
-	Model     json.RawMessage  `json:"model"`
-	AgentConfigs json.RawMessage `json:"agentConfigs"`
-	Limits    json.RawMessage  `json:"limits"`
-	GroundTruth string         `json:"groundTruth"`
-	ForbiddenTools     []string `json:"forbiddenTools"`
-	ForbiddenBehaviors []string `json:"forbiddenBehaviors"`
+	Name               string          `json:"name"`
+	TaskFile           string          `json:"taskFile"`
+	Fixture            string          `json:"fixture"`
+	Model              json.RawMessage `json:"model"`
+	AgentConfigs       json.RawMessage `json:"agentConfigs"`
+	Limits             json.RawMessage `json:"limits"`
+	GroundTruth        string          `json:"groundTruth"`
+	ForbiddenTools     []string        `json:"forbiddenTools"`
+	ForbiddenBehaviors []string        `json:"forbiddenBehaviors"`
 }
 
 // LoadScenario reads, parses, and resolves a JSONC scenario configuration
 // from path. It substitutes {env:VAR} references using os.LookupEnv.
 func LoadScenario(path string) (*ScenarioConfig, error) {
+	//nolint:gosec // G304: path comes from a trusted CLI flag, not user input.
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read scenario config: %w", err)
@@ -92,13 +93,13 @@ func LoadScenario(path string) (*ScenarioConfig, error) {
 	}
 
 	cfg := &ScenarioConfig{
-		Name:             raw.Name,
-		TaskFile:         raw.TaskFile,
-		Fixture:          raw.Fixture,
-		GroundTruth:      raw.GroundTruth,
-		ForbiddenTools:   raw.ForbiddenTools,
+		Name:               raw.Name,
+		TaskFile:           raw.TaskFile,
+		Fixture:            raw.Fixture,
+		GroundTruth:        raw.GroundTruth,
+		ForbiddenTools:     raw.ForbiddenTools,
 		ForbiddenBehaviors: raw.ForbiddenBehaviors,
-		BaseDir:          filepath.Dir(path),
+		BaseDir:            filepath.Dir(path),
 	}
 
 	applyDefaults(cfg)
@@ -182,6 +183,7 @@ func (cfg *ScenarioConfig) ScenarioHash() (string, error) {
 
 	// Incorporate the task prompt content.
 	taskPath := cfg.ResolvePath(cfg.TaskFile)
+	//nolint:gosec // G304: taskPath is resolved from a trusted scenario config.
 	content, err := os.ReadFile(taskPath)
 	if err != nil {
 		return "", fmt.Errorf("read task file for hash: %w", err)

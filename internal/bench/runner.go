@@ -459,8 +459,11 @@ func writeOpenCodeConfig(dir, mode string) error {
 					modelID: map[string]any{
 						"name": modelID,
 						"limit": map[string]any{
-							"context": 32768,
-							"output":  8192,
+							// Defaults suit a local 32K model; override per model via
+							// env (e.g. DeepSeek's large window) to avoid OpenCode
+							// auto-compacting far below the model's real limit.
+							"context": envInt("MODEL_CONTEXT", 32768),
+							"output":  envInt("MODEL_MAX_TOKENS", 8192),
 						},
 					},
 				},
@@ -611,4 +614,14 @@ func modelName() string {
 		return n
 	}
 	return "unsloth/gemma-4-E2B-it-GGUF"
+}
+
+// envInt reads an int from env var name, falling back to def when unset or unparseable.
+func envInt(name string, def int) int {
+	if v := os.Getenv(name); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	return def
 }

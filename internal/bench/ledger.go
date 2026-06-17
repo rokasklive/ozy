@@ -47,6 +47,8 @@ type LedgerWriter struct {
 }
 
 // NewLedgerWriter creates a ledger writer that appends JSON lines to path.
+//
+//nolint:gosec // G304: path is a controlled artifact path in bench output.
 func NewLedgerWriter(path string) (*LedgerWriter, error) {
 	f, err := os.Create(path)
 	if err != nil {

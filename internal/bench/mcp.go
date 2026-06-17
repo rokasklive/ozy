@@ -74,6 +74,8 @@ func runRg(dir string, args ...string) (string, error) {
 }
 
 // runGit runs git with the given args in dir and returns the output.
+//
+//nolint:gosec // G204: git subprocess is intentional for bench fixture.
 func runGit(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir

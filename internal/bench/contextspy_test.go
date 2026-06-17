@@ -55,6 +55,7 @@ func TestContextSpyBreakdown(t *testing.T) {
 	}
 	if bd == nil {
 		t.Fatal("expected a breakdown, got nil")
+		return
 	}
 
 	if len(bd.Requests) != 2 {

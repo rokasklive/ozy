@@ -412,7 +412,7 @@ func realEmbeddingWarmUp(c *execContext) *StepError {
 	rr := client.Ready(wctx)
 	wcancel()
 	if !rr.OK {
-		return c.embeddingStepError(fmt.Errorf("model warm-up failed: %v", rr.Err))
+		return c.embeddingStepError(fmt.Errorf("model warm-up failed: %w", rr.Err))
 	}
 	return nil
 }

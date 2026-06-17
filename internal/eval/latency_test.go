@@ -27,6 +27,7 @@ func TestRunLatency(t *testing.T) {
 	} {
 		if s == nil {
 			t.Fatalf("%s latency not measured", name)
+			continue
 		}
 		if s.N != latencyIters {
 			t.Errorf("%s N = %d, want %d", name, s.N, latencyIters)

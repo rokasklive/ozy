@@ -51,6 +51,8 @@ func NewRunner(configPath, workDir, fixtureDir string, timeout time.Duration) *R
 // Run launches OpenCode in non-interactive mode with the task prompt.
 // It creates a project-level opencode.json and .opencode/mcp.json in the work
 // directory, derived from environment variables — never touching user config.
+//
+//nolint:gosec // G301,G306: broad permissions and subprocess calls are intentional in bench harness.
 func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunResult, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Timeout)
 	defer cancel()
@@ -231,7 +233,7 @@ func parseTranscript(path string) (string, []ToolCallLog) {
 	if err != nil {
 		return "", nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var answer strings.Builder
 	var calls []ToolCallLog
@@ -278,6 +280,8 @@ type Orchestrator struct {
 }
 
 // Run executes the full benchmark.
+//
+//nolint:gosec // G301,G306,G204: broad permissions and subprocess calls are intentional in bench harness.
 func (o *Orchestrator) Run(ctx context.Context) error {
 	modes := []string{o.Mode}
 	if o.Mode == "both" {
@@ -405,6 +409,8 @@ Begin by discovering which tools are available and what each one does.
 // derived from MODEL_BASE_URL / MODEL_API_KEY / MODEL_NAME and the mode's MCP
 // servers. MCP belongs under the top-level "mcp" key in opencode.json — a
 // separate .opencode/mcp.json is not read by OpenCode.
+//
+//nolint:gosec // G306: 0644 permissions are intentional for bench config files.
 func writeOpenCodeConfig(dir, mode string) error {
 	baseURL := os.Getenv("MODEL_BASE_URL")
 	if baseURL == "" {
@@ -459,6 +465,8 @@ func writeOpenCodeConfig(dir, mode string) error {
 
 // writeAuthConfig writes auth.json into dataDir (OpenCode's data dir,
 // $XDG_DATA_HOME/opencode) with a credential for the bench provider.
+//
+//nolint:gosec // G306: 0644 permissions are intentional for bench auth config.
 func writeAuthConfig(dataDir string) error {
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		return fmt.Errorf("mkdir auth dir: %w", err)
@@ -490,6 +498,8 @@ func writeAuthConfig(dataDir string) error {
 // OZY_CATALOG (absolute) so both the index here and the `ozy mcp` broker that
 // OpenCode launches read the same catalog. Without it, `ozy mcp` would serve
 // the user's default, unindexed config and advertise nothing.
+//
+//nolint:gosec // G204,G306: subprocess and permissions are intentional in bench harness.
 func setupOzy(ctx context.Context, fixtureDir, dir string) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("create ozy dir: %w", err)

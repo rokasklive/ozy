@@ -38,6 +38,8 @@ type ToolCallLog struct {
 }
 
 // LoadGroundTruth reads ground_truth.json from path.
+//
+//nolint:gosec // G304: path comes from a trusted scenario config, not user input.
 func LoadGroundTruth(path string) (*GroundTruth, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -88,6 +90,8 @@ func Grade(gt *GroundTruth, finalAnswer string, toolCalls []ToolCallLog, culprit
 }
 
 // WriteGradingResult writes the grading result as JSON to path.
+//
+//nolint:gosec // G304: path is a controlled artifact path in bench output.
 func WriteGradingResult(path string, result *GradingResult) error {
 	f, err := os.Create(path)
 	if err != nil {

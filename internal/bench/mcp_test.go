@@ -68,6 +68,10 @@ func jsonPayload(t *testing.T, res *mcpsdk.CallToolResult) map[string]any {
 func TestMCPServerCodeSearch(t *testing.T) {
 	t.Parallel()
 
+	if _, err := exec.LookPath("rg"); err != nil {
+		t.Skip("rg not available")
+	}
+
 	fixtureDir := t.TempDir()
 	_, err := GenerateFixture(fixtureDir)
 	if err != nil {

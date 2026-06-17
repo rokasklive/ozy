@@ -2,50 +2,52 @@ package bench
 
 import (
 	"context"
-	"database/sql"
-	"path/filepath"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
-// seedContextSpyDB builds a minimal ContextSpy schema with one session whose
-// two requests re-send the same tool surface, plus per-tool stats.
-func seedContextSpyDB(t *testing.T) string {
+// fakeContextSpy serves the subset of the ContextSpy HTTP API the bench uses:
+// session create/end, per-request rows, and per-tool stats. Requests are
+// returned out of timestamp order to exercise Breakdown's sort.
+func fakeContextSpy(t *testing.T) *httptest.Server {
 	t.Helper()
-	dbPath := filepath.Join(t.TempDir(), "contextspy.db")
-	db, err := sql.Open("sqlite", dbPath)
-	if err != nil {
-		t.Fatalf("open: %v", err)
-	}
-	defer db.Close()
-
-	stmts := []string{
-		`CREATE TABLE sessions (id VARCHAR, name VARCHAR, started_at DATETIME, ended_at DATETIME, is_active INTEGER)`,
-		`CREATE TABLE requests (id VARCHAR, session_id VARCHAR, timestamp DATETIME,
-			tokens_system_prompt INTEGER, tokens_tool_definitions INTEGER, tokens_tool_results INTEGER,
-			tokens_file_contents INTEGER, tokens_conversation_history INTEGER, tokens_current_user_message INTEGER,
-			tokens_assistant_prefill INTEGER, tokens_uncategorized INTEGER, tokens_total_input INTEGER, tokens_total_output INTEGER)`,
-		`CREATE TABLE tool_stats (id INTEGER, request_id VARCHAR, tool_name VARCHAR, definition_tokens INTEGER, result_tokens INTEGER)`,
-		// An older session with the same name must be ignored (Breakdown takes the latest).
-		`INSERT INTO sessions VALUES ('old', 'direct-run-1', '2026-01-01', '2026-01-01', 0)`,
-		`INSERT INTO sessions VALUES ('s1', 'direct-run-1', '2026-06-15', '2026-06-15', 0)`,
-		`INSERT INTO requests VALUES ('r1','s1','2026-06-15T00:00:01', 100, 500, 10, 0, 0, 20, 0, 0, 630, 40)`,
-		`INSERT INTO requests VALUES ('r2','s1','2026-06-15T00:00:02', 100, 500, 80, 0, 50, 5, 0, 0, 735, 30)`,
-		// A stray request on the old session must not leak in.
-		`INSERT INTO requests VALUES ('rOld','old','2026-01-01T00:00:01', 1, 1, 1, 0, 0, 1, 0, 0, 4, 1)`,
-		`INSERT INTO tool_stats VALUES (1,'r1','git_log', 300, 0)`,
-		`INSERT INTO tool_stats VALUES (2,'r1','read_file', 200, 0)`,
-		`INSERT INTO tool_stats VALUES (3,'r2','git_log', 300, 80)`,
-	}
-	for _, s := range stmts {
-		if _, err := db.Exec(s); err != nil {
-			t.Fatalf("seed %q: %v", s, err)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/sessions", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"session":{"id":"s1"}}`))
+	})
+	mux.HandleFunc("POST /api/sessions/{id}/end", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	})
+	mux.HandleFunc("GET /api/requests", func(w http.ResponseWriter, r *http.Request) {
+		if got := r.URL.Query().Get("session_id"); got != "s1" {
+			t.Errorf("requests session_id = %q, want s1", got)
 		}
-	}
-	return dbPath
+		_, _ = w.Write([]byte(`{"requests":[
+			{"timestamp":"2026-06-15T00:00:02","tokens_system_prompt":100,"tokens_tool_definitions":500,"tokens_tool_results":80,"tokens_file_contents":0,"tokens_conversation_history":50,"tokens_current_user_message":5,"tokens_assistant_prefill":0,"tokens_uncategorized":0,"tokens_total_input":735,"tokens_total_output":30},
+			{"timestamp":"2026-06-15T00:00:01","tokens_system_prompt":100,"tokens_tool_definitions":500,"tokens_tool_results":10,"tokens_file_contents":0,"tokens_conversation_history":0,"tokens_current_user_message":20,"tokens_assistant_prefill":0,"tokens_uncategorized":0,"tokens_total_input":630,"tokens_total_output":40}
+		]}`))
+	})
+	mux.HandleFunc("GET /api/stats/tools", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"tools":[
+			{"tool_name":"git_log","definition_tokens":600,"result_tokens":80},
+			{"tool_name":"read_file","definition_tokens":200,"result_tokens":0}
+		]}`))
+	})
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+	return srv
 }
 
 func TestContextSpyBreakdown(t *testing.T) {
-	spy := &ContextSpy{bin: []string{"true"}, dbPath: seedContextSpyDB(t)}
+	srv := fakeContextSpy(t)
+	t.Setenv("CONTEXTSPY_API", srv.URL)
+
+	spy := NewContextSpy()
+	spy.StartSession(context.Background(), "direct-run-1")
+	if spy.session != "s1" {
+		t.Fatalf("session id = %q, want s1 (StartSession must stash it)", spy.session)
+	}
 
 	bd, err := spy.Breakdown(context.Background(), "direct-run-1")
 	if err != nil {
@@ -56,9 +58,14 @@ func TestContextSpyBreakdown(t *testing.T) {
 	}
 
 	if len(bd.Requests) != 2 {
-		t.Fatalf("requests = %d, want 2 (latest session only)", len(bd.Requests))
+		t.Fatalf("requests = %d, want 2", len(bd.Requests))
 	}
-	// Totals sum across the two requests; the old session's row must be excluded.
+	// Sorted by timestamp: the 00:00:01 row (systemPrompt+currentUser=120, no
+	// conversation history) must come first despite being sent second.
+	if bd.Requests[0].CurrentUserMessage != 20 || bd.Requests[0].ConversationHistory != 0 {
+		t.Errorf("requests not ordered by timestamp: first = %+v", bd.Requests[0].CategoryTokens)
+	}
+	// Totals sum across the two requests.
 	if bd.Totals.ToolDefinitions != 1000 {
 		t.Errorf("toolDefinitions total = %d, want 1000", bd.Totals.ToolDefinitions)
 	}
@@ -69,19 +76,19 @@ func TestContextSpyBreakdown(t *testing.T) {
 		t.Errorf("toolResults = %d, want 90", bd.Totals.ToolResults)
 	}
 
-	// Tools are grouped and ordered by definition tokens desc; git_log spans
-	// both requests (300+300), read_file only the first.
+	// Tools come pre-aggregated from the API, ordered by definition tokens desc.
 	if len(bd.Tools) != 2 || bd.Tools[0].Tool != "git_log" {
 		t.Fatalf("tools = %+v, want git_log first", bd.Tools)
 	}
-	if bd.Tools[0].DefinitionTokens != 600 || bd.Tools[0].Occurrences != 2 {
-		t.Errorf("git_log = %+v, want 600 def tokens / 2 occurrences", bd.Tools[0])
+	if bd.Tools[0].DefinitionTokens != 600 || bd.Tools[0].ResultTokens != 80 {
+		t.Errorf("git_log = %+v, want 600 def / 80 result tokens", bd.Tools[0])
 	}
 }
 
 func TestContextSpyDisabled(t *testing.T) {
-	// No bin → disabled; every method is a safe no-op.
-	var spy ContextSpy
+	// No CONTEXTSPY_API → disabled; every method is a safe no-op.
+	t.Setenv("CONTEXTSPY_API", "")
+	spy := NewContextSpy()
 	spy.StartSession(context.Background(), "x")
 	spy.EndSession(context.Background())
 	bd, err := spy.Breakdown(context.Background(), "x")

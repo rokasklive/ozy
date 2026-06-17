@@ -9,10 +9,17 @@ services:
     environment:
       - OZY_BENCH_FIXTURE_DIR=/fixture
       - OZY_BENCH_BIN=/usr/local/bin/ozy-bench
+      # Per-run ContextSpy capture over HTTP (host-side proxy). The model is
+      # reached only through ContextSpy (:8889, set via MODEL_BASE_URL in .env);
+      # this is the capture API (:5173). Both via host.docker.internal.
+      - CONTEXTSPY_API=http://host.docker.internal:5173
     volumes:
+      # Only runs/ is writable (artifacts land here). scenarios/configs are
+      # read-only inputs. No host home, repo root, ~/.claude, or ~/.contextspy is
+      # mounted — so OpenCode's upward skill-walk finds nothing to leak.
       - ./runs:/bench/runs
-      - ./scenarios:/bench/scenarios
-      - ./configs:/bench/configs
+      - ./scenarios:/bench/scenarios:ro
+      - ./configs:/bench/configs:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     entrypoint: ["sh", "-c"]

@@ -842,7 +842,7 @@ func TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath(t *testing.T
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := ozymcp.New(liveBroker, "test")
+	adapter := ozymcp.New(liveBroker, "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)

@@ -34,6 +34,7 @@ type Config struct {
 	Search    SearchConfig            `json:"search,omitempty"`
 	Budgets   BudgetsConfig           `json:"budgets,omitempty"`
 	Cache     CacheConfig             `json:"cache,omitempty"`
+	Surface   SurfaceConfig           `json:"surface,omitempty"`
 }
 
 // ServerConfig describes one downstream MCP server using the opencode shape.
@@ -234,6 +235,33 @@ func (s *SemanticSearch) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// SurfaceConfig configures Ozy's agent-facing MCP surface. CapabilityBreadcrumb
+// toggles the bounded list of available downstream servers appended to the
+// findTool description; it is on by default for richer pre-call context.
+type SurfaceConfig struct {
+	CapabilityBreadcrumb bool `json:"capabilityBreadcrumb"`
+}
+
+// surfaceConfigJSON is the raw form of SurfaceConfig so an omitted
+// `capabilityBreadcrumb` can default to true while an explicit `false` disables it.
+type surfaceConfigJSON struct {
+	CapabilityBreadcrumb *bool `json:"capabilityBreadcrumb"`
+}
+
+// UnmarshalJSON applies the default-on capability breadcrumb.
+func (s *SurfaceConfig) UnmarshalJSON(data []byte) error {
+	var raw surfaceConfigJSON
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.CapabilityBreadcrumb == nil {
+		s.CapabilityBreadcrumb = true
+	} else {
+		s.CapabilityBreadcrumb = *raw.CapabilityBreadcrumb
+	}
+	return nil
+}
+
 // BudgetsConfig holds per-tool response budgets (SPEC.md §13).
 type BudgetsConfig struct {
 	FindTool     FindToolBudget     `json:"findTool,omitempty"`
@@ -392,7 +420,7 @@ func Load(path string) (*Loaded, *contract.Error) {
 		return nil, cerr
 	}
 
-	applyDefaults(&raw, sectionPresent(data, "search"), sectionPresent(data, "cache"))
+	applyDefaults(&raw, sectionPresent(data, "search"), sectionPresent(data, "cache"), sectionPresent(data, "surface"))
 
 	resolved := cloneConfig(raw)
 	missing := resolveEnv(&resolved)
@@ -420,7 +448,7 @@ func sectionPresent(data []byte, key string) bool {
 // UnmarshalJSON handles per-section omission of optional fields; this catches
 // the case where the entire section (e.g. `embedding` or `search.semantic`) is
 // missing from the JSON document.
-func applyDefaults(c *Config, searchPresent, cachePresent bool) {
+func applyDefaults(c *Config, searchPresent, cachePresent, surfacePresent bool) {
 	if c.Embedding.VectorBackend == "" {
 		c.Embedding.VectorBackend = DefaultVectorBackend
 	}
@@ -435,6 +463,10 @@ func applyDefaults(c *Config, searchPresent, cachePresent bool) {
 	// Same default-on treatment for the result cache when the section is omitted.
 	if !cachePresent {
 		c.Cache.Enabled = true
+	}
+	// The capability breadcrumb is on by default when the surface section is omitted.
+	if !surfacePresent {
+		c.Surface.CapabilityBreadcrumb = true
 	}
 	if c.Cache.TTLSeconds == 0 {
 		c.Cache.TTLSeconds = DefaultCacheTTLSeconds

@@ -61,7 +61,7 @@ func (a *app) mcpCmd() *cobra.Command {
 			}
 			ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 			defer stop()
-			adapter := ozymcp.New(d.Broker(), Version)
+			adapter := ozymcp.New(d.Broker(), Version, mcpBreadcrumb(d.Config()))
 			// stdout carries the JSON-RPC stream, so diagnostics go to stderr only.
 			// A cancelled context (signal) or client disconnect (EOF) is a clean
 			// shutdown, not a failure.
@@ -73,6 +73,22 @@ func (a *app) mcpCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// mcpBreadcrumb builds the findTool capability breadcrumb from the enabled
+// downstream servers, honoring surface.capabilityBreadcrumb. It returns "" when
+// the breadcrumb is disabled or no servers are configured.
+func mcpBreadcrumb(cfg *config.Loaded) string {
+	if cfg == nil || cfg.Resolved == nil || !cfg.Resolved.Surface.CapabilityBreadcrumb {
+		return ""
+	}
+	var ids []string
+	for id, s := range cfg.Resolved.MCP {
+		if s.IsEnabled() {
+			ids = append(ids, id)
+		}
+	}
+	return ozymcp.Breadcrumb(ids)
 }
 
 func (a *app) indexCmd() *cobra.Command {

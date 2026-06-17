@@ -20,8 +20,12 @@ import (
 )
 
 // jsonResult marshals v into a CallToolResult containing JSON text content.
+// Compact (not indented): these tool results are agent-facing context, so
+// indentation whitespace would only spend the agent's tokens. Unlike Ozy's own
+// responses, this string payload is passed through verbatim — OpenCode does not
+// re-serialize it — so the formatting here reaches the model.
 func jsonResult(v any) *mcpsdk.CallToolResult {
-	data, err := json.MarshalIndent(v, "", "  ")
+	data, err := json.Marshal(v)
 	if err != nil {
 		data = []byte(`{"error":"failed to encode response"}`)
 	}

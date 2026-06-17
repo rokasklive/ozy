@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
@@ -341,16 +342,90 @@ func stepSetupPythonEnvironment(c *execContext) error {
 	return nil
 }
 
+// embeddingWarmUp downloads and verifies the embedding model. It is a package
+// var so tests can drive success/failure without a real model download.
+var embeddingWarmUp = realEmbeddingWarmUp
+
 func stepDownloadEmbeddingAssets(c *execContext) error {
 	if !c.semanticOK {
+		// No Python / venv from the previous step: stay lexical-only. We never
+		// claim the model is present without a verified load.
 		c.log.Sayf("Lexical-only mode — no embedding assets to download.")
 		return nil
 	}
-	// ponytail: Provision installs the pinned packages; FastEmbed fetches the
-	// model lazily on first semantic query. A dedicated pre-download belongs here
-	// if cold-start latency ever becomes a problem.
-	c.log.Sayf("Embedding packages installed; model is fetched on first semantic query.")
+	if serr := embeddingWarmUp(c); serr != nil {
+		// Semantic is optional: a warm-up failure degrades to lexical-only with
+		// an actionable notice rather than aborting an otherwise-complete
+		// install. The StepError content (cause, retry-safety, next command,
+		// log path) is surfaced; we return nil so later steps still run.
+		c.semanticOK = false
+		c.log.Sayf("⚠ embedding model could not be verified — continuing in lexical-only mode.")
+		c.log.Sayf("%s", serr.Error())
+		c.log.Logf("embedding warm-up failed: %v", serr.Cause)
+		return nil
+	}
+	c.log.Sayf("Embedding model downloaded and verified — semantic search ready.")
 	return nil
+}
+
+// realEmbeddingWarmUp starts the (already-provisioned, marker-cached) sidecar
+// and runs the readiness probe under a generous timeout: a fast liveness check
+// then a warm-up that loads the model and runs a probe query. It returns an
+// actionable *StepError on failure and nil on a verified success.
+func realEmbeddingWarmUp(c *execContext) *StepError {
+	res, err := sidecar.Provision(c.ctx, sidecar.ProvisionOptions{
+		VenvDir: c.paths.VenvDir,
+		Backend: config.DefaultVectorBackend,
+		Model:   config.DefaultEmbeddingModel,
+		Logger:  c.log,
+	})
+	if err != nil {
+		return c.embeddingStepError(fmt.Errorf("provision venv: %w", err))
+	}
+	client, err := sidecar.NewClient(sidecar.Options{
+		DataDir: res.VenvDir,
+		Backend: config.DefaultVectorBackend,
+		Model:   config.DefaultEmbeddingModel,
+		Logger:  c.log,
+		ProcessOptions: sidecar.ProcessOptions{
+			PythonPath: res.PythonPath,
+			SourceDir:  res.SourceDir,
+			DataDir:    res.VenvDir,
+			Backend:    config.DefaultVectorBackend,
+			Model:      config.DefaultEmbeddingModel,
+		},
+	})
+	if err != nil {
+		return c.embeddingStepError(fmt.Errorf("start sidecar: %w", err))
+	}
+	defer func() { _ = client.Close() }()
+
+	lctx, lcancel := context.WithTimeout(c.ctx, 15*time.Second)
+	hr := client.Health(lctx)
+	lcancel()
+	if !hr.OK {
+		return c.embeddingStepError(fmt.Errorf("sidecar liveness check failed: %v", hr.Err))
+	}
+	// Warm-up gets its own generous deadline so a cold model download is not
+	// aborted by the short liveness budget above.
+	wctx, wcancel := context.WithTimeout(c.ctx, sidecar.DefaultProvisionTimeout)
+	rr := client.Ready(wctx)
+	wcancel()
+	if !rr.OK {
+		return c.embeddingStepError(fmt.Errorf("model warm-up failed: %v", rr.Err))
+	}
+	return nil
+}
+
+func (c *execContext) embeddingStepError(cause error) *StepError {
+	return &StepError{
+		Step:      "DownloadEmbeddingAssets",
+		Cause:     cause,
+		Impact:    "Semantic search needs the embedding model; without it Ozy serves lexical-only.",
+		SafeRetry: true,
+		Next:      "ozy doctor   # diagnose, then re-run the installer or `ozy index`",
+		LogPath:   c.log.Path(),
+	}
 }
 
 func stepBuildOrLoadToolCatalog(c *execContext) error {

@@ -73,6 +73,22 @@ func (p *mcpProbe) call(ctx context.Context, name string, args map[string]any) (
 		return nil, fmt.Errorf("mcp %s: %w", name, err)
 	}
 	text := resultText(res)
+	// A successful callTool surfaces the downstream payload directly (raw text
+	// or structured content) with Ozy's metadata in _meta — not a JSON envelope.
+	// Project that into the shared doc shape so parity reads toolRef/ok the same
+	// way it does for findTool/describeTool. Errors stay JSON envelopes below.
+	if name == "callTool" && !res.IsError {
+		doc := map[string]any{"ok": true}
+		if res.StructuredContent != nil {
+			doc["result"] = res.StructuredContent
+		} else {
+			doc["result"] = text
+		}
+		for k, v := range res.Meta {
+			doc[k] = v
+		}
+		return doc, nil
+	}
 	if text == "" {
 		return nil, fmt.Errorf("mcp %s: empty result content", name)
 	}

@@ -215,6 +215,36 @@ func (c *Client) Health(ctx context.Context) HealthResult {
 	}
 }
 
+// Ready issues a readiness/warm-up probe: it loads the model (which may
+// trigger a cold model download) and runs one probe query, returning the
+// structured result on success. It is distinct from Health (a fast liveness
+// ping that does not load the model): "available" means a successful Ready,
+// not a bare Health. Callers MUST give Ready a generous timeout so a cold
+// download is not aborted; a short liveness deadline must never bound it. A
+// successful Ready marks the Client healthy.
+func (c *Client) Ready(ctx context.Context) HealthResult {
+	resp, err := c.call(ctx, opReady, &jsonlRequest{})
+	if err != nil {
+		c.healthy.Store(false)
+		if resp != nil && resp.ErrorKind == "model_download_incomplete" {
+			return HealthResult{
+				Available: false,
+				Err:       fmt.Errorf("sidecar: model download incomplete: %s", resp.Error),
+			}
+		}
+		return HealthResult{Available: false, Err: err}
+	}
+	c.healthy.Store(true)
+	return HealthResult{
+		OK:          true,
+		Available:   true,
+		Model:       resp.Model,
+		Dim:         resp.Dim,
+		Backend:     resp.Backend,
+		VectorCount: resp.VectorCount,
+	}
+}
+
 // Upsert embeds and stores one or more documents. An empty input is
 // a no-op. The returned Errors slice mirrors the sidecar's
 // per-document error list; a non-nil error means the request itself
@@ -343,10 +373,10 @@ func (c *Client) call(ctx context.Context, op string, req *jsonlRequest) (*jsonl
 	if c.closed.Load() {
 		return nil, errUnavailable
 	}
-	if !c.healthy.Load() && op != opHealth {
-		// Allow Health to run after a failure so the caller can
-		// re-probe. Other operations are blocked once we've been
-		// marked unhealthy.
+	if !c.healthy.Load() && op != opHealth && op != opReady {
+		// Allow Health and the readiness warm-up to run after a failure
+		// (or before the first probe) so the caller can warm up / re-probe.
+		// Other operations are blocked once we've been marked unhealthy.
 		return nil, errUnavailable
 	}
 

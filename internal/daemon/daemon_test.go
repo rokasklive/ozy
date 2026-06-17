@@ -242,6 +242,49 @@ func TestRun_SidecarShutDownWithDaemon(t *testing.T) {
 	}
 }
 
+func TestIndex_SemanticDisabled_RunsLexicalWithoutProvisioning(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	cfg.Resolved.Search.Semantic.Enabled = false
+	d := NewWithStore(cfg, catalog.NewMemory())
+
+	summary := d.Index(context.Background(), nil)
+	if summary == nil {
+		t.Fatal("Index() returned nil summary")
+	}
+	if d.sidecarProvisioned {
+		t.Error("Index() provisioned a sidecar with semantic disabled, want lexical-only")
+	}
+	// No sink wired, so nothing is embedded. (Sink wiring on the available path
+	// is covered by internal/index sink tests and the end-to-end check.)
+	if summary.EmbeddedCount != 0 || summary.VectorCount != 0 {
+		t.Errorf("embedded=%d vectors=%d, want 0/0 with semantic disabled", summary.EmbeddedCount, summary.VectorCount)
+	}
+}
+
+func TestIndex_SemanticEnabledButProvisioningFails_Degrades(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
+	cfg.Resolved.Search.Semantic.Enabled = true
+	d := NewWithStore(cfg, catalog.NewMemory())
+
+	// A cancelled context makes provisioning/health fail fast, so Index falls
+	// back to the lexical path and reports degraded — without hanging on a real
+	// model download.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	summary := d.Index(ctx, nil)
+	if summary == nil {
+		t.Fatal("Index() returned nil summary")
+	}
+	if !d.SemanticDegraded() {
+		t.Error("SemanticDegraded() = false, want true when provisioning fails")
+	}
+	if d.semanticReason == "" {
+		t.Error("semanticReason is empty, want a specific degraded cause")
+	}
+}
+
 func TestSemanticDegraded_FalseWhenDisabled(t *testing.T) {
 	t.Parallel()
 	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}

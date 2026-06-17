@@ -39,23 +39,27 @@ type EmbedItem struct {
 
 // EmbeddingSink is the optional, opt-in seam the indexer uses to push
 // embeddings to the sidecar after the catalog is persisted. Available() == false
-// disables the sink (lexical-only mode).
+// disables the sink (lexical-only mode). Upsert returns how many tools were
+// actually embedded this run; VectorCount reports the total queryable vectors
+// after the run so the summary can be honest about vector storage.
 type EmbeddingSink interface {
 	Available() bool
-	Upsert(ctx context.Context, items []EmbedItem) error
+	Upsert(ctx context.Context, items []EmbedItem) (int, error)
 	Delete(ctx context.Context, toolRefs []string) error
 	List(ctx context.Context) ([]string, error)
+	VectorCount(ctx context.Context) (int, error)
 	Persist(ctx context.Context) error
 }
 
 // noopSink is the default sink. It is always unavailable.
 type noopSink struct{}
 
-func (noopSink) Available() bool                           { return false }
-func (noopSink) Upsert(context.Context, []EmbedItem) error { return nil }
-func (noopSink) Delete(context.Context, []string) error    { return nil }
-func (noopSink) List(context.Context) ([]string, error)    { return nil, nil }
-func (noopSink) Persist(context.Context) error             { return nil }
+func (noopSink) Available() bool                                  { return false }
+func (noopSink) Upsert(context.Context, []EmbedItem) (int, error) { return 0, nil }
+func (noopSink) Delete(context.Context, []string) error           { return nil }
+func (noopSink) List(context.Context) ([]string, error)           { return nil, nil }
+func (noopSink) VectorCount(context.Context) (int, error)         { return 0, nil }
+func (noopSink) Persist(context.Context) error                    { return nil }
 
 // Summary is the structured `ozy index` result.
 type Summary struct {
@@ -64,6 +68,8 @@ type Summary struct {
 	ServersSkipped   int              `json:"serversSkipped"`
 	ServersFailed    int              `json:"serversFailed"`
 	ToolsIndexed     int              `json:"toolsIndexed"`
+	EmbeddedCount    int              `json:"embeddedCount,omitempty"`
+	VectorCount      int              `json:"vectorCount,omitempty"`
 	Errors           []contract.Error `json:"errors,omitempty"`
 	AgentInstruction string           `json:"agentInstruction,omitempty"`
 }
@@ -71,10 +77,17 @@ type Summary struct {
 // Render produces the human/concise form of an index summary.
 func (s *Summary) Render(format string) string {
 	if format == contract.FormatConcise {
-		return fmt.Sprintf("index servers=%d tools=%d errors=%d", s.ServersReached, s.ToolsIndexed, len(s.Errors))
+		out := fmt.Sprintf("index servers=%d tools=%d errors=%d", s.ServersReached, s.ToolsIndexed, len(s.Errors))
+		if s.EmbeddedCount > 0 || s.VectorCount > 0 {
+			out += fmt.Sprintf(" embedded=%d vectors=%d", s.EmbeddedCount, s.VectorCount)
+		}
+		return out
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "indexed %d tools from %d reachable servers", s.ToolsIndexed, s.ServersReached)
+	if s.EmbeddedCount > 0 || s.VectorCount > 0 {
+		fmt.Fprintf(&b, "\nembedded %d tools; %d vectors queryable", s.EmbeddedCount, s.VectorCount)
+	}
 	if s.ServersSkipped > 0 {
 		fmt.Fprintf(&b, "\nskipped servers: %d", s.ServersSkipped)
 	}
@@ -204,6 +217,20 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 	}
 	if i.sink != nil && i.sink.Available() {
 		i.flushEmbeddings(ctx, summary, embedded)
+		// Loud-fail guard: semantic is enabled and the sidecar is available,
+		// yet the catalog holds tools while vector storage is empty. That is the
+		// silent "indexed-but-not-embedded" failure; report it rather than
+		// claiming success on an empty vector store.
+		if summary.ToolsIndexed > 0 && summary.VectorCount == 0 {
+			summary.OK = false
+			summary.Errors = append(summary.Errors, contract.Error{
+				Type:             contract.ErrTypeSemanticSearchUnavailable,
+				Retryable:        true,
+				Message:          fmt.Sprintf("semantic search is enabled and the sidecar is available, but %d indexed tools produced zero queryable vectors", summary.ToolsIndexed),
+				AgentInstruction: "Run `ozy doctor` to check the embedding sidecar, then re-run `ozy index`. Lexical search still serves from the catalog.",
+			})
+			summary.AgentInstruction = "Semantic search is enabled but no tools were embedded. Run `ozy doctor`, then re-run `ozy index`."
+		}
 	}
 	return summary
 }
@@ -213,7 +240,8 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 // and asks the sink to persist its index. Errors degrade the catalog run:
 // the catalog is still updated; only the embedding pipeline is skipped.
 func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedded []EmbedItem) {
-	if err := i.sink.Upsert(ctx, embedded); err != nil {
+	upserted, err := i.sink.Upsert(ctx, embedded)
+	if err != nil {
 		summary.Errors = append(summary.Errors, contract.Error{
 			Type:             contract.ErrTypeSemanticSearchUnavailable,
 			Retryable:        true,
@@ -222,6 +250,7 @@ func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedde
 		})
 		return
 	}
+	summary.EmbeddedCount = upserted
 	stale, listErr := i.reconcileStaleEmbeddings(ctx)
 	if listErr != nil {
 		summary.Errors = append(summary.Errors, contract.Error{
@@ -242,6 +271,11 @@ func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedde
 			})
 			return
 		}
+	}
+	// Record the queryable vector count after this run's upserts and deletes, so
+	// the summary is honest and the loud-fail guard can detect an empty store.
+	if vc, vcErr := i.sink.VectorCount(ctx); vcErr == nil {
+		summary.VectorCount = vc
 	}
 	if err := i.sink.Persist(ctx); err != nil {
 		summary.Errors = append(summary.Errors, contract.Error{

@@ -91,6 +91,8 @@ func resolveGitSHA() string {
 
 // ComputeFixtureHash returns a SHA-256 hash of the fixture directory contents,
 // used to detect fixture changes across runs.
+//
+//nolint:gosec // G304: dir is a controlled fixture path, not user input.
 func ComputeFixtureHash(dir string) (string, error) {
 	// Walk the fixture directory and hash file contents.
 	h := sha256.New()

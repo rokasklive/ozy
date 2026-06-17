@@ -228,6 +228,8 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 
 // parseTranscript reads the transcript file and extracts the final answer
 // (all JSON text events concatenated) and tool call names.
+//
+//nolint:gosec // G304: path is a controlled artifact path in bench output.
 func parseTranscript(path string) (string, []ToolCallLog) {
 	f, err := os.Open(path)
 	if err != nil {

@@ -62,6 +62,8 @@ func BuildProvenance(cfg *ScenarioConfig, modes []string, runCount int) (*Enviro
 }
 
 // WriteProvenance writes the environment record as JSON to the given path.
+//
+//nolint:gosec // G304: path is a controlled artifact path in bench output.
 func WriteProvenance(path string, record *EnvironmentRecord) error {
 	f, err := os.Create(path)
 	if err != nil {

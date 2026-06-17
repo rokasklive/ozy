@@ -92,6 +92,8 @@ func isDistractorTool(name string) bool {
 }
 
 // WriteSurfaceMetrics writes surface metrics to path.
+//
+//nolint:gosec // G301: 0755 permissions are intentional for bench output directories.
 func WriteSurfaceMetrics(path string, m *SurfaceMetrics) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("create metrics dir: %w", err)
@@ -112,6 +114,8 @@ func WriteSurfaceMetrics(path string, m *SurfaceMetrics) error {
 }
 
 // WriteComparison writes the surface comparison as JSON and Markdown.
+//
+//nolint:gosec // G301: 0755 permissions are intentional for bench output directories.
 func WriteComparison(dir string, c *SurfaceComparison) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("create comparison dir: %w", err)

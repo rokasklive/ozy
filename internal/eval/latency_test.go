@@ -27,8 +27,8 @@ func TestRunLatency(t *testing.T) {
 	} {
 		if s == nil {
 			t.Fatalf("%s latency not measured", name)
-			continue
 		}
+		//nolint:staticcheck // SA5011: s guaranteed non-nil after Fatalf (staticcheck false positive)
 		if s.N != latencyIters {
 			t.Errorf("%s N = %d, want %d", name, s.N, latencyIters)
 		}

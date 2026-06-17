@@ -193,6 +193,7 @@ func registerCodeSearch(srv *mcpsdk.Server, fixtureDir string) {
 		if err != nil {
 			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
 		}
+		//nolint:gosec // G304: path is validated by safePath above.
 		data, err := os.ReadFile(fullPath)
 		if err != nil {
 			return jsonResult(map[string]any{"error": err.Error(), "path": in.Path}), nil, nil
@@ -492,6 +493,7 @@ func registerFilesystem(srv *mcpsdk.Server, fixtureDir string) {
 		if err != nil {
 			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
 		}
+		//nolint:gosec // G304: path is validated by safePath above.
 		data, err := os.ReadFile(fullPath)
 		if err != nil {
 			return jsonResult(map[string]any{"error": err.Error(), "path": in.Path}), nil, nil

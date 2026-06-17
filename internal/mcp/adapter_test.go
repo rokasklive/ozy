@@ -51,6 +51,21 @@ func textPayload(t *testing.T, res *mcpsdk.CallToolResult) map[string]any {
 	return payload
 }
 
+// textContent returns the raw text of the first content block, without
+// assuming it is JSON — used for callTool, whose payload is now surfaced
+// directly rather than wrapped in an Ozy envelope.
+func textContent(t *testing.T, res *mcpsdk.CallToolResult) string {
+	t.Helper()
+	if len(res.Content) == 0 {
+		t.Fatal("tool result had no content")
+	}
+	tc, ok := res.Content[0].(*mcpsdk.TextContent)
+	if !ok {
+		t.Fatalf("content[0] is %T, want *TextContent", res.Content[0])
+	}
+	return tc.Text
+}
+
 func TestAdapter_AdvertisesExactlyThreeTools(t *testing.T) {
 	cs := connect(t)
 	list, err := cs.ListTools(context.Background(), nil)
@@ -431,20 +446,85 @@ func TestAdapter_CallToolInvokesFixtureDownstreamAndNormalizesResult(t *testing.
 	if res.IsError {
 		t.Fatalf("callTool returned IsError=true; content=%+v", res.Content)
 	}
-	payload := textPayload(t, res)
-	if payload["ok"] != true {
-		t.Errorf("ok = %v, want true", payload["ok"])
-	}
-	if payload["toolRef"] != "fixture.fixture_echo" {
-		t.Errorf("toolRef = %v, want fixture.fixture_echo", payload["toolRef"])
-	}
-	got, _ := payload["result"].(string)
+	// The downstream text payload is surfaced directly — not a JSON-stringified
+	// Ozy envelope the agent must unwrap.
+	got := textContent(t, res)
 	if !strings.Contains(got, "hello") {
-		t.Errorf("result = %q, want substring %q", got, "hello")
+		t.Errorf("content = %q, want the raw downstream text containing %q", got, "hello")
 	}
-	summary, _ := payload["resultSummary"].(string)
-	if summary == "" {
-		t.Error("resultSummary is empty, want non-empty")
+	if strings.Contains(got, `"toolRef"`) || strings.Contains(got, `"resultSummary"`) {
+		t.Errorf("content = %q, want the raw payload, not a wrapped Ozy envelope", got)
+	}
+	// Ozy's call metadata rides alongside in _meta, exactly once.
+	if res.Meta["toolRef"] != "fixture.fixture_echo" {
+		t.Errorf("_meta.toolRef = %v, want fixture.fixture_echo", res.Meta["toolRef"])
+	}
+	if summary, _ := res.Meta["resultSummary"].(string); summary == "" {
+		t.Error("_meta.resultSummary is empty, want non-empty")
+	}
+}
+
+func TestAdapter_CallToolPreservesStructuredContent(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	factory := func(_ string, _ config.ServerConfig) (mcpsdk.Transport, error) {
+		dsServerT, dsClientT := mcpsdk.NewInMemoryTransports()
+		dsServer := mcpsdk.NewServer(&mcpsdk.Implementation{Name: "fixture-downstream", Version: "0"}, nil)
+		mcpsdk.AddTool(dsServer, &mcpsdk.Tool{
+			Name:        "fixture_struct",
+			Title:       "Fixture Struct",
+			Description: "Return a structured payload",
+		}, func(context.Context, *mcpsdk.CallToolRequest, map[string]any) (*mcpsdk.CallToolResult, any, error) {
+			return &mcpsdk.CallToolResult{
+				StructuredContent: map[string]any{"count": float64(3), "items": []any{"a", "b"}},
+			}, nil, nil
+		})
+		go func() { _ = dsServer.Run(ctx, dsServerT) }()
+		return dsClientT, nil
+	}
+
+	connector := downstream.New(downstream.WithTransportFactory(factory))
+	liveBroker := broker.NewLive(catalog.NewMemory(), &config.Config{
+		MCP: map[string]config.ServerConfig{"fixture": {Type: "local", Enabled: true}},
+	}, connector, search.New(catalog.NewMemory(), nil))
+
+	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(liveBroker, "test")
+	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, ozyClientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name: "callTool",
+		Arguments: map[string]any{
+			"toolRef":   "fixture.fixture_struct",
+			"arguments": map[string]any{},
+		},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(callTool): %v", err)
+	}
+	if res.IsError {
+		t.Fatalf("callTool returned IsError=true; content=%+v", res.Content)
+	}
+	// The structured payload is preserved as structured content, not re-encoded
+	// as a string nested inside an Ozy envelope.
+	sc, ok := res.StructuredContent.(map[string]any)
+	if !ok {
+		t.Fatalf("structuredContent is %T, want map", res.StructuredContent)
+	}
+	if sc["count"] != float64(3) {
+		t.Errorf("structuredContent.count = %v, want 3", sc["count"])
+	}
+	if res.Meta["toolRef"] != "fixture.fixture_struct" {
+		t.Errorf("_meta.toolRef = %v, want fixture.fixture_struct", res.Meta["toolRef"])
 	}
 }
 
@@ -529,19 +609,15 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 	if res.IsError {
 		t.Fatalf("callTool returned IsError=true; content=%+v", res.Content)
 	}
-	payload = textPayload(t, res)
-	if payload["ok"] != true {
-		t.Errorf("ok = %v, want true", payload["ok"])
-	}
-	if payload["toolRef"] != picked {
-		t.Errorf("toolRef = %v, want %q", payload["toolRef"], picked)
-	}
-	got, _ := payload["result"].(string)
+	got := textContent(t, res)
 	if !strings.Contains(got, "fixture_read") {
-		t.Errorf("result = %q, want substring %q", got, "fixture_read")
+		t.Errorf("content = %q, want the raw downstream text containing %q", got, "fixture_read")
 	}
-	if summary, _ := payload["resultSummary"].(string); summary == "" {
-		t.Error("resultSummary is empty, want non-empty")
+	if res.Meta["toolRef"] != picked {
+		t.Errorf("_meta.toolRef = %v, want %q", res.Meta["toolRef"], picked)
+	}
+	if summary, _ := res.Meta["resultSummary"].(string); summary == "" {
+		t.Error("_meta.resultSummary is empty, want non-empty")
 	}
 }
 

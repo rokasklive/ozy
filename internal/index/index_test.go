@@ -302,6 +302,7 @@ func TestIndexer_SetsLastIndexedAtWhenReachableServerHasZeroTools(t *testing.T) 
 
 type recordingSink struct {
 	available   bool
+	embedZero   bool // simulate "available but embeds nothing" (the silent bug)
 	upserted    []EmbedItem
 	deleted     []string
 	listReturn  []string
@@ -313,12 +314,15 @@ type recordingSink struct {
 }
 
 func (s *recordingSink) Available() bool { return s.available }
-func (s *recordingSink) Upsert(_ context.Context, items []EmbedItem) error {
+func (s *recordingSink) Upsert(_ context.Context, items []EmbedItem) (int, error) {
 	if s.upsertErr != nil {
-		return s.upsertErr
+		return 0, s.upsertErr
+	}
+	if s.embedZero {
+		return 0, nil // accepted the request but embedded nothing
 	}
 	s.upserted = append(s.upserted, items...)
-	return nil
+	return len(items), nil
 }
 func (s *recordingSink) Delete(_ context.Context, toolRefs []string) error {
 	if s.deleteErr != nil {
@@ -329,6 +333,12 @@ func (s *recordingSink) Delete(_ context.Context, toolRefs []string) error {
 }
 func (s *recordingSink) List(context.Context) ([]string, error) {
 	return s.listReturn, s.listErr
+}
+func (s *recordingSink) VectorCount(context.Context) (int, error) {
+	if s.embedZero {
+		return 0, nil
+	}
+	return len(s.upserted), nil
 }
 func (s *recordingSink) Persist(context.Context) error {
 	s.persistCall++
@@ -372,6 +382,59 @@ func TestIndexer_WithSink_UpsertsChangedAndNewTools(t *testing.T) {
 	}
 	if sink.persistCall != 1 {
 		t.Errorf("sink.Persist called %d times, want 1", sink.persistCall)
+	}
+	if summary.EmbeddedCount != 1 {
+		t.Errorf("EmbeddedCount = %d, want 1", summary.EmbeddedCount)
+	}
+	if summary.VectorCount != 1 {
+		t.Errorf("VectorCount = %d, want 1", summary.VectorCount)
+	}
+}
+
+func TestIndexer_SemanticAvailableButEmbedsZero_IsLoudFailure(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	// Sink is available but embeds nothing — the silent "indexed 160, embedded 0"
+	// bug. The run must fail loudly with the reason and the next command.
+	sink := &recordingSink{available: true, embedZero: true}
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{{
+				Name:        "confluence_search",
+				Title:       "Confluence Search",
+				Description: "Search wiki",
+				InputSchema: map[string]any{"type": "object"},
+			}}},
+		},
+	}}, WithSink(sink))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if summary.OK {
+		t.Fatal("summary.OK = true, want false when tools are indexed but zero are embedded")
+	}
+	if summary.ToolsIndexed != 1 {
+		t.Errorf("ToolsIndexed = %d, want 1 (catalog still persisted)", summary.ToolsIndexed)
+	}
+	if summary.VectorCount != 0 {
+		t.Errorf("VectorCount = %d, want 0", summary.VectorCount)
+	}
+	var sawSemantic bool
+	for _, e := range summary.Errors {
+		if e.Type == contract.ErrTypeSemanticSearchUnavailable {
+			sawSemantic = true
+		}
+	}
+	if !sawSemantic {
+		t.Error("expected a SEMANTIC_SEARCH_UNAVAILABLE error on the indexed-but-not-embedded path")
+	}
+	if !strings.Contains(summary.AgentInstruction, "ozy index") {
+		t.Errorf("AgentInstruction = %q, want it to name the next command", summary.AgentInstruction)
+	}
+	// The catalog is still populated — lexical search keeps working.
+	if tools, _ := store.Tools(ctx); len(tools) != 1 {
+		t.Errorf("catalog has %d tools, want 1 (loud-fail must not drop the catalog)", len(tools))
 	}
 }
 
@@ -476,7 +539,7 @@ func TestIndexer_WithUnavailableSink_StillIndexesCatalog(t *testing.T) {
 	}
 }
 
-func TestIndexer_SinkUpsertFailureDegradesGracefully(t *testing.T) {
+func TestIndexer_SinkUpsertFailure_CatalogPersistsButLoudFails(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	store := catalog.NewMemory()
@@ -497,25 +560,24 @@ func TestIndexer_SinkUpsertFailureDegradesGracefully(t *testing.T) {
 	}}, WithSink(sink))
 
 	summary := indexer.Run(ctx, &config.Config{})
-	if !summary.OK {
-		t.Fatalf("summary not OK (catalog must persist even when sink fails): %+v", summary)
+	// The sidecar is available but embedded nothing — a loud failure now, not a
+	// silent success. The catalog is still persisted (lexical keeps working).
+	if summary.OK {
+		t.Fatalf("summary.OK = true, want false when an available sink embeds nothing: %+v", summary)
 	}
 	if summary.ToolsIndexed != 1 {
 		t.Errorf("ToolsIndexed = %d, want 1", summary.ToolsIndexed)
 	}
-	if len(summary.Errors) == 0 {
-		t.Error("summary.Errors empty, want an SEMANTIC_SEARCH_UNAVAILABLE error")
+	if tools, _ := store.Tools(ctx); len(tools) != 1 {
+		t.Errorf("catalog has %d tools, want 1 (catalog must persist even when sink fails)", len(tools))
 	}
-	var sawSemantic bool
+	var sawUpsertErr bool
 	for _, e := range summary.Errors {
-		if e.Type == contract.ErrTypeSemanticSearchUnavailable {
-			sawSemantic = true
-			if !strings.Contains(e.Message, "upsert") {
-				t.Errorf("error message %q, want to mention upsert", e.Message)
-			}
+		if e.Type == contract.ErrTypeSemanticSearchUnavailable && strings.Contains(e.Message, "upsert") {
+			sawUpsertErr = true
 		}
 	}
-	if !sawSemantic {
-		t.Error("expected an SEMANTIC_SEARCH_UNAVAILABLE error for sink upsert failure")
+	if !sawUpsertErr {
+		t.Error("expected a SEMANTIC_SEARCH_UNAVAILABLE error mentioning the upsert failure")
 	}
 }

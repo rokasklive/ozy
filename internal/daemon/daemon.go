@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
@@ -21,12 +22,14 @@ import (
 
 // Daemon holds the runtime wiring shared by the CLI and MCP adapter.
 type Daemon struct {
-	cfg               *config.Loaded
-	store             catalog.Store
-	broker            broker.Broker
-	sidecarClient     *sidecar.Client
-	sidecarAdapter    *sidecar.SemanticAdapter
-	semanticAvailable bool
+	cfg                *config.Loaded
+	store              catalog.Store
+	broker             broker.Broker
+	sidecarClient      *sidecar.Client
+	sidecarAdapter     *sidecar.SemanticAdapter
+	semanticAvailable  bool
+	semanticReason     string // specific cause when semantic is degraded
+	sidecarProvisioned bool   // provisioning attempted once this lifetime
 }
 
 // New constructs the runtime from already-loaded configuration. It initializes
@@ -103,7 +106,11 @@ func (d *Daemon) Run(ctx context.Context, status io.Writer) error {
 	if status != nil {
 		fmt.Fprintln(status, "ozy daemon ready")
 		if d.SemanticDegraded() {
-			fmt.Fprintln(status, "notice: semantic search requested but unavailable; using lexical baseline")
+			reason := d.semanticReason
+			if reason == "" {
+				reason = "embedding sidecar unavailable"
+			}
+			fmt.Fprintf(status, "notice: semantic search requested but unavailable (%s); using lexical baseline — run `ozy doctor` to diagnose, then `ozy index` to rebuild\n", reason)
 		}
 	}
 	<-ctx.Done()
@@ -117,7 +124,15 @@ func (d *Daemon) Run(ctx context.Context, status io.Writer) error {
 	return nil
 }
 
+// provisionSidecar starts and verifies the embedding sidecar. It is idempotent:
+// provisioning is attempted at most once per daemon lifetime, so the daemon
+// startup path and a standalone Index() call share one attempt. Verification is
+// a two-step probe — a fast liveness Health then a generous readiness warm-up —
+// so a short liveness deadline never aborts an in-progress cold model download.
 func (d *Daemon) provisionSidecar(ctx context.Context, status io.Writer) {
+	if d.sidecarProvisioned {
+		return
+	}
 	if d.cfg == nil || d.cfg.Resolved == nil {
 		return
 	}
@@ -125,6 +140,7 @@ func (d *Daemon) provisionSidecar(ctx context.Context, status io.Writer) {
 	if !resolved.Search.Semantic.Enabled {
 		return
 	}
+	d.sidecarProvisioned = true
 	if status != nil {
 		fmt.Fprintln(status, "semantic search enabled — provisioning embedding sidecar")
 	}
@@ -134,10 +150,7 @@ func (d *Daemon) provisionSidecar(ctx context.Context, status io.Writer) {
 		Model:   emb.Model,
 	})
 	if err != nil {
-		d.semanticAvailable = false
-		if status != nil {
-			fmt.Fprintf(status, "notice: sidecar provisioning failed: %v — running lexical-only\n", err)
-		}
+		d.degradeSemantic(status, fmt.Sprintf("sidecar provisioning failed: %v", err))
 		return
 	}
 	sidecarOpts := sidecar.Options{
@@ -154,20 +167,27 @@ func (d *Daemon) provisionSidecar(ctx context.Context, status io.Writer) {
 	}
 	sc, err := sidecar.NewClient(sidecarOpts)
 	if err != nil {
-		d.semanticAvailable = false
-		if status != nil {
-			fmt.Fprintf(status, "notice: sidecar start failed: %v — running lexical-only\n", err)
-		}
+		d.degradeSemantic(status, fmt.Sprintf("sidecar start failed: %v", err))
 		return
 	}
-	hctx, hcancel := context.WithTimeout(ctx, sidecarSidecarHealthTimeout)
-	defer hcancel()
-	hr := sc.Health(hctx)
+	// Liveness: confirm the process answers. A short deadline is fine — this
+	// does NOT load the model.
+	lctx, lcancel := context.WithTimeout(ctx, sidecarLivenessTimeout)
+	hr := sc.Health(lctx)
+	lcancel()
 	if !hr.OK {
-		d.semanticAvailable = false
-		if status != nil {
-			fmt.Fprintf(status, "notice: sidecar health check failed: %v — running lexical-only\n", hr.Err)
-		}
+		d.degradeSemantic(status, fmt.Sprintf("sidecar health check failed: %v", hr.Err))
+		_ = sc.Close()
+		return
+	}
+	// Readiness warm-up: load the model (may trigger a cold download) and run a
+	// probe query, under its OWN generous deadline so the liveness timeout above
+	// never aborts a download. "Available" means this succeeds.
+	wctx, wcancel := context.WithTimeout(ctx, sidecar.DefaultProvisionTimeout)
+	rr := sc.Ready(wctx)
+	wcancel()
+	if !rr.OK {
+		d.degradeSemantic(status, fmt.Sprintf("embedding model warm-up failed: %v", rr.Err))
 		_ = sc.Close()
 		return
 	}
@@ -175,14 +195,26 @@ func (d *Daemon) provisionSidecar(ctx context.Context, status io.Writer) {
 	d.sidecarClient = sc
 	d.sidecarAdapter = adapter
 	d.semanticAvailable = true
+	d.semanticReason = ""
 	d.reWireBroker()
 	if status != nil {
 		fmt.Fprintf(status, "sidecar ready: backend=%s model=%s dim=%d vectors=%d\n",
-			hr.Backend, hr.Model, hr.Dim, hr.VectorCount)
+			rr.Backend, rr.Model, rr.Dim, rr.VectorCount)
 	}
 }
 
-const sidecarSidecarHealthTimeout = 10 * 1e9 // nanoseconds (10 s)
+// degradeSemantic records the specific reason semantic search is unavailable
+// and surfaces it, so the degraded notice names a cause and a next step rather
+// than a bare "lexical-only".
+func (d *Daemon) degradeSemantic(status io.Writer, reason string) {
+	d.semanticAvailable = false
+	d.semanticReason = reason
+	if status != nil {
+		fmt.Fprintf(status, "notice: %s — running lexical-only\n", reason)
+	}
+}
+
+const sidecarLivenessTimeout = 10 * time.Second
 
 func (d *Daemon) reWireBroker() {
 	var resolved *config.Config
@@ -192,6 +224,11 @@ func (d *Daemon) reWireBroker() {
 	d.broker = wireBroker(d.store, resolved, search.New(d.store, d.sidecarAdapter))
 }
 
+// Shutdown stops the embedding sidecar if one is running. It is safe to call
+// when no sidecar was provisioned. The standalone `ozy index` path uses it to
+// avoid leaking the subprocess after a one-shot index.
+func (d *Daemon) Shutdown() { d.shutdownSidecar() }
+
 func (d *Daemon) shutdownSidecar() {
 	if d.sidecarClient == nil {
 		return
@@ -199,6 +236,23 @@ func (d *Daemon) shutdownSidecar() {
 	_ = d.sidecarClient.Close()
 	d.sidecarClient = nil
 	d.sidecarAdapter = nil
+}
+
+// Index provisions the embedding sidecar (idempotently) and runs the indexer,
+// attaching the embedding sink when semantic search is available. It is the one
+// index path shared by daemon startup and the standalone `ozy index` command,
+// so both index identically — catalog plus vectors when semantic is enabled.
+func (d *Daemon) Index(ctx context.Context, status io.Writer) *index.Summary {
+	d.provisionSidecar(ctx, status)
+	var resolved *config.Config
+	if d.cfg != nil {
+		resolved = d.cfg.Resolved
+	}
+	idx := index.New(d.store, nil)
+	if d.semanticAvailable && d.sidecarClient != nil {
+		idx = index.New(d.store, nil, index.WithSink(newSink(d.sidecarClient)))
+	}
+	return idx.Run(ctx, resolved)
 }
 
 func (d *Daemon) runStartupIndex(ctx context.Context, status io.Writer) {
@@ -231,15 +285,7 @@ func (d *Daemon) runStartupIndex(ctx context.Context, status io.Writer) {
 		return
 	}
 
-	var resolved *config.Config
-	if d.cfg != nil {
-		resolved = d.cfg.Resolved
-	}
-	idx := index.New(d.store, nil)
-	if d.semanticAvailable && d.sidecarClient != nil {
-		idx = index.New(d.store, nil, index.WithSink(newSink(d.sidecarClient)))
-	}
-	summary := idx.Run(ctx, resolved)
+	summary := d.Index(ctx, status)
 
 	if status != nil {
 		fmt.Fprintf(status, "index complete: %d servers reached, %d tools indexed, %d errors",
@@ -264,7 +310,7 @@ func newSink(c *sidecar.Client) *sink { return &sink{c: c} }
 
 func (s *sink) Available() bool { return s.c.Available() }
 
-func (s *sink) Upsert(ctx context.Context, items []index.EmbedItem) error {
+func (s *sink) Upsert(ctx context.Context, items []index.EmbedItem) (int, error) {
 	sideItems := make([]sidecar.UpsertItem, len(items))
 	for i, item := range items {
 		sideItems[i] = sidecar.UpsertItem{
@@ -275,13 +321,27 @@ func (s *sink) Upsert(ctx context.Context, items []index.EmbedItem) error {
 			Tags:        item.Tags,
 		}
 	}
-	_, err := s.c.Upsert(ctx, sideItems)
-	return err
+	res, err := s.c.Upsert(ctx, sideItems)
+	if err != nil {
+		return 0, err
+	}
+	return res.Upserted, nil
 }
 
 func (s *sink) Delete(ctx context.Context, refs []string) error {
 	_, err := s.c.Delete(ctx, refs)
 	return err
+}
+
+// VectorCount reports how many vectors the sidecar currently stores, so the
+// index summary can show the queryable vector count and the loud-fail guard can
+// detect an indexed-but-not-embedded run.
+func (s *sink) VectorCount(ctx context.Context) (int, error) {
+	st, err := s.c.Stats(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return st.VectorCount, nil
 }
 
 func (s *sink) List(ctx context.Context) ([]string, error) {

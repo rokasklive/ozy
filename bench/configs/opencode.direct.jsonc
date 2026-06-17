@@ -1,0 +1,40 @@
+{
+  // OpenCode config for DIRECT mode — all 7 fixture MCP servers exposed directly.
+  "mcp": {
+    "code-search": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "code-search", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "git": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "git", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "incident-db": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "incident-db", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "filesystem", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "time": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "time"],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "memory"],
+      "enabled": true
+    },
+    "notes": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "notes"],
+      "enabled": true
+    }
+  }
+}

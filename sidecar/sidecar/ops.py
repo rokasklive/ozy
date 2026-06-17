@@ -25,7 +25,7 @@ from typing import Any
 
 import numpy as np
 
-from .embedder import Embedder
+from .embedder import Embedder, ModelLoadError
 from .store import META_BACKEND, META_DIM, META_MODEL, Store
 from .vector import (
     FaissBackend,
@@ -77,6 +77,41 @@ class Ops:
     # ------------------------------------------------------------------ ops
 
     def op_health(self, args: dict[str, Any]) -> dict[str, Any]:
+        info = self.embedder.get_model_info()
+        return {
+            "ok": True,
+            "model": str(info["model"]),
+            "dim": int(info["dim"]),
+            "backend": self.backend_name,
+            "vectorCount": int(self.store.count_vectors()),
+        }
+
+    def op_warmup(self, args: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG002
+        """Readiness probe: load the model and prove a query returns.
+
+        Distinct from :meth:`op_health` (liveness), which reports metadata
+        without loading the model. The warm-up pays the cold model-download
+        cost once and runs one probe embed+search so callers can treat the
+        sidecar as "available" only when semantic search actually works. A
+        partial/corrupt cache self-heals via :meth:`Embedder.ensure_loaded`;
+        a download that is still incomplete after the re-fetch is reported as a
+        structured ``model_download_incomplete`` error rather than an opaque
+        failure.
+        """
+
+        ensure = getattr(self.embedder, "ensure_loaded", None)
+        if callable(ensure):
+            try:
+                ensure()
+            except ModelLoadError as exc:
+                return {
+                    "ok": False,
+                    "error": str(exc),
+                    "errorKind": "model_download_incomplete",
+                }
+        # Prove the embed+search path returns end-to-end. An empty store yields
+        # zero hits, which still counts as a successful (queryable) probe.
+        self.op_query({"text": "probe", "k": 1})
         info = self.embedder.get_model_info()
         return {
             "ok": True,

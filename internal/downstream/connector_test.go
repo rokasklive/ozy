@@ -157,6 +157,7 @@ func TestConnector_ConnectionErrorExcludesSecretValues(t *testing.T) {
 	got := results[0].Error
 	if got == nil {
 		t.Fatal("ConnectAll() error = nil, want structured error")
+		return
 	}
 	if strings.Contains(got.Message, "supersecretvalue") || strings.Contains(got.Message, secret) {
 		t.Fatalf("connection error leaked secret: %+v", got)

@@ -18,12 +18,23 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
 import threading
 from typing import Protocol, runtime_checkable
 
 import numpy as np
 
 LOGGER = logging.getLogger(__name__)
+
+
+class ModelLoadError(Exception):
+    """The embedding model could not be loaded even after a clean re-fetch.
+
+    Raised by :meth:`FastEmbedEmbedder.ensure_loaded` when the model fails to
+    load, the cache is cleared, and a second fetch still fails. The Go side
+    maps this to an actionable "model download incomplete" reason rather than an
+    opaque start failure.
+    """
 
 # BGE's documented convention: prepend ``"query: "`` to a query string so the
 # model produces a query-shaped embedding. The model id is checked so we only
@@ -76,20 +87,66 @@ class FastEmbedEmbedder:
     mysterious first-query failure.
     """
 
-    def __init__(self, model: str = "BAAI/bge-small-en-v1.5") -> None:
+    def __init__(
+        self, model: str = "BAAI/bge-small-en-v1.5", cache_dir: str | None = None
+    ) -> None:
         self.model = model
+        self._cache_dir = cache_dir
         self._dim: int | None = None
         self._lock = threading.Lock()
         self._impl = None  # the underlying fastembed.TextEmbedding
 
     def ensure_loaded(self) -> None:
-        """Eagerly load the underlying model.
+        """Eagerly load the underlying model, self-healing a corrupt cache.
 
-        Triggered by ``EMBEDDING_REQUIRED=1`` so a missing model surfaces
-        during ``health`` instead of failing on the first query.
+        Triggered by ``EMBEDDING_REQUIRED=1`` and by the readiness warm-up so a
+        missing model surfaces eagerly instead of failing on the first query.
+        A partial/corrupt download is the likely cause of a load failure, so on
+        the first failure the model cache directory is cleared and the model is
+        re-fetched exactly once before giving up with :class:`ModelLoadError`.
         """
 
-        self._get_impl()
+        try:
+            self._get_impl()
+            return
+        except Exception as first:  # noqa: BLE001
+            LOGGER.warning("model load failed (%s); attempting cache self-heal", first)
+            if not self._clear_cache():
+                # No known cache dir to clear — cannot self-heal.
+                raise ModelLoadError(f"model load failed: {first}") from first
+            self._impl = None
+            self._dim = None
+            try:
+                self._get_impl()
+            except Exception as second:  # noqa: BLE001
+                raise ModelLoadError(
+                    f"model download incomplete after re-fetch: {second}"
+                ) from second
+
+    def _clear_cache(self) -> bool:
+        """Remove the model cache directory so the next load re-fetches.
+
+        Returns ``True`` when a cache directory is configured (whether or not it
+        existed), ``False`` when there is no known cache location to clear (so
+        the caller knows it cannot self-heal).
+        """
+
+        if not self._cache_dir:
+            return False
+        LOGGER.info("clearing model cache at %s", self._cache_dir)
+        shutil.rmtree(self._cache_dir, ignore_errors=True)
+        return True
+
+    def _build_impl(self):
+        """Construct the underlying FastEmbed model. Isolated so the self-heal
+        path and tests can drive load success/failure without a real download."""
+
+        from fastembed import TextEmbedding  # local import: heavy
+
+        LOGGER.info("loading FastEmbed model %s", self.model)
+        if self._cache_dir:
+            return TextEmbedding(model_name=self.model, cache_dir=self._cache_dir)
+        return TextEmbedding(model_name=self.model)
 
     def _get_impl(self):
         if self._impl is not None:
@@ -99,21 +156,20 @@ class FastEmbedEmbedder:
             if self._impl is not None:
                 return self._impl
 
-            from fastembed import TextEmbedding  # local import: heavy
-
-            LOGGER.info("loading FastEmbed model %s", self.model)
-            self._impl = TextEmbedding(model_name=self.model)
+            impl = self._build_impl()
             # fastembed exposes the dimension either as ``embedding_size`` or
             # via the underlying model. We sniff both for forward compat.
-            dim = getattr(self._impl, "embedding_size", None)
+            dim = getattr(impl, "embedding_size", None)
             if dim is None:
-                model_obj = getattr(self._impl, "model", None)
+                model_obj = getattr(impl, "model", None)
                 dim = getattr(model_obj, "embedding_size", None)
             if dim is None:
                 # Fall back to inferring from a probe embed call.
+                self._impl = impl
                 probe = self._embed_raw(["probe"])
                 dim = int(probe.shape[1])
             self._dim = int(dim)
+            self._impl = impl
             return self._impl
 
     @property

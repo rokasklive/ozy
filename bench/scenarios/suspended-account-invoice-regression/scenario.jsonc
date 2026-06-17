@@ -1,0 +1,28 @@
+{
+  "name": "suspended-account-invoice-regression",
+  "taskFile": "task.md",
+  "fixture": "suspended-account-invoice-regression",
+  "model": {
+    "nameEnv": "MODEL_NAME",
+    "baseURLEnv": "MODEL_BASE_URL",
+    "apiKeyEnv": "MODEL_API_KEY",
+    "temperature": "0.0",
+    "maxTokens": 4096,
+    "contextWindow": 32768
+  },
+  "agentConfigs": {
+    "direct": "bench/configs/opencode.direct.jsonc",
+    "ozy": "bench/configs/opencode.ozy.jsonc"
+  },
+  "limits": {
+    "runs": 5,
+    "timeoutSeconds": 600
+  },
+  "groundTruth": "expected/ground_truth.json",
+  "forbiddenTools": ["web_search", "web_fetch", "brave_search"],
+  "forbiddenBehaviors": [
+    "public_web_search",
+    "architecture_redesign",
+    "unrelated_refactor"
+  ]
+}

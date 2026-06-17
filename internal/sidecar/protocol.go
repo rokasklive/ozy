@@ -15,6 +15,7 @@ package sidecar
 // Operation names sent on the wire. Must match the Python sidecar exactly.
 const (
 	opHealth = "health"
+	opReady  = "warmup"
 	opUpsert = "upsert"
 	opDelete = "delete"
 	opQuery  = "query"
@@ -75,4 +76,8 @@ type jsonlResponse struct {
 	Errors      []string   `json:"errors,omitempty"`
 	Hits        []jsonlHit `json:"hits,omitempty"`
 	Error       string     `json:"error,omitempty"`
+	// ErrorKind classifies an error so the Go client can map it to an
+	// actionable reason. The readiness probe sets "model_download_incomplete"
+	// when the model cannot be fetched even after a cache self-heal.
+	ErrorKind string `json:"errorKind,omitempty"`
 }

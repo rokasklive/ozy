@@ -86,27 +86,45 @@ func newSidecarProbe(emb config.EmbeddingConfig) SidecarInspector {
 		}
 		defer func() { _ = client.Close() }()
 
-		hr := client.Health(ctx)
+		// Liveness first (fast): a dead sidecar fails here in seconds rather
+		// than holding the warm-up's generous deadline.
+		lctx, lcancel := context.WithTimeout(ctx, sidecarLivenessTimeout)
+		hr := client.Health(lctx)
+		lcancel()
 		if !hr.OK {
-			reason := "health: "
-			if hr.Err != nil {
-				reason += hr.Err.Error()
-			} else {
-				reason += "unknown error"
-			}
-			return SidecarStatus{Available: false, Reason: reason}
+			return SidecarStatus{Available: false, Reason: "health: " + errText(hr.Err)}
+		}
+		// Readiness warm-up: load the model and run a probe query. "Available"
+		// is true only when this succeeds, so doctor reports semantic available
+		// only when vectors are actually queryable — the same predicate the
+		// daemon and `ozy index` use.
+		rr := client.Ready(ctx)
+		if !rr.OK {
+			return SidecarStatus{Available: false, Reason: "warm-up: " + errText(rr.Err)}
 		}
 
 		stats, _ := client.Stats(ctx)
 		return SidecarStatus{
 			Available:   true,
-			Model:       hr.Model,
-			Dim:         hr.Dim,
-			Backend:     hr.Backend,
+			Model:       rr.Model,
+			Dim:         rr.Dim,
+			Backend:     rr.Backend,
 			VectorCount: stats.VectorCount,
 			ToolCount:   stats.ToolCount,
 		}
 	}
+}
+
+// sidecarLivenessTimeout bounds the fast liveness probe so a wedged sidecar
+// fails quickly; the readiness warm-up gets its own generous deadline.
+const sidecarLivenessTimeout = 10 * time.Second
+
+// errText renders an error for a status reason, tolerating a nil error.
+func errText(err error) string {
+	if err == nil {
+		return "unknown error"
+	}
+	return err.Error()
 }
 
 func (a *app) doctorCmd() *cobra.Command {
@@ -211,7 +229,10 @@ func (a *app) runDoctor() *contract.DoctorResult {
 	if !sidecarInspectorOverridden && loaded.Resolved.Search.Semantic.Enabled {
 		sidecarInspector = newSidecarProbe(loaded.Resolved.Embedding)
 	}
-	embCtx, embCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	// The readiness probe may pay a cold model download on first run, so the
+	// embedding check gets a generous ceiling; the probe's own liveness step
+	// still fails fast on a dead sidecar.
+	embCtx, embCancel := context.WithTimeout(context.Background(), sidecar.DefaultProvisionTimeout)
 	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector))
 	embCancel()
 

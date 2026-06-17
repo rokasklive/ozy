@@ -15,7 +15,6 @@ import (
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
 	"github.com/rokasklive/ozy/internal/eval"
-	ozyindex "github.com/rokasklive/ozy/internal/index"
 	ozymcp "github.com/rokasklive/ozy/internal/mcp"
 )
 
@@ -85,7 +84,11 @@ func (a *app) indexCmd() *cobra.Command {
 			if !ok {
 				return nil
 			}
-			summary := ozyindex.New(d.Store(), nil).Run(context.Background(), d.Config().Resolved)
+			// Index provisions the sidecar and embeds when semantic is enabled —
+			// the same path the daemon uses — so the CLI never silently runs
+			// lexical-only. Shut the one-shot sidecar down before exiting.
+			summary := d.Index(context.Background(), a.errOut)
+			d.Shutdown()
 			a.emit(summary)
 			if !summary.OK {
 				a.exitCode = 1

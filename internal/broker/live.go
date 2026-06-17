@@ -103,7 +103,7 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 	}
 
 	if ranking.SemanticDegraded {
-		note := "Semantic search was requested but is unavailable; results are lexical-only."
+		note := "Semantic search was requested but is unavailable; results are lexical-only. Run `ozy doctor` to see why and `ozy index` to rebuild the semantic index."
 		if result.AgentInstruction != "" {
 			result.AgentInstruction = note + " " + result.AgentInstruction
 		} else {

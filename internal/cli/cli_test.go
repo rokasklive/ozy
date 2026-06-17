@@ -872,22 +872,18 @@ func TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath(t *testing.T
 	if !ok {
 		t.Fatalf("MCP content[0] is %T, want *TextContent", res.Content[0])
 	}
-	var mcpPayload map[string]any
-	if err := json.Unmarshal([]byte(tc.Text), &mcpPayload); err != nil {
-		t.Fatalf("MCP content is not valid JSON: %v\n%s", err, tc.Text)
-	}
 
-	if mcpPayload["ok"] != cliPayload["ok"] {
-		t.Errorf("parity: ok = %v (MCP) vs %v (CLI)", mcpPayload["ok"], cliPayload["ok"])
+	// callTool now surfaces the downstream payload directly: the readable text
+	// is the raw result (not a JSON-stringified Ozy envelope), and Ozy's
+	// metadata rides in _meta. Parity holds when these match the CLI fields.
+	if cliResult, _ := cliPayload["result"].(string); tc.Text != cliResult {
+		t.Errorf("parity: result = %q (MCP content) vs %q (CLI)", tc.Text, cliResult)
 	}
-	if mcpPayload["toolRef"] != cliPayload["toolRef"] {
-		t.Errorf("parity: toolRef = %v (MCP) vs %v (CLI)", mcpPayload["toolRef"], cliPayload["toolRef"])
+	if res.Meta["toolRef"] != cliPayload["toolRef"] {
+		t.Errorf("parity: toolRef = %v (MCP _meta) vs %v (CLI)", res.Meta["toolRef"], cliPayload["toolRef"])
 	}
-	if mcpPayload["result"] != cliPayload["result"] {
-		t.Errorf("parity: result = %v (MCP) vs %v (CLI)", mcpPayload["result"], cliPayload["result"])
-	}
-	if mcpPayload["resultSummary"] != cliPayload["resultSummary"] {
-		t.Errorf("parity: resultSummary = %v (MCP) vs %v (CLI)", mcpPayload["resultSummary"], cliPayload["resultSummary"])
+	if res.Meta["resultSummary"] != cliPayload["resultSummary"] {
+		t.Errorf("parity: resultSummary = %v (MCP _meta) vs %v (CLI)", res.Meta["resultSummary"], cliPayload["resultSummary"])
 	}
 }
 

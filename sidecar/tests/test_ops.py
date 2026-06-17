@@ -24,6 +24,17 @@ def test_health_returns_model_info(ops: Ops) -> None:
     assert resp["vectorCount"] == 0
 
 
+def test_warmup_returns_readiness_payload(ops: Ops) -> None:
+    # The readiness probe loads the model (no-op for the fake), runs a probe
+    # query, and reports the same shape as health.
+    resp = ops.op_warmup({})
+    assert resp["ok"] is True
+    assert resp["model"] == "fake-bge-small"
+    assert resp["dim"] == 384
+    assert resp["backend"] == "turbovec"
+    assert resp["vectorCount"] == 0
+
+
 def test_stats_returns_counts(ops: Ops) -> None:
     resp = ops.op_stats({})
     assert resp["ok"] is True

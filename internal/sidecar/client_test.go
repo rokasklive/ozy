@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -95,6 +96,118 @@ func TestClient_Health_NotOK(t *testing.T) {
 	}
 	if c.Available() {
 		t.Error("Client.Available() = true after failed Health")
+	}
+}
+
+// warmupOK returns a scripted readiness response.
+func warmupOK(req map[string]any) map[string]any {
+	return map[string]any{
+		"id":          req["id"],
+		"ok":          true,
+		"model":       "BAAI/bge-small-en-v1.5",
+		"dim":         384,
+		"backend":     "turbovec",
+		"vectorCount": 7,
+	}
+}
+
+func TestClient_Ready_IsDistinctOpFromHealth(t *testing.T) {
+	t.Parallel()
+	var mu sync.Mutex
+	var ops []string
+	c := newTestClient(t, &ScriptedSidecar{
+		OnRequest: func(req map[string]any) ScriptedResponse {
+			op, _ := req["op"].(string)
+			mu.Lock()
+			ops = append(ops, op)
+			mu.Unlock()
+			switch op {
+			case opHealth:
+				return ScriptedResponse{Response: healthOK(req)}
+			case opReady:
+				return ScriptedResponse{Response: warmupOK(req)}
+			default:
+				return ScriptedResponse{}
+			}
+		},
+	})
+
+	if h := c.Health(context.Background()); !h.OK {
+		t.Fatalf("Health: %v", h.Err)
+	}
+	rr := c.Ready(context.Background())
+	if !rr.OK {
+		t.Fatalf("Ready: %v", rr.Err)
+	}
+	if rr.VectorCount != 7 || rr.Dim != 384 {
+		t.Errorf("Ready result = %+v, want dim 384 vectors 7", rr)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	if len(ops) != 2 || ops[0] != "health" || ops[1] != "warmup" {
+		t.Errorf("ops = %v, want [health warmup] (readiness is a distinct op)", ops)
+	}
+}
+
+func TestClient_Ready_WarmUpNotBoundedByShortLivenessTimeout(t *testing.T) {
+	t.Parallel()
+	c := newTestClient(t, &ScriptedSidecar{
+		OnRequest: func(req map[string]any) ScriptedResponse {
+			op, _ := req["op"].(string)
+			switch op {
+			case opHealth:
+				// Liveness answers immediately.
+				return ScriptedResponse{Response: healthOK(req)}
+			case opReady:
+				// Warm-up is slow (simulating a cold model download).
+				return ScriptedResponse{Response: warmupOK(req), Delay: 80 * time.Millisecond}
+			default:
+				return ScriptedResponse{}
+			}
+		},
+	})
+
+	// Liveness under a short budget — succeeds because it does not load a model.
+	lctx, lcancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	h := c.Health(lctx)
+	lcancel()
+	if !h.OK {
+		t.Fatalf("liveness Health under short timeout: %v", h.Err)
+	}
+	// Warm-up under its own generous budget — the short liveness deadline above
+	// must not abort it.
+	wctx, wcancel := context.WithTimeout(context.Background(), 2*time.Second)
+	rr := c.Ready(wctx)
+	wcancel()
+	if !rr.OK {
+		t.Fatalf("warm-up Ready under generous timeout was aborted: %v", rr.Err)
+	}
+}
+
+func TestClient_Ready_ModelDownloadIncompleteIsActionable(t *testing.T) {
+	t.Parallel()
+	c := newTestClient(t, &ScriptedSidecar{
+		OnRequest: func(req map[string]any) ScriptedResponse {
+			op, _ := req["op"].(string)
+			if op == opReady {
+				return ScriptedResponse{Response: map[string]any{
+					"id":        req["id"],
+					"ok":        false,
+					"error":     "model download incomplete after re-fetch: boom",
+					"errorKind": "model_download_incomplete",
+				}}
+			}
+			return ScriptedResponse{Response: healthOK(req)}
+		},
+	})
+
+	rr := c.Ready(context.Background())
+	if rr.OK {
+		t.Fatal("Ready OK = true, want false on an incomplete model download")
+	}
+	if rr.Err == nil || !strings.Contains(rr.Err.Error(), "model download incomplete") {
+		t.Errorf("Ready.Err = %v, want an actionable 'model download incomplete' reason", rr.Err)
 	}
 }
 

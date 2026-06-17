@@ -1,0 +1,6 @@
+# ContextSpy configuration — generated at runtime by the bench runner.
+# Points at the model endpoint as a reverse proxy target.
+[[reverse_targets]]
+target_url = "http://host.docker.internal:8080/v1"
+provider = "openai"
+listen_port = 8081

@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 # Operations the protocol understands. Anything else gets a structured
 # error and the loop keeps running.
-_KNOWN_OPS = {"health", "upsert", "delete", "query", "stats"}
+_KNOWN_OPS = {"health", "warmup", "upsert", "delete", "query", "stats"}
 
 
 class Handler:

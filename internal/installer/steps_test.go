@@ -144,6 +144,70 @@ func TestInstallOzyBinaryLocalBuild(t *testing.T) {
 	}
 }
 
+func TestDownloadEmbeddingAssets_WarmUpSuccessKeepsSemantic(t *testing.T) {
+	c := newTestCtx(t)
+	c.semanticOK = true
+	called := false
+	orig := embeddingWarmUp
+	embeddingWarmUp = func(*execContext) *StepError { called = true; return nil }
+	t.Cleanup(func() { embeddingWarmUp = orig })
+
+	if err := stepDownloadEmbeddingAssets(c); err != nil {
+		t.Fatalf("step returned error on a verified warm-up: %v", err)
+	}
+	if !called {
+		t.Error("warm-up was not invoked when semantic is planned")
+	}
+	if !c.semanticOK {
+		t.Error("semanticOK flipped false after a successful warm-up")
+	}
+}
+
+func TestDownloadEmbeddingAssets_WarmUpFailureDegradesNotAborts(t *testing.T) {
+	c := newTestCtx(t)
+	c.semanticOK = true
+	orig := embeddingWarmUp
+	embeddingWarmUp = func(c *execContext) *StepError {
+		return c.embeddingStepError(errors.New("model download incomplete"))
+	}
+	t.Cleanup(func() { embeddingWarmUp = orig })
+
+	// A warm-up failure must NOT abort the install — semantic is optional.
+	if err := stepDownloadEmbeddingAssets(c); err != nil {
+		t.Fatalf("warm-up failure aborted the install: %v", err)
+	}
+	if c.semanticOK {
+		t.Error("semanticOK should flip false after a warm-up failure")
+	}
+}
+
+func TestDownloadEmbeddingAssets_NoPythonStaysLexical(t *testing.T) {
+	c := newTestCtx(t)
+	c.semanticOK = false // SetupPythonEnvironment found no toolchain
+	called := false
+	orig := embeddingWarmUp
+	embeddingWarmUp = func(*execContext) *StepError { called = true; return nil }
+	t.Cleanup(func() { embeddingWarmUp = orig })
+
+	if err := stepDownloadEmbeddingAssets(c); err != nil {
+		t.Fatalf("lexical-only path returned error: %v", err)
+	}
+	if called {
+		t.Error("warm-up must not run without Python (no verified model load)")
+	}
+	if c.semanticOK {
+		t.Error("semanticOK must stay false in lexical-only mode")
+	}
+}
+
+func TestEmbeddingStepError_IsActionable(t *testing.T) {
+	c := newTestCtx(t)
+	se := c.embeddingStepError(errors.New("boom"))
+	if se.Step == "" || se.Cause == nil || !se.SafeRetry || se.Next == "" || se.LogPath == "" {
+		t.Errorf("embedding step error missing actionable fields: %+v", se)
+	}
+}
+
 func TestAllowConsentBoundary(t *testing.T) {
 	// --yes must NOT auto-accept a risky action, even non-interactively.
 	c := newTestCtx(t)

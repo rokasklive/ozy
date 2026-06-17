@@ -134,7 +134,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     store = Store(db_path)
-    embedder = FastEmbedEmbedder(model=args.model)
+    # Own the model cache under the data dir so a partial/corrupt download has a
+    # known location the embedder can clear and re-fetch (self-heal).
+    model_cache_dir = os.path.join(data_dir, "models")
+    embedder = FastEmbedEmbedder(model=args.model, cache_dir=model_cache_dir)
     if os.environ.get("EMBEDDING_REQUIRED") == "1":
         LOGGER.info("EMBEDDING_REQUIRED=1: loading model eagerly")
         embedder.ensure_loaded()

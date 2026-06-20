@@ -1,16 +1,16 @@
-# Graph Report - ozy  (2026-06-15)
+# Graph Report - ozy  (2026-06-17)
 
 ## Corpus Check
-- 247 files · ~228,253 words
+- 255 files · ~236,358 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3976 nodes · 6164 edges · 273 communities (254 shown, 19 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 613 edges (avg confidence: 0.77)
+- 4089 nodes · 6372 edges · 269 communities (252 shown, 17 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 643 edges (avg confidence: 0.77)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `95b86b69`
+- Built from commit: `96772b5a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -250,7 +250,6 @@
 - [[_COMMUNITY_Community 234|Community 234]]
 - [[_COMMUNITY_Community 235|Community 235]]
 - [[_COMMUNITY_Community 236|Community 236]]
-- [[_COMMUNITY_Community 237|Community 237]]
 - [[_COMMUNITY_Community 238|Community 238]]
 - [[_COMMUNITY_Community 239|Community 239]]
 - [[_COMMUNITY_Community 240|Community 240]]
@@ -264,11 +263,9 @@
 - [[_COMMUNITY_Community 248|Community 248]]
 - [[_COMMUNITY_Community 249|Community 249]]
 - [[_COMMUNITY_Community 250|Community 250]]
-- [[_COMMUNITY_Community 251|Community 251]]
 - [[_COMMUNITY_Community 252|Community 252]]
 - [[_COMMUNITY_Community 253|Community 253]]
 - [[_COMMUNITY_Community 254|Community 254]]
-- [[_COMMUNITY_Community 255|Community 255]]
 - [[_COMMUNITY_Community 256|Community 256]]
 - [[_COMMUNITY_Community 257|Community 257]]
 - [[_COMMUNITY_Community 258|Community 258]]
@@ -281,31 +278,30 @@
 - [[_COMMUNITY_Community 265|Community 265]]
 - [[_COMMUNITY_Community 266|Community 266]]
 - [[_COMMUNITY_Community 268|Community 268]]
-- [[_COMMUNITY_Community 272|Community 272]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `NewMemory()` - 46 edges
+1. `NewMemory()` - 50 edges
 2. `Config` - 38 edges
 3. `Store` - 38 edges
 4. `TurbovecBackend` - 37 edges
-5. `Client` - 33 edges
-6. `Ops` - 33 edges
-7. `execContext` - 32 edges
-8. `newTestClient()` - 30 edges
-9. `live` - 27 edges
-10. `T` - 26 edges
+5. `Ops` - 35 edges
+6. `execContext` - 34 edges
+7. `Client` - 34 edges
+8. `newTestClient()` - 33 edges
+9. `T` - 29 edges
+10. `live` - 27 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Cache effectiveness gate` --semantically_similar_to--> `Thresholds seed low, ratchet up`  [INFERRED] [semantically similar]
   openspec/specs/eval-cache-effectiveness/spec.md → evals/METHODOLOGY.md
 - `Three MCP Tools (findTool/describeTool/callTool)` --semantically_similar_to--> `Hybrid Tool Search (findTool)`  [INFERRED] [semantically similar]
   README.md → openspec/specs/tool-search/spec.md
-- `runUninstall()` --calls--> `Uninstall()`  [INFERRED]
-  cmd/ozy-install/main.go → internal/installer/uninstall.go
 - `mustLoad()` --calls--> `Data()`  [INFERRED]
   internal/eval/invocation_test.go → evals/embed.go
 - `TestRunInvocationEmbedded()` --calls--> `Data()`  [INFERRED]
   internal/eval/invocation_test.go → evals/embed.go
+- `benchEngine()` --calls--> `Data()`  [INFERRED]
+  internal/eval/perf_test.go → evals/embed.go
 
 ## Import Cycles
 - None detected.
@@ -330,59 +326,59 @@
 - **CI pipeline composition: build-test + cross-platform installer + lint** — workflows_ci_workflow, workflows_ci_build_test_job, workflows_ci_installer_job, workflows_ci_lint_job [EXTRACTED 1.00]
 - **Ozy Mascot Visual Design Composition** — assets_ozy_bear_character, assets_ozy_pixel_art_style, assets_ozy_wire_glasses, assets_ozy_brown_jacket, assets_ozy_striped_shirt, assets_ozy_grumpy_expression [EXTRACTED 0.95]
 
-## Communities (273 total, 19 thin omitted)
+## Communities (269 total, 17 thin omitted)
 
 ### Community 0 - "Installer & Uninstaller"
-Cohesion: 0.25
-Nodes (18): swapStdout(), TestRunDryRunMakesNoMutations(), pathPresent(), containsCat(), mkFile(), populate(), sandboxPaths(), TestPlanRemovalsConservativeKeepsConfig() (+10 more)
+Cohesion: 0.06
+Nodes (65): askConsent(), Confirm(), TestConfirm(), TestConsentPolicyDecide(), ConsentPolicy, Decision, swapStdout(), TestRunDryRunMakesNoMutations() (+57 more)
 
 ### Community 1 - "Broker Connectors"
-Cohesion: 0.18
-Nodes (26): CallToolParams, CallToolResult, ClientSession, Config, Context, ListToolsParams, ListToolsResult, Result (+18 more)
+Cohesion: 0.16
+Nodes (31): NewLive(), Broker, Store, CallToolParams, CallToolResult, ClientSession, Config, Context (+23 more)
 
 ### Community 2 - "Configuration Scaffold"
-Cohesion: 0.22
+Cohesion: 0.21
 Nodes (20): appendBlockOnce(), configureUnixPath(), configureWindowsPath(), homeDir(), pathBlock(), pathExportLine(), printPathInstructions(), rcFileFor() (+12 more)
 
 ### Community 3 - "Installer Dependency Checks"
-Cohesion: 0.16
-Nodes (20): DepChecker, Dependency, firstVersion(), majorMinor(), mustOut(), NewDepChecker(), semanticFrom(), statusFor() (+12 more)
+Cohesion: 0.06
+Nodes (57): DepChecker, Dependency, firstVersion(), majorMinor(), mustOut(), NewDepChecker(), semanticFrom(), statusFor() (+49 more)
 
 ### Community 4 - "Installer Execution Engine"
 Cohesion: 0.06
-Nodes (51): execContext, Progress, NewProgress(), TestProgressColorOnTTY(), TestProgressPlainNoANSI(), step, boolLabel(), buildLocalOzy() (+43 more)
+Nodes (56): execContext, Progress, NewProgress(), TestProgressColorOnTTY(), TestProgressPlainNoANSI(), step, boolLabel(), buildLocalOzy() (+48 more)
 
 ### Community 5 - "Catalog File Persistence"
-Cohesion: 0.06
-Nodes (58): File, NewFile(), TestFile_EmptyStoreQueriesAreClean(), TestFile_LastIndexedAtSurvivesRestart(), TestFile_OverwriteKeepsValidJSON(), TestFile_PersistedCatalogContainsNoConfigSecrets(), TestFile_WritesAndReloadsCatalog(), fileDocument (+50 more)
+Cohesion: 0.08
+Nodes (54): NewFile(), TestFile_EmptyStoreQueriesAreClean(), TestFile_LastIndexedAtSurvivesRestart(), TestFile_OverwriteKeepsValidJSON(), TestFile_PersistedCatalogContainsNoConfigSecrets(), TestFile_WritesAndReloadsCatalog(), run(), runTestMCPServer() (+46 more)
 
 ### Community 6 - "Downstream Transport"
-Cohesion: 0.15
-Nodes (21): Connector, configError(), connectionError(), isOAuthAuthFailure(), New(), Scrub(), secretValues(), WithMaxConcurrency() (+13 more)
+Cohesion: 0.07
+Nodes (45): Connection, blockingTransport, Connector, configError(), connectionError(), isOAuthAuthFailure(), New(), Scrub() (+37 more)
 
 ### Community 7 - "Broker Call Result Caching"
 Cohesion: 0.13
 Nodes (21): cacheWorkload(), dispatchCacheOp(), isReadOnlyTool(), RunCacheEffectiveness(), cacheTestCorpus(), TestRunCacheEffectiveness(), TestStore_MapsReadOnly(), CacheEffectivenessMetrics (+13 more)
 
 ### Community 8 - "Sidecar Go Client"
-Cohesion: 0.12
-Nodes (42): Client, T, Bool, Client, Context, Filter, Logger, SemanticHit (+34 more)
+Cohesion: 0.11
+Nodes (46): Client, T, Bool, Client, Context, Filter, Logger, SemanticHit (+38 more)
 
 ### Community 9 - "Sidecar Vector Backend"
-Cohesion: 0.08
-Nodes (41): load_or_rebuild(), Per-operation orchestration for the embedding sidecar.  Each public method on :c, Load the persisted index or rebuild it from SQLite.      Triggers a rebuild when, FakeEmbedder, FaissBackend, file_ext_for(), make_backend(), Pluggable vector index behind the embedding sidecar.  Two backends share a singl (+33 more)
+Cohesion: 0.11
+Nodes (29): FakeEmbedder, ndarray, FaissBackend, make_backend(), turbovec-backed vector index (default).      Uses ``turbovec.IdMapIndex`` with 4, Construct without creating a new IdMapIndex (used by load)., FAISS-backed vector index (opt-in).      Wraps ``faiss.IndexIDMap(faiss.IndexFla, Factory: instantiate a :class:`VectorBackend` by name.      Raises ``ValueError` (+21 more)
 
 ### Community 10 - "Eval Reporting Pipeline"
-Cohesion: 0.14
-Nodes (29): Builder, dashPct(), LoadSnapshot(), num(), pct(), ranWord(), Scoreboard(), shortCommit() (+21 more)
+Cohesion: 0.08
+Nodes (40): Builder, Provenance, dashPct(), LoadSnapshot(), num(), pct(), ranWord(), Scoreboard() (+32 more)
 
 ### Community 11 - "CLI App Core"
-Cohesion: 0.24
-Nodes (13): CallToolRequest, Broker, CallToolResult, Context, Error, Server, Adapter, asContractError() (+5 more)
+Cohesion: 0.21
+Nodes (15): CallToolRequest, Broker, CallResult, CallToolResult, Context, Error, Server, Adapter (+7 more)
 
 ### Community 12 - "Sidecar Embedder Interface"
-Cohesion: 0.07
-Nodes (31): MonkeyPatch, FakeEmbedder, FastEmbedEmbedder, make_embedder(), _needs_bge_query_prefix(), FastEmbed wrapper for the Ozy embedding sidecar.  The embedder is the only place, Call the underlying fastembed model and return a numpy array.          This bypa, Embed ``texts`` and return a ``(len(texts), dim)`` float32 array.          Args: (+23 more)
+Cohesion: 0.06
+Nodes (38): MonkeyPatch, FakeEmbedder, FastEmbedEmbedder, _needs_bge_query_prefix(), Eagerly load the underlying model, self-healing a corrupt cache.          Trigge, Remove the model cache directory so the next load re-fetches.          Returns `, Construct the underlying FastEmbed model. Isolated so the self-heal         path, Call the underlying fastembed model and return a numpy array.          This bypa (+30 more)
 
 ### Community 13 - "OpenSpec Archive Deltas"
 Cohesion: 0.06
@@ -401,8 +397,8 @@ Cohesion: 0.17
 Nodes (19): ergoAcc, budgetFor(), cliSurface(), groundedNextStep(), hasActionableVerb(), isQueryRestating(), knownDecision(), mcpArgs() (+11 more)
 
 ### Community 17 - "Live Broker Discovery"
-Cohesion: 0.08
-Nodes (34): Alternative, Connector, live, applyCallBudget(), catalogToolToCandidate(), disabledServer(), extractErrorText(), firstLine() (+26 more)
+Cohesion: 0.09
+Nodes (31): Alternative, Connector, live, applyCallBudget(), catalogToolToCandidate(), disabledServer(), extractErrorText(), firstLine() (+23 more)
 
 ### Community 18 - "Eval Catalog Fixtures"
 Cohesion: 0.11
@@ -410,7 +406,7 @@ Nodes (15): CatalogServer, Catalog, CatalogServer, CatalogTool, Corpus, schemaPr
 
 ### Community 19 - "Sidecar Store Operations"
 Cohesion: 0.07
-Nodes (20): Row, ndarray, SQLite-backed embedding metadata store.  The store is the sidecar's source of tr, SQLite-backed embedding metadata store.      The store owns its own connection (, Return the meta value for ``key`` or None when missing., Insert-or-replace the meta value for ``key``., Return the row for ``tool_ref`` or None when missing., Return the row for ``vector_id`` or None when missing. (+12 more)
+Nodes (22): Path, Row, ndarray, SQLite-backed embedding metadata store.      The store owns its own connection (, Return the meta value for ``key`` or None when missing., Insert-or-replace the meta value for ``key``., Return the row for ``tool_ref`` or None when missing., Return the row for ``vector_id`` or None when missing. (+14 more)
 
 ### Community 20 - "Sidecar Client Internals"
 Cohesion: 0.11
@@ -422,35 +418,35 @@ Nodes (23): Connector, EmbeddingSink, EmbedItem, buildEmbedItem(), New(), normal
 
 ### Community 22 - "Sidecar Embedder Implementations"
 Cohesion: 0.09
-Nodes (17): Embedder, Protocol, Embedder, Protocol implemented by both the real and fake embedders.      The protocol is w, Return ``{"model": str, "dim": int}`` describing the active model., Store, ndarray, ndarray (+9 more)
+Nodes (23): Embedder, Exception, Protocol, Embedder, make_embedder(), ModelLoadError, FastEmbed wrapper for the Ozy embedding sidecar.  The embedder is the only place, Factory: return a :class:`FastEmbedEmbedder` for the named model.      Exists so (+15 more)
 
 ### Community 23 - "Protocol Test Suite"
 Cohesion: 0.09
-Nodes (26): Handler, _make_handler(), Protocol dispatch-loop tests.  Covers: framed round-trips, unknown-op error is n, Flat args: all keys except id/op are operation args., Backward compat: nested 'args' key also works., Query with filter using the flat args format., Filter that matches nothing returns empty hits., Full dispatch loop processes multiple requests. (+18 more)
+Nodes (25): _make_handler(), Protocol dispatch-loop tests.  Covers: framed round-trips, unknown-op error is n, Flat args: all keys except id/op are operation args., Backward compat: nested 'args' key also works., Query with filter using the flat args format., Filter that matches nothing returns empty hits., Full dispatch loop processes multiple requests., Malformed JSON produces an error response but the loop continues. (+17 more)
 
 ### Community 24 - "Broker Call Test Suite"
 Cohesion: 0.14
 Nodes (26): newCallBroker(), TestCallTool_DisabledServerReturnsConfigError(), TestCallTool_DownstreamToolErrorReturnsDownstreamCallFailed(), TestCallTool_MalformedToolRefReturnsToolNotFound(), TestCallTool_ResultExceedingBudgetIsTruncated(), TestCallTool_ResultWithinBudgetIsUnchanged(), TestCallTool_StructuredContentPreferredOverText(), TestCallTool_SuccessfulInvocationNormalizesAndSummarizes() (+18 more)
 
 ### Community 25 - "Daemon Core"
-Cohesion: 0.14
-Nodes (15): Daemon, New(), newSink(), wireBroker(), sink, Broker, Client, Config (+7 more)
+Cohesion: 0.13
+Nodes (16): Daemon, New(), newSink(), wireBroker(), sink, Broker, Client, Config (+8 more)
 
 ### Community 26 - "Eval Quality Gates"
-Cohesion: 0.10
-Nodes (23): CacheGate, DiscoveryGate, ErgonomicsGate, CacheGate, DiscoveryGate, ErgonomicsGate, addMinGate(), LoadThresholds() (+15 more)
+Cohesion: 0.11
+Nodes (22): CacheGate, DiscoveryGate, ErgonomicsGate, CacheGate, DiscoveryGate, ErgonomicsGate, addMinGate(), LoadThresholds() (+14 more)
 
 ### Community 27 - "CLI Command Handlers"
-Cohesion: 0.12
-Nodes (14): asError(), evalError(), embedCorpus(), sidecarSemanticBuilder(), TestSemanticLegImprovesDiscovery(), TestSemanticLegSkipsWhenDisabled(), app, Command (+6 more)
+Cohesion: 0.08
+Nodes (28): asError(), evalError(), embedCorpus(), sidecarSemanticBuilder(), TestSemanticLegImprovesDiscovery(), TestSemanticLegSkipsWhenDisabled(), WriteStarter(), BackupConfig() (+20 more)
 
 ### Community 28 - "API Contract Types"
 Cohesion: 0.11
 Nodes (21): Alternative, CallNextAction, CallResult, Candidate, CatalogStats, DescribeResult, DoctorCheck, DoctorResult (+13 more)
 
 ### Community 29 - "Sidecar Entry Point"
-Cohesion: 0.11
-Nodes (23): ArgumentParser, _build_arg_parser(), main(), CLI entrypoint for the Ozy embedding sidecar.  Run as ``python -m sidecar``. The, Resolve the data dir from flag, env, or default., Configure stderr logging.      The Go side reads only stdout for protocol messag, _resolve_data_dir(), _setup_logging() (+15 more)
+Cohesion: 0.09
+Nodes (29): ArgumentParser, Handler, _build_arg_parser(), main(), CLI entrypoint for the Ozy embedding sidecar.  Run as ``python -m sidecar``. The, Resolve the data dir from flag, env, or default., Configure stderr logging.      The Go side reads only stdout for protocol messag, _resolve_data_dir() (+21 more)
 
 ### Community 30 - "Module Cluster 30"
 Cohesion: 0.14
@@ -465,7 +461,7 @@ Cohesion: 0.08
 Nodes (36): cacheKey(), NewCaching(), mustPut(), newTestCache(), TestCachingBroker_FailuresNotCached(), TestCachingBroker_FindAndDescribeCached(), TestCachingBroker_ListPassthrough(), TestCachingBroker_ReadOnlyCallCachedDistinctArgs() (+28 more)
 
 ### Community 33 - "Module Cluster 33"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (13): blockingSession, fakeConnector, fakeSession, recordingSink, CallToolParams, CallToolResult, Config, Context (+5 more)
 
 ### Community 34 - "Module Cluster 34"
@@ -473,8 +469,8 @@ Cohesion: 0.11
 Nodes (22): Archive change: 2026-06-15-ozy-installer, cmd/ozy-install (Go bootstrap binary), PATH reachability detection, Platform-appropriate directory rules (XDG / APPDATA), Single platform-paths abstraction, Actionable errors, One-command bootstrap entrypoint (cmd/ozy-install), Config create-or-update without clobbering (+14 more)
 
 ### Community 35 - "Module Cluster 35"
-Cohesion: 0.14
-Nodes (18): Ops, Bundle the live sidecar state (embedder + store + backend).      Constructed onc, Write the current vector index to ``<data_dir>/index.<ext>``., Any, FakeEmbedder, index_path(), Return the canonical on-disk path for a backend's persisted index., _embedder_for_dim() (+10 more)
+Cohesion: 0.11
+Nodes (24): load_or_rebuild(), Load the persisted index or rebuild it from SQLite.      Triggers a rebuild when, FakeEmbedder, file_ext_for(), index_path(), Return the persisted file extension for a given backend name., Return the canonical on-disk path for a backend's persisted index., _embedder_for_dim() (+16 more)
 
 ### Community 36 - "Module Cluster 36"
 Cohesion: 0.31
@@ -486,27 +482,27 @@ Nodes (19): TestDefaultPathPrecedence(), TestEmbeddingConfig_DefaultsWhenEmbeddi
 
 ### Community 38 - "Module Cluster 38"
 Cohesion: 0.18
-Nodes (19): Ops, Per-operation orchestration tests.  Covers: health, upsert (skip-unchanged, embe, test_delete_empty_list(), test_delete_rejects_missing_tool_refs(), test_delete_removes_tools(), test_health_returns_model_info(), test_query_facet_filter_no_match(), test_query_missing_text() (+11 more)
+Nodes (20): Ops, Per-operation orchestration tests.  Covers: health, upsert (skip-unchanged, embe, test_delete_empty_list(), test_delete_rejects_missing_tool_refs(), test_delete_removes_tools(), test_health_returns_model_info(), test_query_facet_filter_no_match(), test_query_missing_text() (+12 more)
 
 ### Community 39 - "Module Cluster 39"
-Cohesion: 0.29
-Nodes (18): NewMemory(), TestIndexer_DoesNotAdvanceLastIndexedAtOnTotalFailure(), TestIndexer_ListToolsErrorRedactsConfiguredSecrets(), TestIndexer_NoReachableServersIsInstructional(), TestIndexer_NormalizesDiscoveredTools(), TestIndexer_NoSink_StillIndexesCatalog(), TestIndexer_PartialFailureDoesNotAbortReachableServers(), TestIndexer_PerServerTimeoutCancelsListTools() (+10 more)
+Cohesion: 0.21
+Nodes (23): NewMemory(), TestMemory_EmptyStoreQueriesAreClean(), TestMemory_LastIndexedAt(), TestMemory_StatsCountFreshness(), TestIndexer_DoesNotAdvanceLastIndexedAtOnTotalFailure(), TestIndexer_ListToolsErrorRedactsConfiguredSecrets(), TestIndexer_NoReachableServersIsInstructional(), TestIndexer_NormalizesDiscoveredTools() (+15 more)
 
 ### Community 40 - "Module Cluster 40"
 Cohesion: 0.17
 Nodes (18): 2026-06-12 init-project-skeleton configuration spec delta, 2026-06-13 downstream-discovery configuration spec delta, 2026-06-13 user-config-mcp-tools configuration spec delta, 2026-06-15 cache-calltool-results configuration spec delta, cache section (result cache), Configuration discovery and loading, Configuration initialization writes to user config home, Configuration validation (+10 more)
 
 ### Community 41 - "Module Cluster 41"
-Cohesion: 0.20
-Nodes (18): NewContextSpy(), Orchestrator, Runner, mcpServers(), modelName(), NewRunner(), parseToolCalls(), parseTranscript() (+10 more)
+Cohesion: 0.21
+Nodes (17): Orchestrator, Runner, mcpServers(), modelName(), NewRunner(), parseToolCalls(), parseTranscript(), setupOzy() (+9 more)
 
 ### Community 42 - "Module Cluster 42"
 Cohesion: 0.20
 Nodes (17): Store, Tests for the SQLite-backed embedding metadata store., test_all_vector_ids_sorted(), test_compute_skip_classifies(), test_delete_many_returns_vector_ids(), test_facet_allowlist_by_server_id(), test_facet_allowlist_by_tags(), test_get_by_vector_id_roundtrip() (+9 more)
 
 ### Community 43 - "Module Cluster 43"
-Cohesion: 0.15
-Nodes (16): firstAcceptableRank(), isWrongServerPick(), opToken(), rankedRefs(), RunDiscovery(), splitRef(), discoveryAcc, DiscoveryMetrics (+8 more)
+Cohesion: 0.20
+Nodes (12): isWrongServerPick(), opToken(), rankedRefs(), RunDiscovery(), splitRef(), discoveryAcc, DiscoveryMetrics, DiscoveryReport (+4 more)
 
 ### Community 44 - "Module Cluster 44"
 Cohesion: 0.16
@@ -561,12 +557,12 @@ Cohesion: 0.16
 Nodes (14): Archive change: 2026-06-15-comprehensive-eval-suite, Machine-readable run snapshot, Reproducible benchmark provenance, Dataset schema and validation, Labeled discovery gold sets, Gold-set provenance and hygiene, Synthetic downstream MCP catalog (the world), Data-driven scenario loading (+6 more)
 
 ### Community 57 - "Module Cluster 57"
-Cohesion: 0.35
-Nodes (13): NewWithStore(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore(), TestRun_FreshCatalogSkipsIndexing(), TestRun_IndexingFailureStillReportsReady(), TestRun_ReportsReadyAndStopsOnCancel(), TestRun_SemanticEnabledButNoSidecar_StillReadyDegraded(), TestRun_SidecarShutDownWithDaemon() (+5 more)
+Cohesion: 0.32
+Nodes (15): NewWithStore(), TestIndex_SemanticDisabled_RunsLexicalWithoutProvisioning(), TestIndex_SemanticEnabledButProvisioningFails_Degrades(), TestNew_UsesPersistentCatalogStore(), TestNew_WiresBrokerAndStore(), TestRun_FreshCatalogSkipsIndexing(), TestRun_IndexingFailureStillReportsReady(), TestRun_ReportsReadyAndStopsOnCancel() (+7 more)
 
 ### Community 58 - "Module Cluster 58"
-Cohesion: 0.27
-Nodes (11): TestGateSkipsSemanticWhenLegAbsent(), TestHygieneFiresOnLexicalFreebie(), TestLoadEmbeddedCorpus(), TestLoadRejectsDanglingToolRef(), TestLoadRejectsMissingRationale(), TestNoMatchCountsRefusalAsCorrect(), TestRunDiscoveryDeterministic(), TestRunEndToEnd() (+3 more)
+Cohesion: 0.24
+Nodes (12): TestGateSkipsSemanticWhenLegAbsent(), TestHygieneFiresOnLexicalFreebie(), TestLoadEmbeddedCorpus(), TestLoadRejectsDanglingToolRef(), TestLoadRejectsMissingRationale(), TestNoMatchCountsRefusalAsCorrect(), TestRunDiscoveryDeterministic(), TestRunEndToEnd() (+4 more)
 
 ### Community 59 - "Module Cluster 59"
 Cohesion: 0.19
@@ -581,8 +577,8 @@ Cohesion: 0.29
 Nodes (10): corpusConfig(), newCorpusBroker(), RunInvocation(), scoreInvocation(), invocationAcc, InvocationMetrics, InvocationReport, Corpus (+2 more)
 
 ### Community 62 - "Module Cluster 62"
-Cohesion: 0.20
-Nodes (20): hasEnv(), inMemoryFactory(), resultsByID(), TestConnector_ConnectionErrorExcludesSecretValues(), TestConnector_ConnectsInMemoryServerAndListsTools(), TestConnector_DisabledServersAreSkipped(), TestConnector_LocalTransportUsesCommandAndEnvironment(), TestConnector_OAuthConnectionFailureIsAuthUnavailableAndRedacted() (+12 more)
+Cohesion: 0.25
+Nodes (8): File, fileDocument, Context, RWMutex, Server, Stats, Time, Tool
 
 ### Community 63 - "Module Cluster 63"
 Cohesion: 0.12
@@ -597,8 +593,8 @@ Cohesion: 0.26
 Nodes (12): Archive change: 2026-06-12-init-project-skeleton, Archive change: 2026-06-13-mcp-findtool-live-discovery, Archive change: 2026-06-14-mcp-calltool-live-invocation, Agent-ergonomics conformance checks, Invocation and repair metrics, Judgment-heavy metrics are graded by humans, not LLM judge, MCP callTool performs live brokered invocation, MCP findTool performs live downstream discovery (+4 more)
 
 ### Community 66 - "Module Cluster 66"
-Cohesion: 0.15
-Nodes (16): Path, FakeEmbedder, data_dir(), fake_embedder(), ops(), Shared pytest fixtures for the Ozy embedding sidecar tests.  Every test gets a f, A fresh data dir for one test.      Returned as a string because that's the type, A deterministic embedder with the BGE-small default dim.      Query and document (+8 more)
+Cohesion: 0.18
+Nodes (12): FakeEmbedder, fake_embedder(), ops(), A deterministic embedder with the BGE-small default dim.      Query and document, A tiny-dim FakeEmbedder for vector backend tests.      Using a small dim keeps t, A :class:`Store` rooted in ``data_dir``; closed at teardown., A turbovec backend at the test dim.      Tests that need a FAISS backend constru, A wired :class:`Ops` with a turbovec backend and the fake embedder.      Mirrors (+4 more)
 
 ### Community 67 - "Module Cluster 67"
 Cohesion: 0.27
@@ -697,8 +693,8 @@ Cohesion: 0.40
 Nodes (5): 2026-06-15 ozy-installer cli-interface spec delta, Installer bootstrap is a separate entrypoint, cmd/ozy-install bootstrap binary, ozy uninstall command, Uninstall command
 
 ### Community 91 - "Module Cluster 91"
-Cohesion: 0.60
-Nodes (4): TestMemory_EmptyStoreQueriesAreClean(), TestMemory_LastIndexedAt(), TestMemory_StatsCountFreshness(), T
+Cohesion: 0.19
+Nodes (4): ndarray, Add ``vectors`` (shape ``(n, dim)``, ``float32``) to the index.          ``ids``, Return the top-``k`` nearest neighbors of ``query``.          ``query`` has shap, Remove the vectors identified by ``ids`` (1-D ``uint64``).
 
 ### Community 92 - "Module Cluster 92"
 Cohesion: 0.40
@@ -837,8 +833,8 @@ Cohesion: 0.10
 Nodes (19): ADDED Requirements, Requirement: Cache effectiveness gate, Requirement: Corpus carries read-only tool intent, Requirement: Eval harness exercises the result cache, Requirement: Redundant-call-reduction metric, Requirement: Repeated-call cache workload, Requirement: Scoreboard reports cache effectiveness, Scenario: Cache family runs through a cache-wrapped broker (+11 more)
 
 ### Community 142 - "Community 142"
-Cohesion: 0.26
-Nodes (19): removal, removalCategory, cleanupPath(), confirmPurge(), dropCategory(), hasCategory(), planRemovals(), printIntroUninstall() (+11 more)
+Cohesion: 0.17
+Nodes (11): 1. Model is warmed up and verified during install, 2. Liveness and warm-up are separate operations with separate timeouts, 3. Partial/corrupt model cache self-heals in the sidecar, 4. One index path that provisions and embeds, 5. `callTool` success returns the payload directly, Context, Decisions, Goals / Non-Goals (+3 more)
 
 ### Community 143 - "Community 143"
 Cohesion: 0.10
@@ -861,8 +857,8 @@ Cohesion: 0.11
 Nodes (17): Requirement: Invocation does not amplify retries, Requirement: Invoke the downstream tool via tools/call, Requirement: Normalize results and downstream errors, Requirement: Resolve toolRef to a downstream server and tool, Scenario: A malformed toolRef is rejected instructionally, Scenario: A reachable tool is invoked and returns a success result, Scenario: A valid toolRef resolves to its server and tool, Scenario: An unknown or disabled server is rejected instructionally (+9 more)
 
 ### Community 148 - "Community 148"
-Cohesion: 0.18
-Nodes (9): WriteStarter(), Logger, NewLogger(), Redact(), TestLoggerWritesFileAndRedacts(), TestRedact(), WriteCloser, Writer (+1 more)
+Cohesion: 0.22
+Nodes (8): Logger, NewLogger(), Redact(), TestLoggerWritesFileAndRedacts(), TestRedact(), WriteCloser, Writer, T
 
 ### Community 149 - "Community 149"
 Cohesion: 0.12
@@ -929,24 +925,24 @@ Cohesion: 0.13
 Nodes (14): ADDED Requirements, Requirement: Human-readable public benchmark scoreboard, Requirement: Machine-readable run snapshot, Requirement: Methodology separated from public benchmarks, Requirement: Reproducible benchmark provenance, Requirement: Threshold gates, Scenario: A run is gated, Scenario: Math lives in the methodology document (+6 more)
 
 ### Community 165 - "Community 165"
-Cohesion: 0.15
-Nodes (11): Provenance, RunResult, HygieneFinding, CacheEffectivenessMetrics, DiscoveryReport, ErgonomicsReport, GateResult, InvocationReport (+3 more)
+Cohesion: 0.18
+Nodes (10): MODIFIED Requirements, Requirement: Sidecar readiness requires a loaded model and queryable vectors, Scenario: Availability means a query succeeds, Scenario: Cold model warm-up is not aborted by the liveness timeout, Scenario: Degraded mode states the reason and the next step, Scenario: Partial or corrupt model cache is re-fetched, ADDED Requirements, Requirement: Graceful degradation when the sidecar is unavailable (+2 more)
 
 ### Community 166 - "Community 166"
 Cohesion: 0.13
 Nodes (14): install-paths, Purpose, Requirements, Requirement: PATH reachability detection, Requirement: Platform-appropriate directory rules, Requirement: Single platform-paths abstraction, Scenario: Binary already on PATH, Scenario: Binary not on PATH (+6 more)
 
 ### Community 167 - "Community 167"
-Cohesion: 0.27
-Nodes (12): BackupConfig(), NewConfigManager(), mustMkConfig(), TestBackupConfig(), TestEnsureDoesNotClobberInvalid(), TestEnsurePreservesExistingValid(), TestEnsureWritesFreshConfig(), testLogger() (+4 more)
+Cohesion: 0.25
+Nodes (7): MODIFIED Requirements, Scenario: Model is downloaded during install, not deferred, Scenario: Model provisioning failure is actionable, Scenario: Partial or corrupt model download is recovered, Requirement: Python and asset provisioning with graceful degradation, Scenario: Toolchain absent degrades, not fails, Scenario: Toolchain present
 
 ### Community 168 - "Community 168"
-Cohesion: 0.23
-Nodes (11): askConsent(), Confirm(), TestConfirm(), TestConsentPolicyDecide(), ConsentPolicy, Decision, Risk, Logger (+3 more)
+Cohesion: 0.25
+Nodes (7): Requirement: `ozy index` populates the catalog, Scenario: Indexing reports a summary, Scenario: Indexing with no reachable servers is instructional, MODIFIED Requirements, Scenario: Indexed-but-not-embedded is a loud failure, Scenario: Semantic-enabled index embeds and reports vector counts, Scenario: Sidecar unavailable still indexes the catalog
 
 ### Community 169 - "Community 169"
-Cohesion: 0.30
-Nodes (13): T, Paths, binaryName(), OnPath(), pathEqual(), Resolve(), envFrom(), TestOnPath() (+5 more)
+Cohesion: 0.25
+Nodes (7): 1. Sidecar readiness: liveness vs. warm-up, 2. Partial/corrupt model cache self-heal (Python sidecar), 3. Install warms up and verifies the model, 4. `ozy index` provisions and embeds, 5. Honest, consistent degraded reporting, 6. callTool returns the payload directly, 7. Tests and verification
 
 ### Community 170 - "Community 170"
 Cohesion: 0.23
@@ -973,8 +969,8 @@ Cohesion: 0.14
 Nodes (13): downstream-connection, Purpose, Requirements, Requirement: Connect to local (stdio) servers, Requirement: Connect to remote (HTTP) servers, Requirement: Non-leaky connection errors, Requirement: Per-server isolation, Scenario: Connection failure error is redacted (+5 more)
 
 ### Community 176 - "Community 176"
-Cohesion: 0.27
-Nodes (13): Plan, BuildPlan(), fileExists(), ozyVersion(), releaseVersion(), renderDeps(), RenderPlan(), semanticAvailable() (+5 more)
+Cohesion: 0.29
+Nodes (6): Requirement: callTool surfaces the downstream payload directly, Scenario: Call metadata is not double-wrapped, Scenario: Errors stay structured failures, Scenario: Structured result is preserved as structured content, Scenario: Textual result is directly readable, ADDED Requirements
 
 ### Community 177 - "Community 177"
 Cohesion: 0.14
@@ -1013,8 +1009,8 @@ Cohesion: 0.15
 Nodes (12): ADDED Requirements, Requirement: PATH reachability detection, Requirement: Platform-appropriate directory rules, Requirement: Single platform-paths abstraction, Scenario: Binary already on PATH, Scenario: Binary not on PATH, Scenario: Config and venv match existing resolution, Scenario: Linux falls back to home defaults (+4 more)
 
 ### Community 186 - "Community 186"
-Cohesion: 0.21
-Nodes (15): execute(), printIntro(), printManualChecklist(), retryCommand(), Run(), Options, Platform, DetectPlatform() (+7 more)
+Cohesion: 0.29
+Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
 ### Community 187 - "Community 187"
 Cohesion: 0.18
@@ -1101,12 +1097,12 @@ Cohesion: 0.20
 Nodes (9): MODIFIED Requirements, ADDED Requirements, Requirement: Embedding sidecar supervision, Requirement: Graceful degradation of optional subsystems, Scenario: Runs lexical-only when the sidecar is enabled but unavailable, Scenario: Runs with semantic search disabled, Scenario: Sidecar is shut down with the daemon, Scenario: Sidecar is started and health-checked when semantic is enabled (+1 more)
 
 ### Community 208 - "Community 208"
-Cohesion: 0.32
-Nodes (10): CategoryTokens, ContextBreakdown, ContextSpy, addTokens(), readToolTokens(), WriteBreakdown(), RequestTokens, ToolTokens (+2 more)
+Cohesion: 0.18
+Nodes (16): apiRequest, CategoryTokens, ContextBreakdown, ContextSpy, addTokens(), NewContextSpy(), fakeContextSpy(), TestContextSpyBreakdown() (+8 more)
 
 ### Community 209 - "Community 209"
-Cohesion: 0.47
-Nodes (9): fakeDeps(), tempPaths(), TestBuildPlanDetectsExistingConfig(), TestBuildPlanLexicalOnlyWarns(), TestBuildPlanSemanticAvailable(), TestRenderPlanEndsWithNothingChanged(), DepChecker, Paths (+1 more)
+Cohesion: 0.50
+Nodes (4): firstAcceptableRank(), Hygiene(), HygieneFinding, Corpus
 
 ### Community 210 - "Community 210"
 Cohesion: 0.20
@@ -1216,10 +1212,6 @@ Nodes (5): 1. Config Home Resolution, 2. Init And Opencode MCP Compatibility, 3.
 Cohesion: 0.47
 Nodes (4): Execute(), app, Command, Writer
 
-### Community 237 - "Community 237"
-Cohesion: 0.40
-Nodes (4): Connection, blockingTransport, fakeTransport, Context
-
 ### Community 238 - "Community 238"
 Cohesion: 0.33
 Nodes (6): Requirements, Requirement: Actionable errors, Requirement: Success summary and MCP handoff, Scenario: Doctor run before summary, Scenario: Failure is descriptive, Scenario: Summary and handoff printed
@@ -1320,10 +1312,6 @@ Nodes (3): 5.1 Included in MVP, 5.2 Excluded from MVP, 5. Current MVP scope
 Cohesion: 0.67
 Nodes (3): 6.1 Main components, 6.2 Adapter paths, 6. System model
 
-### Community 272 - "Community 272"
-Cohesion: 0.70
-Nodes (4): seedContextSpyDB(), TestContextSpyBreakdown(), TestContextSpyDisabled(), T
-
 ## Ambiguous Edges - Review These
 - `Eval command runs the eval suite` → `eval harness (external, runs ozy eval run)`  [AMBIGUOUS]
   openspec/specs/cli-interface/spec.md · relation: references
@@ -1331,9 +1319,9 @@ Nodes (4): seedContextSpyDB(), TestContextSpyBreakdown(), TestContextSpyDisabled
   openspec/specs/configuration/spec.md · relation: references
 
 ## Knowledge Gaps
-- **1470 isolated node(s):** `FS`, `Command`, `RawMessage`, `DB`, `app` (+1465 more)
+- **1515 isolated node(s):** `FS`, `Command`, `RawMessage`, `Client`, `Server` (+1510 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -1342,13 +1330,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
 - **What is the exact relationship between `Opencode MCP section compatibility` and `opencode project (external, defines MCP config shape)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `NewMemory()` connect `Module Cluster 39` to `Module Cluster 32`, `Broker Connectors`, `Catalog File Persistence`, `Community 174`, `Search Fusion Engine`, `Eval Catalog Fixtures`, `Module Cluster 53`, `Broker Call Test Suite`, `Module Cluster 57`, `Module Cluster 91`, `Module Cluster 30`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
-- **Why does `Run()` connect `Module Cluster 49` to `Module Cluster 58`, `Broker Call Result Caching`, `Module Cluster 41`, `Eval Reporting Pipeline`, `Module Cluster 43`, `Module Cluster 44`, `Eval Ergonomics Metrics`, `Module Cluster 55`, `Eval Quality Gates`, `Module Cluster 61`?**
+- **Why does `NewMemory()` connect `Module Cluster 39` to `Module Cluster 32`, `Broker Connectors`, `Catalog File Persistence`, `Community 174`, `Search Fusion Engine`, `Eval Catalog Fixtures`, `Module Cluster 53`, `Broker Call Test Suite`, `Module Cluster 57`, `Module Cluster 30`?**
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+- **Why does `Run()` connect `Module Cluster 49` to `Module Cluster 58`, `Broker Call Result Caching`, `Module Cluster 41`, `Eval Reporting Pipeline`, `Module Cluster 43`, `Module Cluster 44`, `Eval Ergonomics Metrics`, `Community 209`, `Module Cluster 55`, `Eval Quality Gates`, `Module Cluster 61`?**
   _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Why does `NewLive()` connect `Live Broker Discovery` to `Broker Connectors`, `Catalog File Persistence`, `Broker Call Result Caching`, `Community 174`, `Module Cluster 86`, `Broker Call Test Suite`, `Daemon Core`, `Module Cluster 61`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
-- **Are the 45 inferred relationships involving `NewMemory()` (e.g. with `newTestCache()` and `TestCachingBroker_TTLExpiry()`) actually correct?**
-  _`NewMemory()` has 45 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `NewLive()` connect `Broker Connectors` to `Catalog File Persistence`, `Broker Call Result Caching`, `Community 174`, `Live Broker Discovery`, `Module Cluster 86`, `Broker Call Test Suite`, `Daemon Core`, `Module Cluster 61`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Are the 49 inferred relationships involving `NewMemory()` (e.g. with `newTestCache()` and `TestCachingBroker_TTLExpiry()`) actually correct?**
+  _`NewMemory()` has 49 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 15 inferred relationships involving `Store` (e.g. with `ArgumentParser` and `Embedder`) actually correct?**
   _`Store` has 15 INFERRED edges - model-reasoned connections that need verification._

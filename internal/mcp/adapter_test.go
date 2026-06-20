@@ -22,7 +22,7 @@ func connect(t *testing.T) *mcpsdk.ClientSession {
 	t.Cleanup(cancel)
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewSkeleton(catalog.NewMemory()), "test")
+	adapter := New(broker.NewSkeleton(catalog.NewMemory()), "test", "")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -153,7 +153,7 @@ func connectLive(t *testing.T) *mcpsdk.ClientSession {
 	})
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewLive(store, &config.Config{}, fakeLiveConnector{}, search.New(store, nil)), "test")
+	adapter := New(broker.NewLive(store, &config.Config{}, fakeLiveConnector{}, search.New(store, nil)), "test", "")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -200,7 +200,7 @@ func TestAdapter_FindToolReportsEmptyLiveDiscovery(t *testing.T) {
 	}}
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector, search.New(catalog.NewMemory(), nil)), "test")
+	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector, search.New(catalog.NewMemory(), nil)), "test", "")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -289,7 +289,7 @@ func TestAdapter_IntegrationWithFixtureDownstreamServer(t *testing.T) {
 
 	// Wire the MCP adapter.
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test")
+	adapter := New(liveBroker, "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
@@ -400,7 +400,7 @@ func TestAdapter_CallToolInvokesFixtureDownstreamAndNormalizesResult(t *testing.
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test")
+	adapter := New(liveBroker, "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
@@ -464,7 +464,7 @@ func TestAdapter_CallToolInvokesFixtureDownstreamAndNormalizesResult(t *testing.
 	}
 }
 
-func TestAdapter_CallToolPreservesStructuredContent(t *testing.T) {
+func TestAdapter_CallToolStructuredResultCarriedOnceInContent(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
@@ -491,7 +491,7 @@ func TestAdapter_CallToolPreservesStructuredContent(t *testing.T) {
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test")
+	adapter := New(liveBroker, "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
@@ -514,14 +514,14 @@ func TestAdapter_CallToolPreservesStructuredContent(t *testing.T) {
 	if res.IsError {
 		t.Fatalf("callTool returned IsError=true; content=%+v", res.Content)
 	}
-	// The structured payload is preserved as structured content, not re-encoded
-	// as a string nested inside an Ozy envelope.
-	sc, ok := res.StructuredContent.(map[string]any)
-	if !ok {
-		t.Fatalf("structuredContent is %T, want map", res.StructuredContent)
+	// The structured payload is carried once, as compact JSON in content, and is
+	// not duplicated into StructuredContent (Ozy declares no outputSchema).
+	if res.StructuredContent != nil {
+		t.Errorf("StructuredContent = %v, want nil (single representation in content)", res.StructuredContent)
 	}
-	if sc["count"] != float64(3) {
-		t.Errorf("structuredContent.count = %v, want 3", sc["count"])
+	payload := textPayload(t, res)
+	if payload["count"] != float64(3) {
+		t.Errorf("content payload count = %v, want 3", payload["count"])
 	}
 	if res.Meta["toolRef"] != "fixture.fixture_struct" {
 		t.Errorf("_meta.toolRef = %v, want fixture.fixture_struct", res.Meta["toolRef"])
@@ -571,7 +571,7 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test")
+	adapter := New(liveBroker, "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)

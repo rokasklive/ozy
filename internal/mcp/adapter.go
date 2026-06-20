@@ -11,12 +11,39 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"sort"
+	"strings"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/contract"
 )
+
+// MaxBreadcrumbServers bounds the server list appended to the findTool
+// description so the always-loaded agent surface stays small.
+const MaxBreadcrumbServers = 12
+
+// Breadcrumb renders a bounded, sorted summary of the given downstream server
+// ids for the findTool description. It returns "" when there are no servers, so
+// callers can append it unconditionally.
+func Breadcrumb(servers []string) string {
+	if len(servers) == 0 {
+		return ""
+	}
+	sorted := append([]string(nil), servers...)
+	sort.Strings(sorted)
+	shown, overflow := sorted, 0
+	if len(sorted) > MaxBreadcrumbServers {
+		shown, overflow = sorted[:MaxBreadcrumbServers], len(sorted)-MaxBreadcrumbServers
+	}
+	out := "Available downstream servers (use findTool to reach their tools): " + strings.Join(shown, ", ")
+	if overflow > 0 {
+		out += fmt.Sprintf(" (+%d more)", overflow)
+	}
+	return out + "."
+}
 
 // Tool descriptions are written to make Ozy the obvious first reach: they name
 // concrete capabilities and tell the agent when to prefer the broker over
@@ -47,13 +74,20 @@ const (
 
 // Adapter serves the Ozy MCP tools by delegating to a shared broker.
 type Adapter struct {
-	broker  broker.Broker
-	version string
+	broker          broker.Broker
+	version         string
+	findDescription string
 }
 
-// New returns an MCP adapter backed by the given broker.
-func New(b broker.Broker, version string) *Adapter {
-	return &Adapter{broker: b, version: version}
+// New returns an MCP adapter backed by the given broker. A non-empty breadcrumb
+// (see Breadcrumb) is appended to the findTool description so the agent sees the
+// available downstream servers before its first call.
+func New(b broker.Broker, version, breadcrumb string) *Adapter {
+	desc := OzyFindDescription
+	if breadcrumb != "" {
+		desc += "\n\n" + breadcrumb
+	}
+	return &Adapter{broker: b, version: version, findDescription: desc}
 }
 
 type findInput struct {
@@ -81,7 +115,7 @@ func (a *Adapter) Server() *mcpsdk.Server {
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "findTool",
 		Title:       "Find a tool for a capability",
-		Description: OzyFindDescription,
+		Description: a.findDescription,
 	}, a.handleFind)
 
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
@@ -147,7 +181,9 @@ func callResult(res *contract.CallResult) *mcpsdk.CallToolResult {
 	case string:
 		out.Content = []mcpsdk.Content{&mcpsdk.TextContent{Text: v}}
 	default:
-		out.StructuredContent = v
+		// Carry the structured payload once, as compact JSON in content. Ozy's
+		// tools declare no outputSchema, so a second StructuredContent copy would
+		// only duplicate the same bytes for an agent that reads content text.
 		if data, err := json.Marshal(v); err == nil {
 			out.Content = []mcpsdk.Content{&mcpsdk.TextContent{Text: string(data)}}
 		} else {
@@ -157,18 +193,20 @@ func callResult(res *contract.CallResult) *mcpsdk.CallToolResult {
 	return out
 }
 
-// jsonResult wraps a contract value as a CallToolResult, carrying it both as
-// structured content and as JSON text so any MCP client can read it.
+// jsonResult wraps a contract value as a CallToolResult, carrying it once as
+// compact JSON text in content. Ozy's tools declare no outputSchema, so a
+// duplicate StructuredContent copy would only repeat the same payload to an
+// agent that reads content text; pretty-printing would likewise spend tokens on
+// whitespace the agent does not need.
 func jsonResult(v any, isError bool) *mcpsdk.CallToolResult {
-	data, err := json.MarshalIndent(v, "", "  ")
+	data, err := json.Marshal(v)
 	if err != nil {
 		data = []byte(`{"ok":false,"error":{"type":"DOWNSTREAM_CALL_FAILED","message":"failed to encode response"}}`)
 		isError = true
 	}
 	return &mcpsdk.CallToolResult{
-		Content:           []mcpsdk.Content{&mcpsdk.TextContent{Text: string(data)}},
-		StructuredContent: v,
-		IsError:           isError,
+		Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: string(data)}},
+		IsError: isError,
 	}
 }
 

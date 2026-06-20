@@ -12,6 +12,7 @@ import (
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/schema"
 	"github.com/rokasklive/ozy/internal/search"
 )
 
@@ -83,6 +84,12 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
 			result.Alternatives = l.alternatives(decision.RunnerUp)
 			result.Reason = fmt.Sprintf("Multiple tools match %q — top two are too close to separate confidently.", query)
+			result.NextAction = &contract.NextAction{
+				Tool:      "describeTool",
+				ToolRef:   decision.Selected.Tool.ToolRef,
+				Arguments: map[string]any{"toolRef": decision.Selected.Tool.ToolRef},
+				Reason:    "Inspect the close candidates' schemas with describeTool before choosing.",
+			}
 		}
 		if decision.RunnerUp != nil {
 			result.Candidates = []contract.Candidate{
@@ -95,6 +102,10 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 	case search.DecisionNoGoodMatch:
 		if decision.Selected != nil {
 			result.Reason = fmt.Sprintf("No indexed tool strongly matches %q.", query)
+		}
+		result.NextAction = &contract.NextAction{
+			Tool:   "findTool",
+			Reason: "Retry findTool with a more specific capability query.",
 		}
 		result.AgentInstruction = "Refine the query to be more specific, then retry findTool. If the tool should be available, run `ozy doctor` to check the catalog and then `ozy index` to refresh it. Do not infer that the capability is unavailable."
 
@@ -219,6 +230,10 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 		return nil, disabledServer(toolRef, serverID)
 	}
 
+	if verr := l.validateArgs(ctx, toolRef, args); verr != nil {
+		return nil, verr
+	}
+
 	callCtx, cancel := context.WithTimeout(ctx, server.DiscoveryTimeout())
 	defer cancel()
 
@@ -281,6 +296,32 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 		Result:        normalized,
 		ResultSummary: summary,
 	}, nil
+}
+
+// validateArgs checks args against the tool's cataloged input schema when one is
+// available, so an agent that omits or mistypes an argument gets a structured
+// ARGUMENT_VALIDATION_FAILED before any downstream contact. Validation is
+// best-effort: a toolRef with no catalog entry or no schema (for example before
+// `ozy index` has run) is allowed through so callTool stays index-free, leaving
+// live correctness to the downstream server.
+func (l *live) validateArgs(ctx context.Context, toolRef string, args map[string]any) *contract.Error {
+	tool, ok, err := l.skeleton.store.GetTool(ctx, toolRef)
+	if err != nil || !ok || len(tool.InputSchema) == 0 {
+		return nil
+	}
+	problems := schema.Validate(tool.InputSchema, args)
+	if len(problems) == 0 {
+		return nil
+	}
+	return &contract.Error{
+		Type:      contract.ErrTypeArgumentValidationFailed,
+		ToolRef:   toolRef,
+		ServerID:  tool.ServerID,
+		Retryable: false,
+		Message:   "arguments do not satisfy the tool schema: " + strings.Join(problems, "; "),
+		AgentInstruction: "Correct the arguments named in the message and re-call callTool; call describeTool to confirm " +
+			"the exact schema first. Do not retry the same arguments unchanged.",
+	}
 }
 
 func (l *live) List(ctx context.Context) (*contract.ListResult, error) {

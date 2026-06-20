@@ -81,6 +81,13 @@ const starterConfig = `{
     "enabled": true,
     "ttlSeconds": 300,
     "maxEntries": 1024
+  },
+
+  // The capability breadcrumb appends a short, bounded list of your configured
+  // downstream servers to the findTool description, so an agent sees what Ozy
+  // can reach before its first call. On by default; set it to false to opt out.
+  "surface": {
+    "capabilityBreadcrumb": true
   }
 }
 `

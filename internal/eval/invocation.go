@@ -12,6 +12,7 @@ import (
 	"github.com/rokasklive/ozy/internal/config"
 	"github.com/rokasklive/ozy/internal/contract"
 	"github.com/rokasklive/ozy/internal/downstream"
+	"github.com/rokasklive/ozy/internal/schema"
 	"github.com/rokasklive/ozy/internal/search"
 )
 
@@ -65,7 +66,7 @@ func scoreInvocation(ctx context.Context, corpus *Corpus, s InvocationScenario, 
 	switch s.ExpectedOutcome {
 	case OutcomeSuccess:
 		acc.nSuccess++
-		acc.observeValidExpected(len(validateArgs(tool.InputSchema, s.Arguments)) == 0)
+		acc.observeValidExpected(len(schema.Validate(tool.InputSchema, s.Arguments)) == 0)
 		res, cerr := callWithModeling(ctx, bk, tool, nil, s.Arguments)
 		acc.observeErr(cerr)
 		if cerr == nil && res != nil && res.OK {
@@ -78,7 +79,7 @@ func scoreInvocation(ctx context.Context, corpus *Corpus, s InvocationScenario, 
 		acc.observeErr(firstErr)
 		firstClassified := firstErr != nil && firstErr.Type == s.ExpectedError
 
-		acc.observeValidExpected(len(validateArgs(tool.InputSchema, s.Corrected)) == 0)
+		acc.observeValidExpected(len(schema.Validate(tool.InputSchema, s.Corrected)) == 0)
 		res, correctedErr := callWithModeling(ctx, bk, tool, nil, s.Corrected)
 		acc.observeErr(correctedErr)
 		if firstClassified && correctedErr == nil && res != nil && res.OK {
@@ -115,8 +116,8 @@ func scoreInvocation(ctx context.Context, corpus *Corpus, s InvocationScenario, 
 //     server yields DOWNSTREAM_SERVER_OFFLINE and a healthy server succeeds).
 func callWithModeling(ctx context.Context, bk broker.Broker, tool CatalogTool, liveSchema, args map[string]any) (*contract.CallResult, *contract.Error) {
 	if len(liveSchema) > 0 {
-		validVsCatalog := len(validateArgs(tool.InputSchema, args)) == 0
-		validVsLive := len(validateArgs(liveSchema, args)) == 0
+		validVsCatalog := len(schema.Validate(tool.InputSchema, args)) == 0
+		validVsLive := len(schema.Validate(liveSchema, args)) == 0
 		if validVsCatalog && !validVsLive {
 			return nil, &contract.Error{
 				Type:      contract.ErrTypeToolSchemaChanged,
@@ -129,7 +130,7 @@ func callWithModeling(ctx context.Context, bk broker.Broker, tool CatalogTool, l
 			}
 		}
 	}
-	if problems := validateArgs(tool.InputSchema, args); len(problems) > 0 {
+	if problems := schema.Validate(tool.InputSchema, args); len(problems) > 0 {
 		return nil, &contract.Error{
 			Type:      contract.ErrTypeArgumentValidationFailed,
 			ToolRef:   tool.ToolRef,

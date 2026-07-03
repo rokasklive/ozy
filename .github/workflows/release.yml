@@ -20,6 +20,8 @@ jobs:
           go-version: stable
           cache: true
 
+      - uses: anchore/sbom-action/install-syft@v0
+
       - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser

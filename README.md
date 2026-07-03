@@ -190,6 +190,10 @@ CLI and MCP paths cannot drift.
 - [**CONTRIBUTING.md**](CONTRIBUTING.md) — build, test, lint, and how to
   contribute.
 
+## Acknowledgments
+
+[ContextSpy](https://github.com/RimantasZ/contextspy) by [RimantasZ](https://github.com/RimantasZ) — used in the bench harness to intercept and measure model API calls during scenario benchmarking.
+
 ## License
 
 [Apache License 2.0](LICENSE).

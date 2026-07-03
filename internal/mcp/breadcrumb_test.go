@@ -34,7 +34,7 @@ func TestAdapter_FindDescriptionIncludesBreadcrumb(t *testing.T) {
 	t.Cleanup(cancel)
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewSkeleton(catalog.NewMemory()), "test", Breadcrumb([]string{"github", "atlassian"}))
+	adapter := New(StaticProvider(broker.NewSkeleton(catalog.NewMemory())), "test", Breadcrumb([]string{"github", "atlassian"}))
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)

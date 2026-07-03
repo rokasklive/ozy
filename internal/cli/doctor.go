@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -127,6 +128,74 @@ func errText(err error) string {
 	return err.Error()
 }
 
+// inlineSecretKind names the secret pattern a config value matches, or "" when
+// the value is clean or uses an {env:...} reference. Matching is per
+// whitespace-separated field so short prefixes like sk- cannot fire inside
+// ordinary words (desk-lamp).
+func inlineSecretKind(value string) string {
+	if value == "" || strings.Contains(value, "{env:") {
+		return ""
+	}
+	for _, f := range strings.Fields(value) {
+		switch {
+		case strings.HasPrefix(f, "ghp_"), strings.HasPrefix(f, "gho_"), strings.HasPrefix(f, "ghs_"):
+			return "GitHub token"
+		case strings.HasPrefix(f, "github_pat_"):
+			return "GitHub fine-grained token"
+		case strings.HasPrefix(f, "sk-"):
+			return "secret API key (sk-…)"
+		case strings.HasPrefix(f, "AKIA"):
+			return "AWS access key ID"
+		case strings.HasPrefix(f, "xoxb-"), strings.HasPrefix(f, "xoxp-"),
+			strings.HasPrefix(f, "xoxa-"), strings.HasPrefix(f, "xoxs-"):
+			return "Slack token"
+		}
+	}
+	if strings.HasPrefix(value, "Bearer ") {
+		return "bearer credential"
+	}
+	return ""
+}
+
+// secretHygieneChecks scans raw server headers and environment values for
+// inline secret-shaped literals and returns one WARN per finding, naming the
+// server, field, and key — never any part of the value.
+func secretHygieneChecks(raw *config.Config) []contract.DoctorCheck {
+	if raw == nil {
+		return nil
+	}
+	var checks []contract.DoctorCheck
+	serverIDs := make([]string, 0, len(raw.MCP))
+	for id := range raw.MCP {
+		serverIDs = append(serverIDs, id)
+	}
+	sort.Strings(serverIDs)
+	for _, id := range serverIDs {
+		server := raw.MCP[id]
+		for _, field := range []struct {
+			name   string
+			values map[string]string
+		}{{"headers", server.Headers}, {"environment", server.Environment}} {
+			keys := make([]string, 0, len(field.values))
+			for k := range field.values {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				if kind := inlineSecretKind(field.values[k]); kind != "" {
+					checks = append(checks, contract.DoctorCheck{
+						Name:   "secrets",
+						Status: contract.CheckWarn,
+						Detail: fmt.Sprintf("server %q %s %q holds an inline %s; move it to an {env:NAME} reference and rotate the credential",
+							id, field.name, k, kind),
+					})
+				}
+			}
+		}
+	}
+	return checks
+}
+
 func (a *app) doctorCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
@@ -168,6 +237,14 @@ func (a *app) runDoctor() *contract.DoctorResult {
 		Detail: fmt.Sprintf("%d configured", len(loaded.Resolved.MCP)),
 	})
 
+	// Secret hygiene runs on the RAW config: resolved values have {env:...}
+	// already substituted, so scanning them would flag properly-referenced
+	// secrets. Findings name the location and pattern kind — never the value.
+	if hygiene := secretHygieneChecks(loaded.Raw); len(hygiene) > 0 {
+		res.OK = false
+		res.Checks = append(res.Checks, hygiene...)
+	}
+
 	// Missing env references are reported by variable name only — never values.
 	if len(loaded.Missing) == 0 {
 		res.Checks = append(res.Checks, contract.DoctorCheck{
@@ -187,6 +264,7 @@ func (a *app) runDoctor() *contract.DoctorResult {
 		res.AgentInstruction = "Set the missing environment variables, then re-run `ozy doctor`."
 	}
 
+	catalogTotal := 0
 	toolCounts, err := indexedToolCounts()
 	if err != nil {
 		res.OK = false
@@ -196,14 +274,13 @@ func (a *app) runDoctor() *contract.DoctorResult {
 			Detail: fmt.Sprintf("could not read catalog: %v", err),
 		})
 	} else {
-		total := 0
 		for _, count := range toolCounts {
-			total += count
+			catalogTotal += count
 		}
 		res.Checks = append(res.Checks, contract.DoctorCheck{
 			Name:   "catalog",
 			Status: contract.CheckOK,
-			Detail: fmt.Sprintf("%d indexed tools", total),
+			Detail: fmt.Sprintf("%d indexed tools", catalogTotal),
 		})
 	}
 
@@ -233,16 +310,18 @@ func (a *app) runDoctor() *contract.DoctorResult {
 	// embedding check gets a generous ceiling; the probe's own liveness step
 	// still fails fast on a dead sidecar.
 	embCtx, embCancel := context.WithTimeout(context.Background(), sidecar.DefaultProvisionTimeout)
-	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector))
+	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector, catalogTotal))
 	embCancel()
 
 	return res
 }
 
 // embeddingCheck turns a SidecarStatus into one DoctorCheck. The check is OK
-// when the sidecar is up; WARN otherwise (the user is still served lexical
-// search — degradation is the supported safety net, not a failure).
-func embeddingCheck(ctx context.Context, inspector SidecarInspector) contract.DoctorCheck {
+// when the sidecar is up AND vector coverage matches the catalog; WARN otherwise
+// (the user is still served lexical search — degradation is the supported safety
+// net, not a failure). catalogTotal is the catalog tool count for the coverage
+// cross-check.
+func embeddingCheck(ctx context.Context, inspector SidecarInspector, catalogTotal int) contract.DoctorCheck {
 	if inspector == nil {
 		return contract.DoctorCheck{
 			Name:   "embedding",
@@ -258,10 +337,20 @@ func embeddingCheck(ctx context.Context, inspector SidecarInspector) contract.Do
 			Detail: "semantic unavailable (lexical-only)" + reasonSuffix(st.Reason),
 		}
 	}
+	// Coverage cross-check: the sidecar is up, but if the catalog holds more
+	// tools than the vector store has vectors, semantic results are partial or
+	// stale. Surface it rather than reporting two independently green checks.
+	if catalogTotal > 0 && st.VectorCount < catalogTotal {
+		return contract.DoctorCheck{
+			Name:   "embedding",
+			Status: contract.CheckWarn,
+			Detail: fmt.Sprintf("partial embedding coverage: %d vectors for %d catalog tools — run `ozy index` to rebuild", st.VectorCount, catalogTotal),
+		}
+	}
 	return contract.DoctorCheck{
 		Name:   "embedding",
 		Status: contract.CheckOK,
-		Detail: fmt.Sprintf("ready; backend=%s model=%s dim=%d indexed_tools=%d", st.Backend, st.Model, st.Dim, st.ToolCount),
+		Detail: fmt.Sprintf("ready; backend=%s model=%s dim=%d vectors=%d catalog_tools=%d", st.Backend, st.Model, st.Dim, st.VectorCount, catalogTotal),
 	}
 }
 

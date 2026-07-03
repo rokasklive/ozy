@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/rokasklive/ozy/internal/catalog"
@@ -54,11 +55,19 @@ func TestFindTool_AmbiguousCarriesNextAction(t *testing.T) {
 	if res.NextAction == nil {
 		t.Fatal("ambiguous decision must carry a structured nextAction")
 	}
-	if res.NextAction.Tool != "describeTool" {
-		t.Errorf("NextAction.Tool = %q, want describeTool", res.NextAction.Tool)
+	// The candidates already inline their schemas, so the guidance is
+	// compare-and-call — never a describeTool re-fetch of delivered bytes.
+	if res.NextAction.Tool != "callTool" {
+		t.Errorf("NextAction.Tool = %q, want callTool (compare-and-call)", res.NextAction.Tool)
 	}
-	if res.NextAction.ToolRef == "" || res.NextAction.ToolRef != res.SelectedToolRef {
-		t.Errorf("NextAction.ToolRef = %q, want selected %q", res.NextAction.ToolRef, res.SelectedToolRef)
+	if res.NextAction.ToolRef != "" {
+		t.Errorf("NextAction.ToolRef = %q, want empty — the choice belongs to the agent", res.NextAction.ToolRef)
+	}
+	if strings.Contains(res.AgentInstruction, "describeTool") {
+		t.Errorf("ambiguous instruction must not prescribe describeTool for inlined schemas, got %q", res.AgentInstruction)
+	}
+	if len(res.Candidates) != 2 {
+		t.Fatalf("candidates = %d, want both close matches surfaced", len(res.Candidates))
 	}
 }
 

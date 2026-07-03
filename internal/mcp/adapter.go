@@ -61,33 +61,63 @@ const (
 		"context on irrelevant tools. Prefer this before broad shell exploration when the needed " +
 		"information may be available through the environment's tool catalog."
 
-	OzyDescribeDescription = "Get everything needed to call a downstream tool correctly on the first " +
-		"try: its exact input schema, what each argument means, usage guidance, and a recommended " +
-		"call shape. Run it on the toolRef returned by findTool before calling, so you never have to " +
-		"guess at arguments."
+	OzyDescribeDescription = "Get a downstream tool's exact input schema, its current callable status, " +
+		"and a recommended callTool shape. Run it on a toolRef from findTool when the schema was not " +
+		"already inlined in the findTool response, so you never have to guess at arguments."
 
 	OzyCallDescription = "Actually run a downstream tool through Ozy — execute the query, read the " +
 		"file, search the history, hit the API. This is how a capability you found with findTool gets " +
 		"performed: pass the toolRef and its arguments, and Ozy validates and routes the call to the " +
 		"live downstream server."
+
+	// OzyServerInstructions is set as the MCP server `instructions` at
+	// initialize — the one always-loaded, client-injected channel — so agents
+	// know when to reach for the broker before they ever list its tools.
+	OzyServerInstructions = "Ozy brokers many downstream tools behind three stable tools. When a task needs a " +
+		"capability beyond your built-in tools — web or docs search, code/history inspection, databases, " +
+		"external services — call findTool first with a capability query instead of guessing tool names or " +
+		"exploring by shell. findTool returns a decision with the exact next call to make; callTool executes " +
+		"the chosen tool. Results state truncation, staleness, and recovery steps in-band; trust those notices."
 )
 
-// Adapter serves the Ozy MCP tools by delegating to a shared broker.
-type Adapter struct {
-	broker          broker.Broker
-	version         string
-	findDescription string
+// BrokerProvider yields the current shared broker. The adapter reads it per
+// request rather than capturing it once, so a background sidecar provisioning
+// pass that swaps the runtime's broker (lexical -> hybrid) is seen immediately
+// without reconstructing the adapter. *daemon.Daemon satisfies this.
+type BrokerProvider interface {
+	Broker() broker.Broker
 }
 
-// New returns an MCP adapter backed by the given broker. A non-empty breadcrumb
-// (see Breadcrumb) is appended to the findTool description so the agent sees the
-// available downstream servers before its first call.
-func New(b broker.Broker, version, breadcrumb string) *Adapter {
+// staticProvider wraps a fixed broker for callers and tests that do not swap.
+type staticProvider struct{ b broker.Broker }
+
+func (s staticProvider) Broker() broker.Broker { return s.b }
+
+// StaticProvider adapts a fixed broker to a BrokerProvider for callers that
+// never swap (evals, tests).
+func StaticProvider(b broker.Broker) BrokerProvider { return staticProvider{b} }
+
+// Adapter serves the Ozy MCP tools by delegating to a shared broker read from
+// the provider on each call.
+type Adapter struct {
+	provider        BrokerProvider
+	version         string
+	findDescription string
+	instructions    string
+}
+
+// New returns an MCP adapter backed by the given broker provider. A non-empty
+// breadcrumb (see Breadcrumb) is appended to the findTool description and to
+// the server instructions, so the agent sees the available downstream servers
+// both in its always-loaded context and before its first call.
+func New(p BrokerProvider, version, breadcrumb string) *Adapter {
 	desc := OzyFindDescription
+	instructions := OzyServerInstructions
 	if breadcrumb != "" {
 		desc += "\n\n" + breadcrumb
+		instructions += "\n\n" + breadcrumb
 	}
-	return &Adapter{broker: b, version: version, findDescription: desc}
+	return &Adapter{provider: p, version: version, findDescription: desc, instructions: instructions}
 }
 
 type findInput struct {
@@ -110,7 +140,7 @@ func (a *Adapter) Server() *mcpsdk.Server {
 		Name:    "ozy",
 		Title:   "Ozy capability broker",
 		Version: a.version,
-	}, nil)
+	}, &mcpsdk.ServerOptions{Instructions: a.instructions})
 
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "findTool",
@@ -139,12 +169,33 @@ func (a *Adapter) Serve(ctx context.Context) error {
 }
 
 func (a *Adapter) handleFind(ctx context.Context, _ *mcpsdk.CallToolRequest, in findInput) (*mcpsdk.CallToolResult, any, error) {
-	res, _ := a.broker.FindTool(ctx, in.Query)
+	res, err := a.provider.Broker().FindTool(ctx, in.Query)
+	if err != nil {
+		// Never a null-with-success: a broker failure (for example an unreadable
+		// catalog) is a labeled §9.3 envelope exactly like describe/call.
+		return jsonResult(contract.NewErrorEnvelope(findError(err)), true), nil, nil
+	}
 	return jsonResult(res, false), nil, nil
 }
 
+// findError recovers the structured error from a findTool failure. Unlike
+// invocation, a non-contract failure here is a local catalog/config problem,
+// not a downstream one, so the synthesized type is CONFIG_ERROR.
+func findError(err error) *contract.Error {
+	var ce *contract.Error
+	if errors.As(err, &ce) {
+		return ce
+	}
+	return &contract.Error{
+		Type:             contract.ErrTypeConfigError,
+		Retryable:        true,
+		Message:          "findTool failed: " + err.Error(),
+		AgentInstruction: "Run `ozy doctor` to check catalog storage, then retry findTool.",
+	}
+}
+
 func (a *Adapter) handleDescribe(ctx context.Context, _ *mcpsdk.CallToolRequest, in describeInput) (*mcpsdk.CallToolResult, any, error) {
-	res, err := a.broker.DescribeTool(ctx, in.ToolRef)
+	res, err := a.provider.Broker().DescribeTool(ctx, in.ToolRef)
 	if err != nil {
 		return jsonResult(contract.NewErrorEnvelope(asContractError(err)), true), nil, nil
 	}
@@ -152,7 +203,7 @@ func (a *Adapter) handleDescribe(ctx context.Context, _ *mcpsdk.CallToolRequest,
 }
 
 func (a *Adapter) handleCall(ctx context.Context, _ *mcpsdk.CallToolRequest, in callInput) (*mcpsdk.CallToolResult, any, error) {
-	res, err := a.broker.CallTool(ctx, in.ToolRef, in.Arguments)
+	res, err := a.provider.Broker().CallTool(ctx, in.ToolRef, in.Arguments)
 	if err != nil {
 		return jsonResult(contract.NewErrorEnvelope(asContractError(err)), true), nil, nil
 	}
@@ -164,7 +215,10 @@ func (a *Adapter) handleCall(ctx context.Context, _ *mcpsdk.CallToolRequest, in 
 // preserved as structured content (with a JSON rendering for text-only
 // clients), and Ozy's call metadata (toolRef, resultSummary, any nextActions)
 // rides in _meta exactly once — never a second stringified copy of the whole
-// §9.3 envelope wrapped around the payload.
+// §9.3 envelope wrapped around the payload. Actionable notices (truncation
+// recovery, cache staleness) are appended as one separate trailing text block:
+// major clients never show _meta to the model, so anything the agent must act
+// on has to travel in content, while the payload block stays byte-identical.
 func callResult(res *contract.CallResult) *mcpsdk.CallToolResult {
 	out := &mcpsdk.CallToolResult{
 		Meta: mcpsdk.Meta{
@@ -189,6 +243,9 @@ func callResult(res *contract.CallResult) *mcpsdk.CallToolResult {
 		} else {
 			out.Content = []mcpsdk.Content{&mcpsdk.TextContent{Text: res.ResultSummary}}
 		}
+	}
+	if notices := res.AllNotices(); len(notices) > 0 {
+		out.Content = append(out.Content, &mcpsdk.TextContent{Text: "[ozy] " + strings.Join(notices, "\n[ozy] ")})
 	}
 	return out
 }

@@ -301,16 +301,15 @@ func TestIndexer_SetsLastIndexedAtWhenReachableServerHasZeroTools(t *testing.T) 
 }
 
 type recordingSink struct {
-	available   bool
-	embedZero   bool // simulate "available but embeds nothing" (the silent bug)
-	upserted    []EmbedItem
-	deleted     []string
-	listReturn  []string
-	listErr     error
-	upsertErr   error
-	deleteErr   error
-	persistErr  error
-	persistCall int
+	available      bool
+	embedZero      bool // simulate "available but embeds nothing" (the silent bug)
+	vectorCountVal *int // when set, VectorCount returns this (simulate partial coverage)
+	upserted       []EmbedItem
+	deleted        []string
+	upsertErr      error
+	deleteErr      error
+	persistErr     error
+	persistCall    int
 }
 
 func (s *recordingSink) Available() bool { return s.available }
@@ -331,10 +330,10 @@ func (s *recordingSink) Delete(_ context.Context, toolRefs []string) error {
 	s.deleted = append(s.deleted, toolRefs...)
 	return nil
 }
-func (s *recordingSink) List(context.Context) ([]string, error) {
-	return s.listReturn, s.listErr
-}
 func (s *recordingSink) VectorCount(context.Context) (int, error) {
+	if s.vectorCountVal != nil {
+		return *s.vectorCountVal, nil
+	}
 	if s.embedZero {
 		return 0, nil
 	}
@@ -438,16 +437,65 @@ func TestIndexer_SemanticAvailableButEmbedsZero_IsLoudFailure(t *testing.T) {
 	}
 }
 
+func TestIndexer_SemanticAvailableButPartialCoverage_IsLoudFailure(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	store := catalog.NewMemory()
+	one := 1
+	// Two tools indexed but only one queryable vector — the partial/stale embed
+	// the old `== 0` guard let pass silently. The run must fail loudly.
+	sink := &recordingSink{available: true, vectorCountVal: &one}
+	indexer := New(store, fakeConnector{results: []downstream.Result{
+		{
+			ServerID: "atlassian",
+			Session: fakeSession{tools: []*mcpsdk.Tool{
+				{Name: "confluence_search", Title: "Confluence Search", Description: "Search wiki", InputSchema: map[string]any{"type": "object"}},
+				{Name: "jira_search", Title: "Jira Search", Description: "Search issues", InputSchema: map[string]any{"type": "object"}},
+			}},
+		},
+	}}, WithSink(sink))
+
+	summary := indexer.Run(ctx, &config.Config{})
+	if summary.OK {
+		t.Fatal("summary.OK = true, want false when fewer tools are embedded than indexed")
+	}
+	if summary.ToolsIndexed != 2 {
+		t.Errorf("ToolsIndexed = %d, want 2", summary.ToolsIndexed)
+	}
+	if summary.VectorCount != 1 {
+		t.Errorf("VectorCount = %d, want 1 (partial coverage)", summary.VectorCount)
+	}
+	var sawSemantic bool
+	for _, e := range summary.Errors {
+		if e.Type == contract.ErrTypeSemanticSearchUnavailable {
+			sawSemantic = true
+		}
+	}
+	if !sawSemantic {
+		t.Error("expected a SEMANTIC_SEARCH_UNAVAILABLE error on the partial-embed path")
+	}
+	if !strings.Contains(summary.AgentInstruction, "ozy index") {
+		t.Errorf("AgentInstruction = %q, want it to name the next command", summary.AgentInstruction)
+	}
+}
+
 func TestIndexer_WithSink_ReconcilesDeletedTools(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	store := catalog.NewMemory()
 	now := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
 
-	sink := &recordingSink{
-		available:  true,
-		listReturn: []string{"atlassian.confluence_search", "github.removed_tool"},
+	// Previously indexed tool the server no longer serves: reconciliation must
+	// delete it from the catalog and push the same deletion to the sink.
+	if err := store.PutTool(ctx, catalog.Tool{
+		ToolRef:            "atlassian.removed_tool",
+		ServerID:           "atlassian",
+		DownstreamToolName: "removed_tool",
+	}); err != nil {
+		t.Fatal(err)
 	}
+
+	sink := &recordingSink{available: true}
 	indexer := New(store, fakeConnector{results: []downstream.Result{
 		{
 			ServerID: "atlassian",
@@ -467,11 +515,11 @@ func TestIndexer_WithSink_ReconcilesDeletedTools(t *testing.T) {
 	if !summary.OK {
 		t.Fatalf("summary not OK: %+v", summary)
 	}
-	if len(sink.deleted) != 1 {
-		t.Fatalf("sink.deleted = %v, want [github.removed_tool]", sink.deleted)
+	if len(sink.deleted) != 1 || sink.deleted[0] != "atlassian.removed_tool" {
+		t.Fatalf("sink.deleted = %v, want [atlassian.removed_tool]", sink.deleted)
 	}
-	if sink.deleted[0] != "github.removed_tool" {
-		t.Errorf("deleted[0] = %s, want github.removed_tool", sink.deleted[0])
+	if _, ok, _ := store.GetTool(ctx, "atlassian.removed_tool"); ok {
+		t.Fatal("catalog should no longer hold the removed tool")
 	}
 }
 

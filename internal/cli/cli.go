@@ -62,7 +62,6 @@ func (a *app) rootCmd() *cobra.Command {
 
 	root.AddCommand(
 		a.initCmd(),
-		a.daemonCmd(),
 		a.mcpCmd(),
 		a.indexCmd(),
 		a.doctorCmd(),
@@ -104,5 +103,6 @@ func (a *app) load() (*daemon.Daemon, bool) {
 		})
 		return nil, false
 	}
+	d.SetLogger(newLogger(cfg.Path))
 	return d, true
 }

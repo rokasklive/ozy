@@ -9,14 +9,16 @@ import "fmt"
 
 // Error type values returned in structured failures (SPEC.md §9.3).
 const (
-	ErrTypeToolNotFound              = "TOOL_NOT_FOUND"
-	ErrTypeDownstreamServerOffline   = "DOWNSTREAM_SERVER_OFFLINE"
-	ErrTypeArgumentValidationFailed  = "ARGUMENT_VALIDATION_FAILED"
+	ErrTypeToolNotFound             = "TOOL_NOT_FOUND"
+	ErrTypeDownstreamServerOffline  = "DOWNSTREAM_SERVER_OFFLINE"
+	ErrTypeArgumentValidationFailed = "ARGUMENT_VALIDATION_FAILED"
+	// ErrTypeToolSchemaChanged is reserved: the live broker does not emit it
+	// yet. It names the planned schema-drift failure (cataloged schema no
+	// longer matching the live tool) that the eval corpus already exercises.
 	ErrTypeToolSchemaChanged         = "TOOL_SCHEMA_CHANGED"
 	ErrTypeDownstreamCallFailed      = "DOWNSTREAM_CALL_FAILED"
 	ErrTypeAuthUnavailable           = "AUTH_UNAVAILABLE"
 	ErrTypeSemanticSearchUnavailable = "SEMANTIC_SEARCH_UNAVAILABLE"
-	ErrTypeResultTruncated           = "RESULT_TRUNCATED"
 	ErrTypeConfigError               = "CONFIG_ERROR"
 
 	// ErrTypeNotImplemented is a skeleton-only marker for operations whose broker

@@ -221,8 +221,7 @@ func knownDecision(find *contract.FindResult) bool {
 		return false
 	}
 	switch find.Decision {
-	case contract.DecisionUse, contract.DecisionChooseFromCandidates,
-		contract.DecisionKnownButUnavailable, contract.DecisionNoGoodMatch,
+	case contract.DecisionUse, contract.DecisionNoGoodMatch,
 		contract.DecisionAmbiguous, contract.DecisionCatalogEmpty:
 		return true
 	default:

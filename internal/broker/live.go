@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -16,9 +17,10 @@ import (
 	"github.com/rokasklive/ozy/internal/search"
 )
 
-// Connector is the downstream seam used by the live broker. ConnectAll powers
-// FindTool; Connect is the single-server connection used by CallTool so only
-// the target server is contacted for a single invocation.
+// Connector is the downstream seam used by the live broker. FindTool never
+// connects downstream — it ranks the persistent catalog; ConnectAll serves
+// indexing and doctor. Connect is the single-server connection used by
+// CallTool so only the target server is contacted for a single invocation.
 type Connector interface {
 	ConnectAll(ctx context.Context, cfg *config.Config) []downstream.Result
 	Connect(ctx context.Context, serverID string, server config.ServerConfig) downstream.Result
@@ -65,30 +67,46 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 	case search.DecisionUse:
 		result.Confidence = decision.Confidence
 		if decision.Selected != nil {
-			result.SelectedToolRef = decision.Selected.Tool.ToolRef
-			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
+			tool := decision.Selected.Tool
+			result.SelectedToolRef = tool.ToolRef
+			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(tool.InputSchema))
 			result.Reason = decision.Selected.Reason
-			result.Alternatives = l.alternatives(decision.RunnerUp)
-			result.NextAction = &contract.NextAction{
-				Tool:      "describeTool",
-				ToolRef:   decision.Selected.Tool.ToolRef,
-				Arguments: map[string]any{"toolRef": decision.Selected.Tool.ToolRef},
-				Reason:    "Inspect exact schema before invoking through callTool.",
+			result.Alternatives = l.alternatives(ranking)
+			if l.inlineFullSchema(tool.InputSchema) {
+				// Fast path: the schema is small enough to deliver now, so the
+				// describeTool hop becomes the exception rather than the ritual.
+				result.Selected.InputSchema = tool.InputSchema
+				result.Selected.SchemaPreview = nil
+				callArgs := map[string]any{"toolRef": tool.ToolRef, "arguments": argumentSkeleton(tool.InputSchema)}
+				result.Selected.RecommendedCall = &contract.RecommendedCall{Tool: "callTool", Arguments: callArgs}
+				result.NextAction = &contract.NextAction{
+					Tool:      "callTool",
+					ToolRef:   tool.ToolRef,
+					Arguments: callArgs,
+					Reason:    "The full inputSchema is inlined — invoke directly.",
+				}
+				result.AgentInstruction = "The selected tool's full inputSchema is inlined above. Call callTool directly " +
+					"with arguments matching it; use describeTool only if the schema is unclear."
+			} else {
+				result.NextAction = &contract.NextAction{
+					Tool:      "describeTool",
+					ToolRef:   tool.ToolRef,
+					Arguments: map[string]any{"toolRef": tool.ToolRef},
+					Reason:    "Inspect exact schema before invoking through callTool.",
+				}
+				result.AgentInstruction = "Use describeTool to inspect the selected tool's full schema before invoking it through callTool."
 			}
-			result.AgentInstruction = "Use describeTool to inspect the selected tool's full schema before invoking it through callTool."
 		}
 
 	case search.DecisionAmbiguous:
 		if decision.Selected != nil {
 			result.SelectedToolRef = decision.Selected.Tool.ToolRef
 			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
-			result.Alternatives = l.alternatives(decision.RunnerUp)
+			result.Alternatives = l.alternatives(ranking)
 			result.Reason = fmt.Sprintf("Multiple tools match %q — top two are too close to separate confidently.", query)
 			result.NextAction = &contract.NextAction{
-				Tool:      "describeTool",
-				ToolRef:   decision.Selected.Tool.ToolRef,
-				Arguments: map[string]any{"toolRef": decision.Selected.Tool.ToolRef},
-				Reason:    "Inspect the close candidates' schemas with describeTool before choosing.",
+				Tool:   "callTool",
+				Reason: "Compare the candidates' inlined schemas and invoke the chosen toolRef.",
 			}
 		}
 		if decision.RunnerUp != nil {
@@ -97,7 +115,9 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 				catalogToolToCandidate(decision.RunnerUp),
 			}
 		}
-		result.AgentInstruction = "Two tools match closely. Use describeTool on both to inspect their schemas before choosing."
+		// The candidates already carry their full input schemas, so the agent is
+		// told to compare and call — never to re-fetch delivered bytes.
+		result.AgentInstruction = "Two tools match closely. Compare the candidates' inlined schemas and call the better fit with callTool."
 
 	case search.DecisionNoGoodMatch:
 		if decision.Selected != nil {
@@ -135,6 +155,7 @@ func (l *live) stats(ctx context.Context) (*contract.CatalogStats, error) {
 		IndexedTools:      cs.IndexedTools,
 		FreshTools:        cs.FreshTools,
 		StaleTools:        cs.StaleTools,
+		CatalogAgeSeconds: catalogAge(ctx, l.skeleton.store),
 	}, nil
 }
 
@@ -161,14 +182,65 @@ func (l *live) schemaPreview(schema map[string]any) *contract.SchemaPreview {
 	return preview
 }
 
-func (l *live) alternatives(entry *search.RankedEntry) []contract.Alternative {
-	if entry == nil {
-		return nil
+// fastPathSchemaBytes is the canonical-encoding size at or under which a
+// selected tool's full inputSchema is inlined in the findTool response, so the
+// agent can call directly instead of paying a describeTool round-trip.
+// ponytail: constant threshold; make it a budget knob only if real schemas demand tuning.
+const fastPathSchemaBytes = 2048
+
+// alternatives returns the runner-ups after the selected entry, bounded by
+// budgets.findTool.maxResults (selected + alternatives ≤ maxResults).
+func (l *live) alternatives(ranking *search.Ranking) []contract.Alternative {
+	maxResults := config.FindToolBudget{}.EffectiveMaxResults()
+	if l.cfg != nil {
+		maxResults = l.cfg.Budgets.FindTool.EffectiveMaxResults()
 	}
-	return []contract.Alternative{{
-		ToolRef: entry.Tool.ToolRef,
-		Reason:  entry.Reason,
-	}}
+	var out []contract.Alternative
+	for i := 1; i < len(ranking.Entries) && len(out) < maxResults-1; i++ {
+		e := &ranking.Entries[i]
+		out = append(out, contract.Alternative{
+			ToolRef: e.Tool.ToolRef,
+			Reason:  e.Reason,
+		})
+	}
+	return out
+}
+
+// inlineFullSchema reports whether the schema should ride inline in the
+// findTool response: always when budgets.findTool.includeFullSchemas forces it,
+// otherwise when its canonical encoding fits the fast-path threshold.
+func (l *live) inlineFullSchema(schema map[string]any) bool {
+	if len(schema) == 0 {
+		return false
+	}
+	if l.cfg != nil && l.cfg.Budgets.FindTool.IncludeFullSchemas {
+		return true
+	}
+	data, err := json.Marshal(schema)
+	return err == nil && len(data) <= fastPathSchemaBytes
+}
+
+// argumentSkeleton builds a callTool arguments placeholder from the schema's
+// required fields, typed from their declared property types, so the
+// recommended call shows the shape to fill rather than an empty object.
+func argumentSkeleton(schema map[string]any) map[string]any {
+	out := map[string]any{}
+	req, _ := schema["required"].([]any)
+	props, _ := schema["properties"].(map[string]any)
+	for _, r := range req {
+		name, ok := r.(string)
+		if !ok {
+			continue
+		}
+		typ := "value"
+		if p, ok := props[name].(map[string]any); ok {
+			if s, ok := p["type"].(string); ok && s != "" {
+				typ = s
+			}
+		}
+		out[name] = "<" + typ + ">"
+	}
+	return out
 }
 
 func selectedToolFromEntry(entry *search.RankedEntry, preview *contract.SchemaPreview) *contract.SelectedTool {
@@ -234,11 +306,16 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 		return nil, verr
 	}
 
-	callCtx, cancel := context.WithTimeout(ctx, server.DiscoveryTimeout())
+	// Invocation runs under its own clock: callTimeout (default 60s), never the
+	// 5s discovery timeout — a real tool call routinely outlives discovery.
+	callCtx, cancel := context.WithTimeout(ctx, server.InvocationTimeout())
 	defer cancel()
 
 	result := l.connector.Connect(callCtx, serverID, server)
 	if result.Error != nil {
+		if derr := deadlineError(ctx, callCtx, toolRef, serverID, server); derr != nil {
+			return nil, derr
+		}
 		result.Error.ToolRef = toolRef
 		result.Error.Message = downstream.Scrub(result.Error.Message, server)
 		return nil, result.Error
@@ -260,6 +337,9 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 		Arguments: args,
 	})
 	if err != nil {
+		if derr := deadlineError(ctx, callCtx, toolRef, serverID, server); derr != nil {
+			return nil, derr
+		}
 		return nil, &contract.Error{
 			Type:             contract.ErrTypeDownstreamCallFailed,
 			ServerID:         serverID,
@@ -282,20 +362,18 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 
 	normalized := normalizeCallResult(callRes)
 	summary := summarizeCall(downstreamName, normalized)
-	if truncated, marker, ok := applyCallBudget(l.cfg, normalized); ok {
-		return &contract.CallResult{
-			OK:            true,
-			ToolRef:       toolRef,
-			Result:        truncated,
-			ResultSummary: summary + " " + marker,
-		}, nil
-	}
-	return &contract.CallResult{
+	bounded, notice := applyCallBudget(l.cfg, normalized)
+	res := &contract.CallResult{
 		OK:            true,
 		ToolRef:       toolRef,
-		Result:        normalized,
+		Result:        bounded,
 		ResultSummary: summary,
-	}, nil
+	}
+	if notice != "" {
+		res.ResultSummary = summary + " (truncated)"
+		res.Notices = append(res.Notices, notice)
+	}
+	return res, nil
 }
 
 // validateArgs checks args against the tool's cataloged input schema when one is
@@ -336,6 +414,27 @@ func splitToolRef(toolRef string) (serverID, downstreamName string, ok bool) {
 		return "", "", false
 	}
 	return toolRef[:idx], toolRef[idx+1:], true
+}
+
+// deadlineError reports a structured, non-retryable failure when Ozy's own
+// callTimeout expired, and nil otherwise. Retrying an identical call against
+// the same deadline is deterministic, so the error names the budget and tells
+// the agent to change something instead of blaming the downstream server. A
+// cancelled parent context (the client gave up) is not our deadline.
+func deadlineError(parent, callCtx context.Context, toolRef, serverID string, server config.ServerConfig) *contract.Error {
+	if parent.Err() != nil || !errors.Is(callCtx.Err(), context.DeadlineExceeded) {
+		return nil
+	}
+	return &contract.Error{
+		Type:      contract.ErrTypeDownstreamCallFailed,
+		ServerID:  serverID,
+		ToolRef:   toolRef,
+		Retryable: false,
+		Message: fmt.Sprintf("call exceeded the configured callTimeout of %s for server %q",
+			server.InvocationTimeout(), serverID),
+		AgentInstruction: "Do not retry the same call unchanged — it will hit the same deadline. Narrow the call " +
+			"(smaller scope, fewer results) or raise this server's callTimeout in the Ozy config.",
+	}
 }
 
 func malformedToolRef(toolRef string) *contract.Error {
@@ -446,27 +545,79 @@ func firstLine(s string) string {
 	return s
 }
 
-// applyCallBudget returns (truncatedResult, marker, true) when the encoded
-// normalized result exceeds budgets.callTool.maxResultBytes, otherwise
-// (nil, "", false).
-func applyCallBudget(cfg *config.Config, result any) (any, string, bool) {
+// applyCallBudget bounds an oversized result at a structural boundary and
+// returns the bounded result plus an in-band recovery notice, or (result, "")
+// when the result fits budgets.callTool.maxResultBytes. Arrays lose whole
+// trailing elements so what remains is valid JSON; text is cut at a line
+// (fallback: word) boundary so the tail is readable — never a mid-byte slice
+// through a JSON token or a UTF-8 rune.
+func applyCallBudget(cfg *config.Config, result any) (any, string) {
 	if cfg == nil || cfg.Budgets.CallTool.MaxResultBytes <= 0 {
-		return nil, "", false
-	}
-	encoded, err := json.Marshal(result)
-	if err != nil {
-		return nil, "", false
-	}
-	if len(encoded) <= cfg.Budgets.CallTool.MaxResultBytes {
-		return nil, "", false
+		return result, ""
 	}
 	limit := cfg.Budgets.CallTool.MaxResultBytes
 	if limit < 16 {
 		limit = 16
 	}
-	truncated := make([]byte, 0, limit+len("...[truncated]"))
-	truncated = append(truncated, encoded[:limit]...)
-	truncated = append(truncated, "...[truncated]"...)
-	marker := fmt.Sprintf("(result exceeded budgets.callTool.maxResultBytes=%d bytes; narrow the call for full output)", cfg.Budgets.CallTool.MaxResultBytes)
-	return string(truncated), marker, true
+	encoded, err := json.Marshal(result)
+	if err != nil || len(encoded) <= limit {
+		return result, ""
+	}
+
+	if arr, ok := result.([]any); ok {
+		if kept := arrayPrefixWithinBudget(arr, limit); kept > 0 {
+			notice := fmt.Sprintf("result truncated: showing %d of %d items (budgets.callTool.maxResultBytes=%d); narrow the call for the rest",
+				kept, len(arr), limit)
+			return arr[:kept], notice
+		}
+		// Even the first element does not fit; fall through to a text cut.
+	}
+
+	text, isString := result.(string)
+	if !isString {
+		text = string(encoded)
+	}
+	cut := cutAtBoundary(text, limit)
+	notice := fmt.Sprintf("result truncated to %d of %d bytes (budgets.callTool.maxResultBytes=%d); narrow the call for full output",
+		len(cut), len(text), limit)
+	if !isString {
+		notice += "; the truncated payload is not valid JSON"
+	}
+	return cut, notice
+}
+
+// arrayPrefixWithinBudget returns how many leading elements of arr encode
+// within limit bytes (including brackets and separators).
+func arrayPrefixWithinBudget(arr []any, limit int) int {
+	total := 2 // []
+	for i, el := range arr {
+		b, err := json.Marshal(el)
+		if err != nil {
+			return i
+		}
+		total += len(b)
+		if i > 0 {
+			total++ // comma
+		}
+		if total > limit {
+			return i
+		}
+	}
+	return len(arr)
+}
+
+// cutAtBoundary cuts s to at most limit bytes, preferring the last line break,
+// then the last space, and finally a rune-safe hard cut.
+func cutAtBoundary(s string, limit int) string {
+	if len(s) <= limit {
+		return s
+	}
+	cut := s[:limit]
+	if i := strings.LastIndexByte(cut, '\n'); i > 0 {
+		return cut[:i]
+	}
+	if i := strings.LastIndexByte(cut, ' '); i > 0 {
+		return cut[:i]
+	}
+	return strings.ToValidUTF8(cut, "")
 }

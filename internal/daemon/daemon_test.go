@@ -3,15 +3,24 @@ package daemon
 import (
 	"bytes"
 	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/rokasklive/ozy/internal/broker"
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/config"
+	"github.com/rokasklive/ozy/internal/contract"
 )
+
+// captureLogger returns a logger writing structured text into buf for assertions.
+func captureLogger() (*slog.Logger, *bytes.Buffer) {
+	var buf bytes.Buffer
+	return slog.New(slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})), &buf
+}
 
 func TestNew_WiresBrokerAndStore(t *testing.T) {
 	t.Parallel()
@@ -50,33 +59,21 @@ func TestNew_UsesPersistentCatalogStore(t *testing.T) {
 	}
 }
 
-func TestRun_ReportsReadyAndStopsOnCancel(t *testing.T) {
+func TestStart_ReportsReady(t *testing.T) {
 	t.Parallel()
 	d := NewWithStore(&config.Loaded{Resolved: &config.Config{Version: 1}}, catalog.NewMemory())
+	log, buf := captureLogger()
+	d.SetLogger(log)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	var status bytes.Buffer
-	done := make(chan error, 1)
-	go func() { done <- d.Run(ctx, &status) }()
+	// Start is synchronous: it returns once ready, with no blocking on cancel.
+	d.Start(context.Background())
 
-	// Give Run a moment to write the ready line, then cancel.
-	time.Sleep(10 * time.Millisecond)
-	cancel()
-
-	select {
-	case err := <-done:
-		if err != nil {
-			t.Fatalf("Run() error = %v", err)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("Run() did not return after cancel")
-	}
-	if !strings.Contains(status.String(), "ready") {
-		t.Errorf("status = %q, want it to report readiness", status.String())
+	if !strings.Contains(buf.String(), "ready") {
+		t.Errorf("log = %q, want it to report readiness", buf.String())
 	}
 }
 
-func TestRun_StartsWithSemanticDisabled(t *testing.T) {
+func TestStart_SemanticDisabledDoesNotProvision(t *testing.T) {
 	t.Parallel()
 	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
 	cfg.Resolved.Search.Semantic.Enabled = false
@@ -85,14 +82,14 @@ func TestRun_StartsWithSemanticDisabled(t *testing.T) {
 		t.Error("SemanticDegraded() = true with semantic disabled, want false")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel() // already done; Run should return promptly
-	if err := d.Run(ctx, nil); err != nil {
-		t.Fatalf("Run() error = %v", err)
+	d.Start(context.Background())
+
+	if d.sidecarProvisioned {
+		t.Error("Start provisioned a sidecar with semantic disabled, want lexical-only")
 	}
 }
 
-func TestRun_StaleCatalogTriggersReindex(t *testing.T) {
+func TestStart_StaleCatalogTriggersReindex(t *testing.T) {
 	t.Parallel()
 	store := catalog.NewMemory()
 	ctx := context.Background()
@@ -102,7 +99,6 @@ func TestRun_StaleCatalogTriggersReindex(t *testing.T) {
 		t.Fatalf("SetLastIndexedAt() error = %v", err)
 	}
 
-	// Config file with mtime newer than oldTime.
 	cfgPath := filepath.Join(t.TempDir(), "ozy.jsonc")
 	if err := os.WriteFile(cfgPath, []byte(`{"version":1}`), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
@@ -110,25 +106,20 @@ func TestRun_StaleCatalogTriggersReindex(t *testing.T) {
 	cfg := &config.Loaded{Path: cfgPath, Resolved: &config.Config{Version: 1}}
 
 	d := NewWithStore(cfg, store)
-	ctx2, cancel := context.WithCancel(ctx)
-	var status bytes.Buffer
-	done := make(chan error, 1)
-	go func() { done <- d.Run(ctx2, &status) }()
+	log, buf := captureLogger()
+	d.SetLogger(log)
+	d.Start(ctx)
 
-	time.Sleep(50 * time.Millisecond)
-	cancel()
-	<-done
-
-	out := status.String()
-	if !strings.Contains(out, "reindexing") && !strings.Contains(out, "index complete") {
-		t.Errorf("status does not mention reindexing: %q", out)
+	out := buf.String()
+	if !strings.Contains(out, "reindex") && !strings.Contains(out, "index complete") {
+		t.Errorf("log does not mention reindexing: %q", out)
 	}
 	if !strings.Contains(out, "ready") {
 		t.Error("daemon should report ready even after indexing")
 	}
 }
 
-func TestRun_FreshCatalogSkipsIndexing(t *testing.T) {
+func TestStart_FreshCatalogSkipsIndexing(t *testing.T) {
 	t.Parallel()
 	store := catalog.NewMemory()
 	ctx := context.Background()
@@ -139,23 +130,18 @@ func TestRun_FreshCatalogSkipsIndexing(t *testing.T) {
 	}
 	cfg := &config.Loaded{Path: cfgPath, Resolved: &config.Config{Version: 1}}
 
-	// Set last indexed to now+1s so config file is definitely older.
+	// Set last indexed to now+1s so the config file is definitely older.
 	if err := store.SetLastIndexedAt(ctx, time.Now().Add(time.Second)); err != nil {
 		t.Fatalf("SetLastIndexedAt() error = %v", err)
 	}
 
 	d := NewWithStore(cfg, store)
-	ctx2, cancel := context.WithCancel(ctx)
-	var status bytes.Buffer
-	done := make(chan error, 1)
-	go func() { done <- d.Run(ctx2, &status) }()
+	log, buf := captureLogger()
+	d.SetLogger(log)
+	d.Start(ctx)
 
-	time.Sleep(50 * time.Millisecond)
-	cancel()
-	<-done
-
-	out := status.String()
-	if strings.Contains(out, "reindexing") || strings.Contains(out, "index complete") {
+	out := buf.String()
+	if strings.Contains(out, "reindex") || strings.Contains(out, "index complete") {
 		t.Errorf("fresh catalog should not reindex: %q", out)
 	}
 	if !strings.Contains(out, "ready") {
@@ -163,83 +149,122 @@ func TestRun_FreshCatalogSkipsIndexing(t *testing.T) {
 	}
 }
 
-func TestRun_IndexingFailureStillReportsReady(t *testing.T) {
+func TestStart_IndexingFailureStillReportsReady(t *testing.T) {
 	t.Parallel()
 	store := catalog.NewMemory()
 	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
-	// No MCP servers configured — startup indexing will find no reachable servers.
+	// No MCP servers configured — startup indexing finds no reachable servers.
 	d := NewWithStore(cfg, store)
+	log, buf := captureLogger()
+	d.SetLogger(log)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	var status bytes.Buffer
-	done := make(chan error, 1)
-	go func() { done <- d.Run(ctx, &status) }()
+	d.Start(context.Background())
 
-	time.Sleep(50 * time.Millisecond)
-	cancel()
-	<-done
-
-	out := status.String()
-	if !strings.Contains(out, "ready") {
-		t.Errorf("daemon should report ready even on indexing failure: %q", out)
+	if !strings.Contains(buf.String(), "ready") {
+		t.Errorf("daemon should report ready even on indexing failure: %q", buf.String())
 	}
 }
 
-func TestRun_SemanticEnabledButNoSidecar_StillReadyDegraded(t *testing.T) {
-	t.Parallel()
-	store := catalog.NewMemory()
+func TestStart_SemanticEnabledNoSidecar_Degrades(t *testing.T) {
+	// Redirect the venv to an empty temp dir and cancel the context so
+	// provisioning fails fast without touching the user's real sidecar.
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
 	cfg.Resolved.Search.Semantic.Enabled = true
-	d := NewWithStore(cfg, store)
+	d := NewWithStore(cfg, catalog.NewMemory())
 	if !d.SemanticDegraded() {
 		t.Error("SemanticDegraded() = false, want true when semantic enabled but no sidecar provisioned")
 	}
+	log, buf := captureLogger()
+	d.SetLogger(log)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	var status bytes.Buffer
-	if err := d.Run(ctx, &status); err != nil {
-		t.Fatalf("Run() error = %v", err)
+	d.Start(ctx)
+
+	if !d.SemanticDegraded() {
+		t.Error("SemanticDegraded() = false after failed provisioning, want true")
 	}
-	out := status.String()
-	if !strings.Contains(out, "ready") {
-		t.Errorf("daemon should report ready even with no sidecar: %q", out)
-	}
-	if !strings.Contains(out, "lexical baseline") {
-		t.Errorf("daemon should surface lexical-only degradation: %q", out)
+	if !strings.Contains(buf.String(), "lexical") {
+		t.Errorf("daemon should surface lexical-only degradation: %q", buf.String())
 	}
 }
 
-func TestRun_SidecarShutDownWithDaemon(t *testing.T) {
-	t.Parallel()
-	store := catalog.NewMemory()
+// TestStart_DegradeLogsCauseAndActionWithoutSecret covers the runtime-logging
+// contract: a degradation record names a cause and a next action, and a
+// configured secret never appears in any emitted record.
+func TestStart_DegradeLogsCauseAndActionWithoutSecret(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	const secret = "super-secret-token-xyz"
 	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
 	cfg.Resolved.Search.Semantic.Enabled = true
-	d := NewWithStore(cfg, store)
+	cfg.Resolved.MCP = map[string]config.ServerConfig{
+		"x": {URL: "http://127.0.0.1:1/mcp", Headers: map[string]string{"Authorization": secret}, Enabled: true},
+	}
+	d := NewWithStore(cfg, catalog.NewMemory())
+	log, buf := captureLogger()
+	d.SetLogger(log)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	var status bytes.Buffer
-	done := make(chan error, 1)
-	go func() { done <- d.Run(ctx, &status) }()
-
-	time.Sleep(50 * time.Millisecond)
 	cancel()
+	d.Start(ctx)
 
-	select {
-	case err := <-done:
-		if err != nil {
-			t.Fatalf("Run() error = %v", err)
+	out := buf.String()
+	if !strings.Contains(out, "reason=") {
+		t.Errorf("degradation log missing a cause: %q", out)
+	}
+	if !strings.Contains(out, "action=") {
+		t.Errorf("degradation log missing an action: %q", out)
+	}
+	if strings.Contains(out, secret) {
+		t.Errorf("log leaked a configured secret value: %q", out)
+	}
+}
+
+func TestShutdown_SafeWithoutSidecar(t *testing.T) {
+	t.Parallel()
+	d := NewWithStore(&config.Loaded{Resolved: &config.Config{Version: 1}}, catalog.NewMemory())
+	// No sidecar was provisioned; Shutdown must be a safe, idempotent no-op.
+	d.Shutdown()
+	d.Shutdown()
+}
+
+// stubBroker is a do-nothing broker used to assert the swap mechanism.
+type stubBroker struct{ id string }
+
+func (stubBroker) FindTool(context.Context, string) (*contract.FindResult, error) { return nil, nil }
+func (stubBroker) DescribeTool(context.Context, string) (*contract.DescribeResult, error) {
+	return nil, nil
+}
+func (stubBroker) CallTool(context.Context, string, map[string]any) (*contract.CallResult, error) {
+	return nil, nil
+}
+func (stubBroker) List(context.Context) (*contract.ListResult, error) { return nil, nil }
+
+// TestSetBroker_SwapVisibleAndRaceFree covers the new atomic broker handle: a
+// swap is immediately visible to Broker(), and concurrent swap+read is race-free
+// (run under -race). This is the seam that lets a background provisioning pass
+// upgrade a serving adapter from lexical to hybrid in place.
+func TestSetBroker_SwapVisibleAndRaceFree(t *testing.T) {
+	t.Parallel()
+	d := NewWithStore(&config.Loaded{Resolved: &config.Config{Version: 1}}, catalog.NewMemory())
+	sb := stubBroker{id: "swapped"}
+	d.setBroker(sb)
+	if got := d.Broker(); got != broker.Broker(sb) {
+		t.Errorf("Broker() did not reflect the swap: got %#v", got)
+	}
+
+	done := make(chan struct{})
+	go func() {
+		for i := 0; i < 1000; i++ {
+			d.setBroker(stubBroker{id: "x"})
 		}
-	case <-time.After(time.Second):
-		t.Fatal("Run() did not return after cancel; shutdown may have hung")
+		close(done)
+	}()
+	for i := 0; i < 1000; i++ {
+		_ = d.Broker()
 	}
-	out := status.String()
-	if !strings.Contains(out, "stopped") {
-		t.Errorf("daemon should report stopped: %q", out)
-	}
-	if d.SemanticDegraded() {
-		t.Log("semantic degraded after shutdown — expected (sidecar never provisioned)")
-	}
+	<-done
 }
 
 func TestIndex_SemanticDisabled_RunsLexicalWithoutProvisioning(t *testing.T) {
@@ -248,7 +273,7 @@ func TestIndex_SemanticDisabled_RunsLexicalWithoutProvisioning(t *testing.T) {
 	cfg.Resolved.Search.Semantic.Enabled = false
 	d := NewWithStore(cfg, catalog.NewMemory())
 
-	summary := d.Index(context.Background(), nil)
+	summary := d.Index(context.Background())
 	if summary == nil {
 		t.Fatal("Index() returned nil summary")
 	}
@@ -263,7 +288,7 @@ func TestIndex_SemanticDisabled_RunsLexicalWithoutProvisioning(t *testing.T) {
 }
 
 func TestIndex_SemanticEnabledButProvisioningFails_Degrades(t *testing.T) {
-	t.Parallel()
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	cfg := &config.Loaded{Resolved: &config.Config{Version: 1}}
 	cfg.Resolved.Search.Semantic.Enabled = true
 	d := NewWithStore(cfg, catalog.NewMemory())
@@ -273,7 +298,7 @@ func TestIndex_SemanticEnabledButProvisioningFails_Degrades(t *testing.T) {
 	// model download.
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	summary := d.Index(ctx, nil)
+	summary := d.Index(ctx)
 	if summary == nil {
 		t.Fatal("Index() returned nil summary")
 	}

@@ -44,7 +44,20 @@ func TestMain(m *testing.M) {
 	if os.Getenv("OZY_TEST_MCP_SERVER") == "1" {
 		os.Exit(runTestMCPServer())
 	}
-	os.Exit(m.Run())
+	// Isolate the catalog so tests never read or mutate the developer's real
+	// ~/.local/state/ozy/catalog.json. `ozy search` now self-bootstraps (Start
+	// provisions + conditionally indexes), so a search test writes through to the
+	// catalog; without isolation it would hit live state. Tests that need their
+	// own catalog still override OZY_CATALOG via t.Setenv.
+	dir, err := os.MkdirTemp("", "ozy-cli-test")
+	if err == nil {
+		_ = os.Setenv("OZY_CATALOG", filepath.Join(dir, "catalog.json"))
+	}
+	code := m.Run()
+	if dir != "" {
+		_ = os.RemoveAll(dir)
+	}
+	os.Exit(code)
 }
 
 func runTestMCPServer() int {
@@ -104,10 +117,15 @@ func TestHelpListsAllCommands(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code = %d, want 0", code)
 	}
-	for _, name := range []string{"init", "daemon", "mcp", "index", "doctor", "list", "search", "describe", "call", "eval"} {
+	for _, name := range []string{"init", "mcp", "index", "doctor", "list", "search", "describe", "call", "eval"} {
 		if !strings.Contains(out, name) {
 			t.Errorf("--help output missing command %q", name)
 		}
+	}
+	// `daemon` was removed: `ozy mcp` now self-provisions, so the standalone
+	// command must no longer be advertised.
+	if strings.Contains(out, "daemon") {
+		t.Error("--help still lists the removed `daemon` command")
 	}
 }
 
@@ -136,6 +154,36 @@ func TestSearchJSONIsSingleDocument(t *testing.T) {
 	// Live discovery: unreachable servers produce known_but_unavailable, not catalog_empty.
 	if decision != "known_but_unavailable" && decision != "catalog_empty" {
 		t.Errorf("decision = %v, want known_but_unavailable or catalog_empty", decision)
+	}
+}
+
+// TestSearchSelfProvisionsButListDoesNot covers task 2.6: `ozy search` runs the
+// self-bootstrap path (Start -> provision the sidecar) so it serves semantic out
+// of the box, while catalog-only commands (list) never provision. It asserts via
+// the structured log line, which is emitted on the provisioning attempt
+// regardless of whether the sidecar actually comes up, so it is robust without a
+// real sidecar. The downstream points at a dead local port for a fast index pass.
+func TestSearchSelfProvisionsButListDoesNot(t *testing.T) {
+	t.Setenv("OZY_TEST_TOKEN", "x")
+	cfg := strings.ReplaceAll(cfgWithSecret, "https://mcp.example.com/v1/mcp", "http://127.0.0.1:1/mcp")
+
+	logAfter := func(cmd ...string) string {
+		dir := t.TempDir()
+		cfgPath := filepath.Join(dir, "ozy.jsonc")
+		if err := os.WriteFile(cfgPath, []byte(cfg), 0o644); err != nil {
+			t.Fatalf("write cfg: %v", err)
+		}
+		args := append([]string{"--config", cfgPath, "--format", "json"}, cmd...)
+		_, _, _ = run(args...)
+		data, _ := os.ReadFile(filepath.Join(dir, "logs", "ozy.log"))
+		return string(data)
+	}
+
+	if got := logAfter("search", "anything"); !strings.Contains(got, "provisioning embedding sidecar") {
+		t.Errorf("`search` should self-provision the sidecar; log:\n%s", got)
+	}
+	if got := logAfter("list"); strings.Contains(got, "provisioning embedding sidecar") {
+		t.Errorf("`list` must not provision the sidecar; log:\n%s", got)
 	}
 }
 
@@ -757,7 +805,7 @@ func TestDoctorEmbeddingSectionAvailable(t *testing.T) {
 			if c.Status != "ok" {
 				t.Errorf("embedding status = %q, want ok when sidecar up", c.Status)
 			}
-			for _, want := range []string{"turbovec", "BAAI/bge-small-en-v1.5", "dim=384", "indexed_tools=42"} {
+			for _, want := range []string{"turbovec", "BAAI/bge-small-en-v1.5", "dim=384", "vectors=42"} {
 				if !strings.Contains(c.Detail, want) {
 					t.Errorf("embedding detail missing %q: %s", want, c.Detail)
 				}
@@ -842,7 +890,7 @@ func TestCall_InvokesFixtureDownstreamViaCLIAndParityMatchesMCPPath(t *testing.T
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := ozymcp.New(liveBroker, "test", "")
+	adapter := ozymcp.New(ozymcp.StaticProvider(liveBroker), "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)

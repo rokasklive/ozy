@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// Decision values for findTool (SPEC.md §9.1). They are explicit so an agent can
-// branch on intent rather than parsing prose.
+// Decision values for findTool (SPEC.md §9.1). They are explicit so an agent
+// can branch on intent rather than parsing prose. Every value listed here is
+// emittable by the live broker — advertised-but-unreachable states are the
+// lying-interface failure this contract exists to prevent.
 const (
-	DecisionUse                  = "use"
-	DecisionChooseFromCandidates = "choose_from_candidates"
-	DecisionKnownButUnavailable  = "known_but_unavailable"
-	DecisionNoGoodMatch          = "no_good_match"
-	DecisionAmbiguous            = "ambiguous"
-	DecisionCatalogEmpty         = "catalog_empty"
+	DecisionUse          = "use"
+	DecisionNoGoodMatch  = "no_good_match"
+	DecisionAmbiguous    = "ambiguous"
+	DecisionCatalogEmpty = "catalog_empty"
 )
 
 // CatalogStats is lightweight catalog health surfaced when it affects confidence.
@@ -22,6 +22,11 @@ type CatalogStats struct {
 	IndexedTools      int `json:"indexedTools"`
 	FreshTools        int `json:"freshTools"`
 	StaleTools        int `json:"staleTools"`
+	// CatalogAgeSeconds is the time since the last successful index run, so an
+	// agent can weigh how current the reported tool set and statuses are. Nil
+	// (omitted) means the catalog has never been indexed — distinct from a
+	// just-indexed age of 0.
+	CatalogAgeSeconds *int64 `json:"catalogAgeSeconds,omitempty"`
 }
 
 // SchemaPreview is the field-name preview returned by findTool instead of a full
@@ -32,12 +37,17 @@ type SchemaPreview struct {
 }
 
 // SelectedTool is the best-match summary embedded in a findTool response.
+// Small schemas ride inline (fast path): when InputSchema is set the agent can
+// go straight to callTool using RecommendedCall, skipping the describeTool hop;
+// SchemaPreview is the bounded fallback for schemas too large to inline.
 type SelectedTool struct {
-	ToolRef       string         `json:"toolRef"`
-	Title         string         `json:"title,omitempty"`
-	CallableNow   bool           `json:"callableNow"`
-	ServerStatus  string         `json:"serverStatus,omitempty"`
-	SchemaPreview *SchemaPreview `json:"schemaPreview,omitempty"`
+	ToolRef         string           `json:"toolRef"`
+	Title           string           `json:"title,omitempty"`
+	CallableNow     bool             `json:"callableNow"`
+	ServerStatus    string           `json:"serverStatus,omitempty"`
+	SchemaPreview   *SchemaPreview   `json:"schemaPreview,omitempty"`
+	InputSchema     map[string]any   `json:"inputSchema,omitempty"`
+	RecommendedCall *RecommendedCall `json:"recommendedCall,omitempty"`
 }
 
 // NextAction tells the agent the next concrete Ozy call to make.
@@ -60,9 +70,9 @@ type Alternative struct {
 	Reason  string `json:"reason,omitempty"`
 }
 
-// Candidate is a live-discovered downstream tool surfaced in a findTool
-// choose_from_candidates response. Each candidate carries enough metadata for an
-// agent to select and call describeTool.
+// Candidate is a close-match tool surfaced in a findTool ambiguous response.
+// Each candidate carries enough metadata — including its full input schema —
+// for the agent to compare the candidates and invoke the chosen one directly.
 type Candidate struct {
 	ToolRef            string         `json:"toolRef"`
 	ServerID           string         `json:"serverId"`
@@ -180,6 +190,15 @@ type CallResult struct {
 	Result        any              `json:"result,omitempty"`
 	ResultSummary string           `json:"resultSummary,omitempty"`
 	NextActions   []CallNextAction `json:"nextActions,omitempty"`
+	// Notices are actionable, in-band messages the agent must see alongside the
+	// result (truncation recovery, staleness). Adapters render them inside the
+	// response content — never only in out-of-band metadata.
+	Notices []string `json:"notices,omitempty"`
+	// CachedAgeSeconds is set when this result was served from the result cache:
+	// the age of the cached entry at serve time. readOnlyHint asserts absence of
+	// side effects, not temporal validity, so a cached observation must be
+	// distinguishable from a live one. Nil means the call was invoked live.
+	CachedAgeSeconds *int64 `json:"cachedAgeSeconds,omitempty"`
 }
 
 // Render produces the human/concise form of a callTool success result.
@@ -187,7 +206,21 @@ func (r *CallResult) Render(format string) string {
 	if format == FormatConcise {
 		return fmt.Sprintf("ok %s", r.ToolRef)
 	}
-	return fmt.Sprintf("✓ %s\n  %s", r.ToolRef, r.ResultSummary)
+	out := fmt.Sprintf("✓ %s\n  %s", r.ToolRef, r.ResultSummary)
+	for _, n := range r.AllNotices() {
+		out += "\n  ! " + n
+	}
+	return out
+}
+
+// AllNotices returns the notices to surface in-band, including the cache-hit
+// stamp derived from CachedAgeSeconds, so every renderer shows the same set.
+func (r *CallResult) AllNotices() []string {
+	if r.CachedAgeSeconds == nil {
+		return r.Notices
+	}
+	stamp := fmt.Sprintf("cached result from %ds ago; the environment may have changed since", *r.CachedAgeSeconds)
+	return append(append([]string(nil), r.Notices...), stamp)
 }
 
 // ListedTool is one row of the catalog listing.

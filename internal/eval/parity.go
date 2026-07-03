@@ -53,7 +53,7 @@ func newMCPProbe(ctx context.Context, bk broker.Broker) (*mcpProbe, error) {
 	runCtx, cancel := context.WithCancel(ctx)
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
 
-	srv := ozymcp.New(bk, "eval", "").Server()
+	srv := ozymcp.New(ozymcp.StaticProvider(bk), "eval", "").Server()
 	go func() { _ = srv.Run(runCtx, serverT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "ozy-eval", Version: "eval"}, nil)

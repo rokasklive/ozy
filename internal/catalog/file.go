@@ -100,6 +100,27 @@ func (f *File) PutTool(ctx context.Context, t Tool) error {
 	return f.persistLocked()
 }
 
+// DeleteTools removes tools by toolRef, ignoring unknown refs, and persists the
+// document once for the whole batch.
+func (f *File) DeleteTools(ctx context.Context, toolRefs []string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	changed := false
+	for _, ref := range toolRefs {
+		if _, ok := f.tools[ref]; ok {
+			delete(f.tools, ref)
+			changed = true
+		}
+	}
+	if !changed {
+		return nil
+	}
+	return f.persistLocked()
+}
+
 // Servers returns all known servers in stable order.
 func (f *File) Servers(ctx context.Context) ([]Server, error) {
 	if err := ctx.Err(); err != nil {

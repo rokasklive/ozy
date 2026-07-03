@@ -46,6 +46,19 @@ func (m *Memory) PutTool(ctx context.Context, t Tool) error {
 	return nil
 }
 
+// DeleteTools removes tools by toolRef, ignoring unknown refs.
+func (m *Memory) DeleteTools(ctx context.Context, toolRefs []string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, ref := range toolRefs {
+		delete(m.tools, ref)
+	}
+	return nil
+}
+
 // Servers returns all known servers in stable order.
 func (m *Memory) Servers(context.Context) ([]Server, error) {
 	m.mu.RLock()

@@ -24,6 +24,12 @@ import (
 // timeout when a server entry omits `timeout`.
 const DefaultDiscoveryTimeoutMillis = 5000
 
+// DefaultCallTimeoutMillis bounds a single brokered callTool invocation
+// (connect plus execute) when a server entry omits `callTimeout`. Invocation
+// gets its own generous clock: real tool calls routinely outlive the 5s
+// discovery budget (process spawn, queries, fetches).
+const DefaultCallTimeoutMillis = 60000
+
 // Config is the typed JSONC configuration model. Downstream MCP servers live in
 // MCP, while Ozy-owned sections remain top-level siblings.
 type Config struct {
@@ -48,6 +54,7 @@ type ServerConfig struct {
 	OAuth       json.RawMessage   `json:"oauth,omitempty"`
 	Enabled     bool              `json:"enabled"`
 	Timeout     int               `json:"timeout,omitempty"`
+	CallTimeout int               `json:"callTimeout,omitempty"`
 }
 
 type serverConfigJSON struct {
@@ -60,6 +67,7 @@ type serverConfigJSON struct {
 	OAuth       json.RawMessage   `json:"oauth"`
 	Enabled     *bool             `json:"enabled"`
 	Timeout     *int              `json:"timeout"`
+	CallTimeout *int              `json:"callTimeout"`
 }
 
 // UnmarshalJSON applies opencode MCP defaults: omitted `enabled` means enabled,
@@ -77,6 +85,10 @@ func (s *ServerConfig) UnmarshalJSON(data []byte) error {
 	if raw.Timeout != nil {
 		timeout = *raw.Timeout
 	}
+	callTimeout := DefaultCallTimeoutMillis
+	if raw.CallTimeout != nil {
+		callTimeout = *raw.CallTimeout
+	}
 	*s = ServerConfig{
 		Type:        raw.Type,
 		Command:     append([]string(nil), raw.Command...),
@@ -87,6 +99,7 @@ func (s *ServerConfig) UnmarshalJSON(data []byte) error {
 		OAuth:       append(json.RawMessage(nil), raw.OAuth...),
 		Enabled:     enabled,
 		Timeout:     timeout,
+		CallTimeout: callTimeout,
 	}
 	return nil
 }
@@ -101,6 +114,17 @@ func (s ServerConfig) DiscoveryTimeout() time.Duration {
 	timeout := s.Timeout
 	if timeout <= 0 {
 		timeout = DefaultDiscoveryTimeoutMillis
+	}
+	return time.Duration(timeout) * time.Millisecond
+}
+
+// InvocationTimeout returns the per-server callTool budget (connect plus
+// execute). It is independent of DiscoveryTimeout so a slow tool call is never
+// killed by the short discovery clock.
+func (s ServerConfig) InvocationTimeout() time.Duration {
+	timeout := s.CallTimeout
+	if timeout <= 0 {
+		timeout = DefaultCallTimeoutMillis
 	}
 	return time.Duration(timeout) * time.Millisecond
 }

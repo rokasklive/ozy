@@ -10,7 +10,11 @@
         "OZY_ROOT": "{env:OZY_ROOT}"
       },
       "enabled": true,
-      "timeout": 5000
+      // Two independent clocks: `timeout` bounds discovery/connection during
+      // indexing (opencode-compatible, default 5000ms); `callTimeout` bounds a
+      // single brokered callTool end-to-end (default 60000ms).
+      "timeout": 5000,
+      "callTimeout": 60000
     },
     "atlassian": {
       "type": "remote",

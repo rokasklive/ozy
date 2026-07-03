@@ -26,7 +26,8 @@ const starterConfig = `{
     //   },
     //   "oauth": false,
     //   "enabled": true,
-    //   "timeout": 5000
+    //   "timeout": 5000,      // discovery/connect budget (ms) used by ozy index
+    //   "callTimeout": 60000  // per-callTool budget (ms): connect + execute
     // },
 
     // Example local downstream MCP server.
@@ -38,7 +39,8 @@ const starterConfig = `{
     //     "OZY_ROOT": "{env:OZY_ROOT}"
     //   },
     //   "enabled": true,
-    //   "timeout": 5000
+    //   "timeout": 5000,      // discovery/connect budget (ms) used by ozy index
+    //   "callTimeout": 60000  // per-callTool budget (ms): connect + execute
     // }
   },
 

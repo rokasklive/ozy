@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -234,11 +235,16 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 		return nil, verr
 	}
 
-	callCtx, cancel := context.WithTimeout(ctx, server.DiscoveryTimeout())
+	// Invocation runs under its own clock: callTimeout (default 60s), never the
+	// 5s discovery timeout — a real tool call routinely outlives discovery.
+	callCtx, cancel := context.WithTimeout(ctx, server.InvocationTimeout())
 	defer cancel()
 
 	result := l.connector.Connect(callCtx, serverID, server)
 	if result.Error != nil {
+		if derr := deadlineError(ctx, callCtx, toolRef, serverID, server); derr != nil {
+			return nil, derr
+		}
 		result.Error.ToolRef = toolRef
 		result.Error.Message = downstream.Scrub(result.Error.Message, server)
 		return nil, result.Error
@@ -260,6 +266,9 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 		Arguments: args,
 	})
 	if err != nil {
+		if derr := deadlineError(ctx, callCtx, toolRef, serverID, server); derr != nil {
+			return nil, derr
+		}
 		return nil, &contract.Error{
 			Type:             contract.ErrTypeDownstreamCallFailed,
 			ServerID:         serverID,
@@ -336,6 +345,27 @@ func splitToolRef(toolRef string) (serverID, downstreamName string, ok bool) {
 		return "", "", false
 	}
 	return toolRef[:idx], toolRef[idx+1:], true
+}
+
+// deadlineError reports a structured, non-retryable failure when Ozy's own
+// callTimeout expired, and nil otherwise. Retrying an identical call against
+// the same deadline is deterministic, so the error names the budget and tells
+// the agent to change something instead of blaming the downstream server. A
+// cancelled parent context (the client gave up) is not our deadline.
+func deadlineError(parent, callCtx context.Context, toolRef, serverID string, server config.ServerConfig) *contract.Error {
+	if parent.Err() != nil || !errors.Is(callCtx.Err(), context.DeadlineExceeded) {
+		return nil
+	}
+	return &contract.Error{
+		Type:      contract.ErrTypeDownstreamCallFailed,
+		ServerID:  serverID,
+		ToolRef:   toolRef,
+		Retryable: false,
+		Message: fmt.Sprintf("call exceeded the configured callTimeout of %s for server %q",
+			server.InvocationTimeout(), serverID),
+		AgentInstruction: "Do not retry the same call unchanged — it will hit the same deadline. Narrow the call " +
+			"(smaller scope, fewer results) or raise this server's callTimeout in the Ozy config.",
+	}
 }
 
 func malformedToolRef(toolRef string) *contract.Error {

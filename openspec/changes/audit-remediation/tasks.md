@@ -4,9 +4,9 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 1. Invocation clock (D1)
 
-- [ ] 1.1 Add `callTimeout` to `internal/config` server config (raw + resolved, ms, default 60000, `CallTimeout() time.Duration` accessor); document both knobs in `internal/config/scaffold.go` and `examples/ozy.jsonc`
-- [ ] 1.2 Use `CallTimeout()` for the `callCtx` in `live.CallTool`; on our own deadline (`context.DeadlineExceeded` from `callCtx`), return `DOWNSTREAM_CALL_FAILED` with `retryable: false`, message naming `callTimeout`, instruction to narrow the call or raise the budget
-- [ ] 1.3 Tests: slow fake server succeeds past 5s under default `callTimeout`; deadline exceeded → non-retryable with `callTimeout` named; explicit override honored
+- [x] 1.1 Add `callTimeout` to `internal/config` server config (raw + resolved, ms, default 60000, `CallTimeout() time.Duration` accessor); document both knobs in `internal/config/scaffold.go` and `examples/ozy.jsonc` (accessor named `InvocationTimeout()`)
+- [x] 1.2 Use `CallTimeout()` for the `callCtx` in `live.CallTool`; on our own deadline (`context.DeadlineExceeded` from `callCtx`), return `DOWNSTREAM_CALL_FAILED` with `retryable: false`, message naming `callTimeout`, instruction to narrow the call or raise the budget
+- [x] 1.3 Tests: slow fake server succeeds past 5s under default `callTimeout`; deadline exceeded → non-retryable with `callTimeout` named; explicit override honored (`internal/broker/call_timeout_test.go`)
 
 ## 2. Catalog reconciliation (D2, D3)
 

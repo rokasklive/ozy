@@ -18,9 +18,9 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 3. In-band guidance and structural truncation (D4, D5)
 
-- [ ] 3.1 Rework `applyCallBudget` in `internal/broker/live.go`: top-level array → drop whole trailing elements to fit + "showing N of M items" notice; text/other JSON → cut at last line (fallback word) boundary + partial-payload notice; notice text returned alongside the result, not embedded in `resultSummary` only
-- [ ] 3.2 Adapter trailer mechanism in `internal/mcp/adapter.go`: render actionable notices (truncation, cache stamp) as one short `[ozy] …` trailing `TextContent` block, payload block byte-identical; `_meta` keeps mirroring `toolRef`/`resultSummary`
-- [ ] 3.3 Tests: array truncation yields valid JSON + in-band notice; text truncation cuts at boundary + notice; un-truncated results have no trailer; payload block unchanged by trailers
+- [x] 3.1 Rework `applyCallBudget` in `internal/broker/live.go`: top-level array → drop whole trailing elements to fit + "showing N of M items" notice; text/other JSON → cut at last line (fallback word) boundary + partial-payload notice; notice carried in new `CallResult.Notices` (contract addition), not embedded in `resultSummary`
+- [x] 3.2 Adapter trailer mechanism in `internal/mcp/adapter.go`: `CallResult.AllNotices()` (notices + cache stamp) rendered as one `[ozy] …` trailing `TextContent` block, payload block byte-identical; `_meta` keeps mirroring; CLI `Render` shows the same notices
+- [x] 3.3 Tests: array truncation yields valid JSON + in-band notice; text truncation cuts at boundary + notice; un-truncated results have no trailer; payload block unchanged (`internal/broker/truncation_test.go`, `internal/mcp/trailer_test.go`)
 
 ## 4. findTool cost and credibility (D6, D7)
 

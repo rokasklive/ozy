@@ -185,6 +185,15 @@ type CallResult struct {
 	Result        any              `json:"result,omitempty"`
 	ResultSummary string           `json:"resultSummary,omitempty"`
 	NextActions   []CallNextAction `json:"nextActions,omitempty"`
+	// Notices are actionable, in-band messages the agent must see alongside the
+	// result (truncation recovery, staleness). Adapters render them inside the
+	// response content — never only in out-of-band metadata.
+	Notices []string `json:"notices,omitempty"`
+	// CachedAgeSeconds is set when this result was served from the result cache:
+	// the age of the cached entry at serve time. readOnlyHint asserts absence of
+	// side effects, not temporal validity, so a cached observation must be
+	// distinguishable from a live one. Nil means the call was invoked live.
+	CachedAgeSeconds *int64 `json:"cachedAgeSeconds,omitempty"`
 }
 
 // Render produces the human/concise form of a callTool success result.
@@ -192,7 +201,21 @@ func (r *CallResult) Render(format string) string {
 	if format == FormatConcise {
 		return fmt.Sprintf("ok %s", r.ToolRef)
 	}
-	return fmt.Sprintf("✓ %s\n  %s", r.ToolRef, r.ResultSummary)
+	out := fmt.Sprintf("✓ %s\n  %s", r.ToolRef, r.ResultSummary)
+	for _, n := range r.AllNotices() {
+		out += "\n  ! " + n
+	}
+	return out
+}
+
+// AllNotices returns the notices to surface in-band, including the cache-hit
+// stamp derived from CachedAgeSeconds, so every renderer shows the same set.
+func (r *CallResult) AllNotices() []string {
+	if r.CachedAgeSeconds == nil {
+		return r.Notices
+	}
+	stamp := fmt.Sprintf("cached result from %ds ago; the environment may have changed since", *r.CachedAgeSeconds)
+	return append(append([]string(nil), r.Notices...), stamp)
 }
 
 // ListedTool is one row of the catalog listing.

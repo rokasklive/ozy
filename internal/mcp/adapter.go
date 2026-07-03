@@ -182,7 +182,10 @@ func (a *Adapter) handleCall(ctx context.Context, _ *mcpsdk.CallToolRequest, in 
 // preserved as structured content (with a JSON rendering for text-only
 // clients), and Ozy's call metadata (toolRef, resultSummary, any nextActions)
 // rides in _meta exactly once — never a second stringified copy of the whole
-// §9.3 envelope wrapped around the payload.
+// §9.3 envelope wrapped around the payload. Actionable notices (truncation
+// recovery, cache staleness) are appended as one separate trailing text block:
+// major clients never show _meta to the model, so anything the agent must act
+// on has to travel in content, while the payload block stays byte-identical.
 func callResult(res *contract.CallResult) *mcpsdk.CallToolResult {
 	out := &mcpsdk.CallToolResult{
 		Meta: mcpsdk.Meta{
@@ -207,6 +210,9 @@ func callResult(res *contract.CallResult) *mcpsdk.CallToolResult {
 		} else {
 			out.Content = []mcpsdk.Content{&mcpsdk.TextContent{Text: res.ResultSummary}}
 		}
+	}
+	if notices := res.AllNotices(); len(notices) > 0 {
+		out.Content = append(out.Content, &mcpsdk.TextContent{Text: "[ozy] " + strings.Join(notices, "\n[ozy] ")})
 	}
 	return out
 }

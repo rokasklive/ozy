@@ -365,11 +365,15 @@ func TestCallTool_ResultExceedingBudgetIsTruncated(t *testing.T) {
 	if !ok {
 		t.Fatalf("Result = %T, want string (truncated text)", res.Result)
 	}
-	if !strings.HasSuffix(truncated, "...[truncated]") {
-		t.Errorf("truncated Result must end with ...[truncated], got %q", truncated[len(truncated)-32:])
+	if len(truncated) > 128 {
+		t.Errorf("truncated Result = %d bytes, want <= budget of 128", len(truncated))
 	}
-	if !strings.Contains(res.ResultSummary, "maxResultBytes") || !strings.Contains(res.ResultSummary, "128") {
-		t.Errorf("ResultSummary should mention the budget, got %q", res.ResultSummary)
+	if !strings.Contains(res.ResultSummary, "(truncated)") {
+		t.Errorf("ResultSummary should flag truncation, got %q", res.ResultSummary)
+	}
+	if len(res.Notices) != 1 || !strings.Contains(res.Notices[0], "maxResultBytes=128") ||
+		!strings.Contains(res.Notices[0], "narrow the call") {
+		t.Errorf("Notices should carry in-band recovery guidance, got %v", res.Notices)
 	}
 }
 

@@ -292,20 +292,18 @@ func (l *live) CallTool(ctx context.Context, toolRef string, args map[string]any
 
 	normalized := normalizeCallResult(callRes)
 	summary := summarizeCall(downstreamName, normalized)
-	if truncated, marker, ok := applyCallBudget(l.cfg, normalized); ok {
-		return &contract.CallResult{
-			OK:            true,
-			ToolRef:       toolRef,
-			Result:        truncated,
-			ResultSummary: summary + " " + marker,
-		}, nil
-	}
-	return &contract.CallResult{
+	bounded, notice := applyCallBudget(l.cfg, normalized)
+	res := &contract.CallResult{
 		OK:            true,
 		ToolRef:       toolRef,
-		Result:        normalized,
+		Result:        bounded,
 		ResultSummary: summary,
-	}, nil
+	}
+	if notice != "" {
+		res.ResultSummary = summary + " (truncated)"
+		res.Notices = append(res.Notices, notice)
+	}
+	return res, nil
 }
 
 // validateArgs checks args against the tool's cataloged input schema when one is
@@ -477,27 +475,79 @@ func firstLine(s string) string {
 	return s
 }
 
-// applyCallBudget returns (truncatedResult, marker, true) when the encoded
-// normalized result exceeds budgets.callTool.maxResultBytes, otherwise
-// (nil, "", false).
-func applyCallBudget(cfg *config.Config, result any) (any, string, bool) {
+// applyCallBudget bounds an oversized result at a structural boundary and
+// returns the bounded result plus an in-band recovery notice, or (result, "")
+// when the result fits budgets.callTool.maxResultBytes. Arrays lose whole
+// trailing elements so what remains is valid JSON; text is cut at a line
+// (fallback: word) boundary so the tail is readable — never a mid-byte slice
+// through a JSON token or a UTF-8 rune.
+func applyCallBudget(cfg *config.Config, result any) (any, string) {
 	if cfg == nil || cfg.Budgets.CallTool.MaxResultBytes <= 0 {
-		return nil, "", false
-	}
-	encoded, err := json.Marshal(result)
-	if err != nil {
-		return nil, "", false
-	}
-	if len(encoded) <= cfg.Budgets.CallTool.MaxResultBytes {
-		return nil, "", false
+		return result, ""
 	}
 	limit := cfg.Budgets.CallTool.MaxResultBytes
 	if limit < 16 {
 		limit = 16
 	}
-	truncated := make([]byte, 0, limit+len("...[truncated]"))
-	truncated = append(truncated, encoded[:limit]...)
-	truncated = append(truncated, "...[truncated]"...)
-	marker := fmt.Sprintf("(result exceeded budgets.callTool.maxResultBytes=%d bytes; narrow the call for full output)", cfg.Budgets.CallTool.MaxResultBytes)
-	return string(truncated), marker, true
+	encoded, err := json.Marshal(result)
+	if err != nil || len(encoded) <= limit {
+		return result, ""
+	}
+
+	if arr, ok := result.([]any); ok {
+		if kept := arrayPrefixWithinBudget(arr, limit); kept > 0 {
+			notice := fmt.Sprintf("result truncated: showing %d of %d items (budgets.callTool.maxResultBytes=%d); narrow the call for the rest",
+				kept, len(arr), limit)
+			return arr[:kept], notice
+		}
+		// Even the first element does not fit; fall through to a text cut.
+	}
+
+	text, isString := result.(string)
+	if !isString {
+		text = string(encoded)
+	}
+	cut := cutAtBoundary(text, limit)
+	notice := fmt.Sprintf("result truncated to %d of %d bytes (budgets.callTool.maxResultBytes=%d); narrow the call for full output",
+		len(cut), len(text), limit)
+	if !isString {
+		notice += "; the truncated payload is not valid JSON"
+	}
+	return cut, notice
+}
+
+// arrayPrefixWithinBudget returns how many leading elements of arr encode
+// within limit bytes (including brackets and separators).
+func arrayPrefixWithinBudget(arr []any, limit int) int {
+	total := 2 // []
+	for i, el := range arr {
+		b, err := json.Marshal(el)
+		if err != nil {
+			return i
+		}
+		total += len(b)
+		if i > 0 {
+			total++ // comma
+		}
+		if total > limit {
+			return i
+		}
+	}
+	return len(arr)
+}
+
+// cutAtBoundary cuts s to at most limit bytes, preferring the last line break,
+// then the last space, and finally a rune-safe hard cut.
+func cutAtBoundary(s string, limit int) string {
+	if len(s) <= limit {
+		return s
+	}
+	cut := s[:limit]
+	if i := strings.LastIndexByte(cut, '\n'); i > 0 {
+		return cut[:i]
+	}
+	if i := strings.LastIndexByte(cut, ' '); i > 0 {
+		return cut[:i]
+	}
+	return strings.ToValidUTF8(cut, "")
 }

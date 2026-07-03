@@ -37,6 +37,7 @@ builds:
     goos:
       - linux
       - darwin
+      - windows
     goarch:
       - amd64
       - arm64
@@ -46,24 +47,13 @@ builds:
       - -s -w -X main.version={{ .Version }}
 
 archives:
-  - id: ozy
-    ids: [ozy]
-    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - id: bundle
+    ids: [ozy, ozy-install, ozy-bench]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     formats: tar.gz
     format_overrides:
       - goos: windows
         formats: zip
-  - id: ozy-install
-    ids: [ozy-install]
-    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    formats: tar.gz
-    format_overrides:
-      - goos: windows
-        formats: zip
-  - id: ozy-bench
-    ids: [ozy-bench]
-    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    formats: tar.gz
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
@@ -73,10 +63,6 @@ sboms:
     artifacts: source
     documents:
       - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
-  - id: binaries
-    artifacts: archive
-    documents:
-      - "{{ .ProjectName }}_{{ .Version }}_sbom_binaries.spdx.json"
 
 changelog:
   sort: asc

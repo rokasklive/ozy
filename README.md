@@ -15,7 +15,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/rokasklive/ozy/ci.yml?style=for-the-badge&label=CI)](.github/workflows/ci.yml)
 [![Beta](https://img.shields.io/badge/Status-Beta-yellow?style=for-the-badge)](https://github.com/rokasklive/ozy/releases)
 [![MCP](https://img.shields.io/badge/MCP-Server-1f6feb?style=for-the-badge)](SPEC.md)
-[![Evals](https://img.shields.io/badge/Evals-Tracked-success?style=for-the-badge)](evals/BENCHMARKS.md)
+[![Evals](https://img.shields.io/badge/Evals-Stale-lightgrey?style=for-the-badge)](evals/BENCHMARKS.md)
 
 </div>
 

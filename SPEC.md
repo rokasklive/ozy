@@ -495,9 +495,9 @@ Example shape:
   ],
   "examples": [
     {
-      "request": "Find onboarding docs about billing migration",
+      "request": "Find onboarding docs about CRM migration",
       "arguments": {
-        "query": "billing migration onboarding",
+        "query": "CRM migration onboarding",
         "limit": 5
       }
     }
@@ -538,7 +538,7 @@ Input:
 {
   "toolRef": "atlassian.confluence_search",
   "arguments": {
-    "query": "billing migration onboarding",
+    "query": "CRM migration onboarding",
     "limit": 5
   }
 }
@@ -936,7 +936,7 @@ ozy doctor
 ozy list
 ozy search "tool to search confluence wiki"
 ozy describe atlassian.confluence_search
-ozy call atlassian.confluence_search --json '{"query":"billing migration onboarding","limit":5}'
+ozy call atlassian.confluence_search --json '{"query":"CRM migration onboarding","limit":5}'
 ozy eval run <scenario>
 ```
 

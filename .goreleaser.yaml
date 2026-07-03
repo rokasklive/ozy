@@ -48,18 +48,21 @@ builds:
 archives:
   - id: ozy
     ids: [ozy]
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     formats: tar.gz
     format_overrides:
       - goos: windows
         formats: zip
   - id: ozy-install
     ids: [ozy-install]
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     formats: tar.gz
     format_overrides:
       - goos: windows
         formats: zip
   - id: ozy-bench
     ids: [ozy-bench]
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     formats: tar.gz
 
 checksum:

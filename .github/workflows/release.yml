@@ -20,7 +20,8 @@ jobs:
           go-version: stable
           cache: true
 
-      - uses: anchore/sbom-action/install-syft@v0
+      - name: Install syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
       - uses: goreleaser/goreleaser-action@v6
         with:

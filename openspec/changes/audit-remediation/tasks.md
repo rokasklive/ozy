@@ -39,9 +39,9 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 6. Cache visibility (D10)
 
-- [ ] 6.1 Add additive `cachedAgeSeconds` (omitempty) to `contract.CallResult`; caching broker stamps a shallow copy on hit (store entry gains a produced-at time; never mutate the stored value)
-- [ ] 6.2 Adapter renders the cache stamp as an in-band trailer (`[ozy] cached result from Ns ago`) via 3.2
-- [ ] 6.3 Tests: cached hit stamped with growing age across serves, live call unstamped, stored entry unmutated
+- [x] 6.1 Add additive `cachedAgeSeconds` (omitempty) to `contract.CallResult` (landed with 3.x); caching broker stamps a shallow copy on hit via `stampedCallResult` (entry gains `produced`; stored value never mutated)
+- [x] 6.2 Adapter renders the cache stamp as an in-band trailer via `AllNotices()` (landed with 3.2; covered by `TestCallResult_CachedAgeRendersInBandStamp`)
+- [x] 6.3 Tests: hit stamped, live call unstamped, stored entry unmutated, hits are distinct copies (`internal/broker/cache_stamp_test.go`)
 
 ## 7. Doctor secret scan (D11)
 

@@ -37,8 +37,9 @@ type cachingBroker struct {
 }
 
 type cacheEntry struct {
-	value   any
-	expires time.Time
+	value    any
+	produced time.Time
+	expires  time.Time
 }
 
 // NewCaching wraps inner with a result cache tuned by cfg. Callers gate the wrap
@@ -59,8 +60,8 @@ func (c *cachingBroker) FindTool(ctx context.Context, query string) (*contract.F
 		return c.inner.FindTool(ctx, query)
 	}
 	k := cacheKey("find", query, gen)
-	if v, hit := c.get(k); hit {
-		return v.(*contract.FindResult), nil
+	if e, hit := c.get(k); hit {
+		return e.value.(*contract.FindResult), nil
 	}
 	res, err := c.inner.FindTool(ctx, query)
 	if err == nil && res != nil {
@@ -76,8 +77,8 @@ func (c *cachingBroker) DescribeTool(ctx context.Context, toolRef string) (*cont
 		return c.inner.DescribeTool(ctx, toolRef)
 	}
 	k := cacheKey("describe", toolRef, tool.SchemaHash)
-	if v, hit := c.get(k); hit {
-		return v.(*contract.DescribeResult), nil
+	if e, hit := c.get(k); hit {
+		return e.value.(*contract.DescribeResult), nil
 	}
 	res, err := c.inner.DescribeTool(ctx, toolRef)
 	if err == nil && res != nil {
@@ -97,8 +98,8 @@ func (c *cachingBroker) CallTool(ctx context.Context, toolRef string, args map[s
 		return c.inner.CallTool(ctx, toolRef, args)
 	}
 	k := cacheKey("call", toolRef, tool.SchemaHash, string(argKey))
-	if v, hit := c.get(k); hit {
-		return v.(*contract.CallResult), nil
+	if e, hit := c.get(k); hit {
+		return stampedCallResult(e), nil
 	}
 	res, err := c.inner.CallTool(ctx, toolRef, args)
 	if err == nil && res != nil {
@@ -134,18 +135,32 @@ func cacheKey(parts ...string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (c *cachingBroker) get(k string) (any, bool) {
+// stampedCallResult returns a shallow copy of the cached call result carrying
+// its age at serve time. readOnlyHint asserts absence of side effects, not
+// temporal validity, so a cached observation must be distinguishable from a
+// live one. The stored entry is never mutated — each hit stamps its own copy.
+func stampedCallResult(e cacheEntry) *contract.CallResult {
+	res := *(e.value.(*contract.CallResult))
+	age := int64(time.Since(e.produced).Seconds())
+	if age < 0 {
+		age = 0
+	}
+	res.CachedAgeSeconds = &age
+	return &res
+}
+
+func (c *cachingBroker) get(k string) (cacheEntry, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	e, ok := c.entries[k]
 	if !ok {
-		return nil, false
+		return cacheEntry{}, false
 	}
 	if time.Now().After(e.expires) {
 		delete(c.entries, k)
-		return nil, false
+		return cacheEntry{}, false
 	}
-	return e.value, true
+	return e, true
 }
 
 func (c *cachingBroker) put(k string, v any) {
@@ -154,7 +169,8 @@ func (c *cachingBroker) put(k string, v any) {
 	if c.max > 0 && len(c.entries) >= c.max {
 		c.evictLocked()
 	}
-	c.entries[k] = cacheEntry{value: v, expires: time.Now().Add(c.ttl)}
+	now := time.Now()
+	c.entries[k] = cacheEntry{value: v, produced: now, expires: now.Add(c.ttl)}
 }
 
 // evictLocked prunes expired entries and, if still at capacity, drops one

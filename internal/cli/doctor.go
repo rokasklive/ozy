@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -127,6 +128,74 @@ func errText(err error) string {
 	return err.Error()
 }
 
+// inlineSecretKind names the secret pattern a config value matches, or "" when
+// the value is clean or uses an {env:...} reference. Matching is per
+// whitespace-separated field so short prefixes like sk- cannot fire inside
+// ordinary words (desk-lamp).
+func inlineSecretKind(value string) string {
+	if value == "" || strings.Contains(value, "{env:") {
+		return ""
+	}
+	for _, f := range strings.Fields(value) {
+		switch {
+		case strings.HasPrefix(f, "ghp_"), strings.HasPrefix(f, "gho_"), strings.HasPrefix(f, "ghs_"):
+			return "GitHub token"
+		case strings.HasPrefix(f, "github_pat_"):
+			return "GitHub fine-grained token"
+		case strings.HasPrefix(f, "sk-"):
+			return "secret API key (sk-…)"
+		case strings.HasPrefix(f, "AKIA"):
+			return "AWS access key ID"
+		case strings.HasPrefix(f, "xoxb-"), strings.HasPrefix(f, "xoxp-"),
+			strings.HasPrefix(f, "xoxa-"), strings.HasPrefix(f, "xoxs-"):
+			return "Slack token"
+		}
+	}
+	if strings.HasPrefix(value, "Bearer ") {
+		return "bearer credential"
+	}
+	return ""
+}
+
+// secretHygieneChecks scans raw server headers and environment values for
+// inline secret-shaped literals and returns one WARN per finding, naming the
+// server, field, and key — never any part of the value.
+func secretHygieneChecks(raw *config.Config) []contract.DoctorCheck {
+	if raw == nil {
+		return nil
+	}
+	var checks []contract.DoctorCheck
+	serverIDs := make([]string, 0, len(raw.MCP))
+	for id := range raw.MCP {
+		serverIDs = append(serverIDs, id)
+	}
+	sort.Strings(serverIDs)
+	for _, id := range serverIDs {
+		server := raw.MCP[id]
+		for _, field := range []struct {
+			name   string
+			values map[string]string
+		}{{"headers", server.Headers}, {"environment", server.Environment}} {
+			keys := make([]string, 0, len(field.values))
+			for k := range field.values {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, k := range keys {
+				if kind := inlineSecretKind(field.values[k]); kind != "" {
+					checks = append(checks, contract.DoctorCheck{
+						Name:   "secrets",
+						Status: contract.CheckWarn,
+						Detail: fmt.Sprintf("server %q %s %q holds an inline %s; move it to an {env:NAME} reference and rotate the credential",
+							id, field.name, k, kind),
+					})
+				}
+			}
+		}
+	}
+	return checks
+}
+
 func (a *app) doctorCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
@@ -167,6 +236,14 @@ func (a *app) runDoctor() *contract.DoctorResult {
 		Status: contract.CheckOK,
 		Detail: fmt.Sprintf("%d configured", len(loaded.Resolved.MCP)),
 	})
+
+	// Secret hygiene runs on the RAW config: resolved values have {env:...}
+	// already substituted, so scanning them would flag properly-referenced
+	// secrets. Findings name the location and pattern kind — never the value.
+	if hygiene := secretHygieneChecks(loaded.Raw); len(hygiene) > 0 {
+		res.OK = false
+		res.Checks = append(res.Checks, hygiene...)
+	}
 
 	// Missing env references are reported by variable name only — never values.
 	if len(loaded.Missing) == 0 {

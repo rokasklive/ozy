@@ -45,8 +45,8 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 7. Doctor secret scan (D11)
 
-- [ ] 7.1 Add inline-secret check to `internal/cli/doctor.go`: patterns `ghp_`, `github_pat_`, `sk-`, `AKIA`, `xox[a-z]-`, `Bearer ` on header/environment values without `{env:`; WARN names server + key + pattern kind, never the value
-- [ ] 7.2 Tests: literal `ghp_…` flagged, `{env:…}` not flagged, value absent from all output formats
+- [x] 7.1 Add inline-secret check to `internal/cli/doctor.go` (`secretHygieneChecks` on the RAW config — resolved values would false-flag proper `{env:}` refs): field-prefix matching for `ghp_`/`gho_`/`ghs_`, `github_pat_`, `sk-`, `AKIA`, `xox[bpas]-`, plus `Bearer ` literals; WARN names server + field + key + kind + rotate advice, never the value
+- [x] 7.2 Tests: literal `ghp_…` flagged without leaking, `{env:…}` + sk- inside words pass, bearer literal flagged (`internal/cli/secret_hygiene_test.go`)
 
 ## 8. Docs, SPEC, and verification
 

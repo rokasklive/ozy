@@ -136,6 +136,7 @@ func (l *live) stats(ctx context.Context) (*contract.CatalogStats, error) {
 		IndexedTools:      cs.IndexedTools,
 		FreshTools:        cs.FreshTools,
 		StaleTools:        cs.StaleTools,
+		CatalogAgeSeconds: catalogAge(ctx, l.skeleton.store),
 	}, nil
 }
 

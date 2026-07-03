@@ -22,6 +22,11 @@ type CatalogStats struct {
 	IndexedTools      int `json:"indexedTools"`
 	FreshTools        int `json:"freshTools"`
 	StaleTools        int `json:"staleTools"`
+	// CatalogAgeSeconds is the time since the last successful index run, so an
+	// agent can weigh how current the reported tool set and statuses are. Nil
+	// (omitted) means the catalog has never been indexed — distinct from a
+	// just-indexed age of 0.
+	CatalogAgeSeconds *int64 `json:"catalogAgeSeconds,omitempty"`
 }
 
 // SchemaPreview is the field-name preview returned by findTool instead of a full

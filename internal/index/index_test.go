@@ -306,8 +306,6 @@ type recordingSink struct {
 	vectorCountVal *int // when set, VectorCount returns this (simulate partial coverage)
 	upserted       []EmbedItem
 	deleted        []string
-	listReturn     []string
-	listErr        error
 	upsertErr      error
 	deleteErr      error
 	persistErr     error
@@ -331,9 +329,6 @@ func (s *recordingSink) Delete(_ context.Context, toolRefs []string) error {
 	}
 	s.deleted = append(s.deleted, toolRefs...)
 	return nil
-}
-func (s *recordingSink) List(context.Context) ([]string, error) {
-	return s.listReturn, s.listErr
 }
 func (s *recordingSink) VectorCount(context.Context) (int, error) {
 	if s.vectorCountVal != nil {
@@ -490,10 +485,17 @@ func TestIndexer_WithSink_ReconcilesDeletedTools(t *testing.T) {
 	store := catalog.NewMemory()
 	now := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
 
-	sink := &recordingSink{
-		available:  true,
-		listReturn: []string{"atlassian.confluence_search", "github.removed_tool"},
+	// Previously indexed tool the server no longer serves: reconciliation must
+	// delete it from the catalog and push the same deletion to the sink.
+	if err := store.PutTool(ctx, catalog.Tool{
+		ToolRef:            "atlassian.removed_tool",
+		ServerID:           "atlassian",
+		DownstreamToolName: "removed_tool",
+	}); err != nil {
+		t.Fatal(err)
 	}
+
+	sink := &recordingSink{available: true}
 	indexer := New(store, fakeConnector{results: []downstream.Result{
 		{
 			ServerID: "atlassian",
@@ -513,11 +515,11 @@ func TestIndexer_WithSink_ReconcilesDeletedTools(t *testing.T) {
 	if !summary.OK {
 		t.Fatalf("summary not OK: %+v", summary)
 	}
-	if len(sink.deleted) != 1 {
-		t.Fatalf("sink.deleted = %v, want [github.removed_tool]", sink.deleted)
+	if len(sink.deleted) != 1 || sink.deleted[0] != "atlassian.removed_tool" {
+		t.Fatalf("sink.deleted = %v, want [atlassian.removed_tool]", sink.deleted)
 	}
-	if sink.deleted[0] != "github.removed_tool" {
-		t.Errorf("deleted[0] = %s, want github.removed_tool", sink.deleted[0])
+	if _, ok, _ := store.GetTool(ctx, "atlassian.removed_tool"); ok {
+		t.Fatal("catalog should no longer hold the removed tool")
 	}
 }
 

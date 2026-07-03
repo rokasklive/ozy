@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"time"
 
 	"github.com/rokasklive/ozy/internal/catalog"
 	"github.com/rokasklive/ozy/internal/contract"
@@ -25,12 +26,28 @@ func (s *skeleton) stats(ctx context.Context) *contract.CatalogStats {
 	if err != nil {
 		return nil
 	}
-	return &contract.CatalogStats{
+	out := &contract.CatalogStats{
 		ConfiguredServers: st.ConfiguredServers,
 		IndexedTools:      st.IndexedTools,
 		FreshTools:        st.FreshTools,
 		StaleTools:        st.StaleTools,
 	}
+	out.CatalogAgeSeconds = catalogAge(ctx, s.store)
+	return out
+}
+
+// catalogAge derives seconds-since-last-index for responses, nil when the
+// catalog has never been indexed (distinct from a just-indexed age of 0).
+func catalogAge(ctx context.Context, store catalog.Store) *int64 {
+	t, ok, err := store.LastIndexedAt(ctx)
+	if err != nil || !ok {
+		return nil
+	}
+	age := int64(time.Since(t).Seconds())
+	if age < 0 {
+		age = 0
+	}
+	return &age
 }
 
 // FindTool returns catalog_empty when nothing is indexed, otherwise no_good_match

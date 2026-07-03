@@ -41,12 +41,13 @@ type EmbedItem struct {
 // embeddings to the sidecar after the catalog is persisted. Available() == false
 // disables the sink (lexical-only mode). Upsert returns how many tools were
 // actually embedded this run; VectorCount reports the total queryable vectors
-// after the run so the summary can be honest about vector storage.
+// after the run so the summary can be honest about vector storage. Deletions
+// are catalog-driven: the indexer passes the toolRefs it reconciled out of the
+// catalog, so vector storage tracks the catalog without a sink-side list op.
 type EmbeddingSink interface {
 	Available() bool
 	Upsert(ctx context.Context, items []EmbedItem) (int, error)
 	Delete(ctx context.Context, toolRefs []string) error
-	List(ctx context.Context) ([]string, error)
 	VectorCount(ctx context.Context) (int, error)
 	Persist(ctx context.Context) error
 }
@@ -57,7 +58,6 @@ type noopSink struct{}
 func (noopSink) Available() bool                                  { return false }
 func (noopSink) Upsert(context.Context, []EmbedItem) (int, error) { return 0, nil }
 func (noopSink) Delete(context.Context, []string) error           { return nil }
-func (noopSink) List(context.Context) ([]string, error)           { return nil, nil }
 func (noopSink) VectorCount(context.Context) (int, error)         { return 0, nil }
 func (noopSink) Persist(context.Context) error                    { return nil }
 
@@ -158,15 +158,22 @@ func New(store catalog.Store, connector Connector, opts ...Option) *Indexer {
 func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 	summary := &Summary{OK: true}
 	var embedded []EmbedItem
+	// Reconciliation inputs: what this run actually learned per server. Only a
+	// successful tools/list is authority to delete; a failed or skipped server
+	// merely degrades its cataloged tools.
+	listed := make(map[string]map[string]bool)
+	degraded := make(map[string]catalog.ServerStatus)
 	for _, result := range i.connector.ConnectAll(ctx, cfg) {
 		if result.Skipped {
 			summary.ServersSkipped++
+			degraded[result.ServerID] = catalog.ServerUnknown
 			i.recordServer(ctx, summary, result.ServerID, catalog.ServerUnknown)
 			continue
 		}
 		if result.Error != nil {
 			summary.ServersFailed++
 			summary.Errors = append(summary.Errors, *result.Error)
+			degraded[result.ServerID] = catalog.ServerOffline
 			i.recordServer(ctx, summary, result.ServerID, catalog.ServerOffline)
 			continue
 		}
@@ -180,6 +187,7 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 			}
 			summary.ServersFailed++
 			summary.Errors = append(summary.Errors, err)
+			degraded[result.ServerID] = catalog.ServerOffline
 			i.recordServer(ctx, summary, result.ServerID, catalog.ServerOffline)
 			continue
 		}
@@ -190,10 +198,17 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 		}
 		summary.ServersReached++
 		i.recordServer(ctx, summary, result.ServerID, catalog.ServerOnline)
-		indexed := i.indexSession(ctx, summary, result.ServerID, server, result.Session)
+		indexed, refs, ok := i.indexSession(ctx, summary, result.ServerID, server, result.Session)
 		embedded = append(embedded, indexed...)
+		if ok {
+			listed[result.ServerID] = refs
+		} else {
+			// Connected but tools/list failed: no deletion authority; degrade.
+			degraded[result.ServerID] = catalog.ServerOffline
+		}
 		_ = result.Session.Close()
 	}
+	deleted := i.reconcile(ctx, summary, cfg, listed, degraded)
 	switch {
 	case summary.ServersReached == 0:
 		summary.OK = false
@@ -216,7 +231,7 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 		}
 	}
 	if i.sink != nil && i.sink.Available() {
-		i.flushEmbeddings(ctx, summary, embedded)
+		i.flushEmbeddings(ctx, summary, embedded, deleted)
 		// Loud-fail guard: semantic is enabled and the sidecar is available, yet
 		// the catalog holds more tools than the vector store has queryable
 		// vectors. That is the silent "indexed-but-not-embedded" (or partially
@@ -237,11 +252,11 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 	return summary
 }
 
-// flushEmbeddings batches an upsert to the sink for this run's tools,
-// reconciles deletes (tools previously embedded but no longer in the catalog),
+// flushEmbeddings batches an upsert to the sink for this run's tools, pushes
+// the catalog reconciliation's deletions so vector storage tracks the catalog,
 // and asks the sink to persist its index. Errors degrade the catalog run:
 // the catalog is still updated; only the embedding pipeline is skipped.
-func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedded []EmbedItem) {
+func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedded []EmbedItem, deleted []string) {
 	upserted, err := i.sink.Upsert(ctx, embedded)
 	if err != nil {
 		summary.Errors = append(summary.Errors, contract.Error{
@@ -253,18 +268,8 @@ func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedde
 		return
 	}
 	summary.EmbeddedCount = upserted
-	stale, listErr := i.reconcileStaleEmbeddings(ctx)
-	if listErr != nil {
-		summary.Errors = append(summary.Errors, contract.Error{
-			Type:             contract.ErrTypeSemanticSearchUnavailable,
-			Retryable:        true,
-			Message:          fmt.Sprintf("embedding sink list failed: %v", listErr),
-			AgentInstruction: "Retry `ozy index` later; lexical search still serves from the catalog.",
-		})
-		return
-	}
-	if len(stale) > 0 {
-		if err := i.sink.Delete(ctx, stale); err != nil {
+	if len(deleted) > 0 {
+		if err := i.sink.Delete(ctx, deleted); err != nil {
 			summary.Errors = append(summary.Errors, contract.Error{
 				Type:             contract.ErrTypeSemanticSearchUnavailable,
 				Retryable:        true,
@@ -289,33 +294,83 @@ func (i *Indexer) flushEmbeddings(ctx context.Context, summary *Summary, embedde
 	}
 }
 
-// reconcileStaleEmbeddings returns the set of toolRefs the sink currently
-// stores that are not in the catalog — the indexer should delete them so the
-// sink tracks the catalog.
-func (i *Indexer) reconcileStaleEmbeddings(ctx context.Context) ([]string, error) {
-	sinkRefs, err := i.sink.List(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if len(sinkRefs) == 0 {
-		return nil, nil
-	}
+// reconcile trues the catalog up against what this run learned. Tools whose
+// server listed successfully but no longer serves them, and tools whose server
+// is absent from the configuration, are deleted (returned for the embedding
+// sink). Tools whose configured server was unreachable or disabled are kept but
+// degraded — stale, not callable, with the observed server status — so a flake
+// never erases the catalog while the responses stop asserting fresh/callable.
+func (i *Indexer) reconcile(ctx context.Context, summary *Summary, cfg *config.Config, listed map[string]map[string]bool, degraded map[string]catalog.ServerStatus) []string {
 	tools, err := i.store.Tools(ctx)
 	if err != nil {
-		return nil, err
+		summary.Errors = append(summary.Errors, contract.Error{
+			Type:             contract.ErrTypeConfigError,
+			Retryable:        true,
+			Message:          fmt.Sprintf("failed to read catalog for reconciliation: %v", err),
+			AgentInstruction: "Check catalog storage permissions, then retry indexing.",
+		})
+		return nil
 	}
-	current := make(map[string]struct{}, len(tools))
+
+	var toDelete []string
 	for _, t := range tools {
-		current[t.ToolRef] = struct{}{}
-	}
-	var stale []string
-	for _, ref := range sinkRefs {
-		if _, ok := current[ref]; !ok {
-			stale = append(stale, ref)
+		// A successful listing this run is the strongest authority — it decides
+		// keep-or-delete for its server's tools before any config check, so a
+		// run can never delete what it just discovered.
+		if refs, ok := listed[t.ServerID]; ok {
+			if !refs[t.ToolRef] {
+				toDelete = append(toDelete, t.ToolRef)
+			}
+			continue
+		}
+		if _, inConfig := configServer(cfg, t.ServerID); !inConfig {
+			toDelete = append(toDelete, t.ToolRef)
+			continue
+		}
+		if status, ok := degraded[t.ServerID]; ok {
+			if t.Freshness == catalog.FreshnessStale && !t.CallableNow && t.ServerStatus == status {
+				continue // already degraded; skip a pointless persist
+			}
+			t.Freshness = catalog.FreshnessStale
+			t.CallableNow = false
+			t.ServerStatus = status
+			if err := i.store.PutTool(ctx, t); err != nil {
+				summary.OK = false
+				summary.Errors = append(summary.Errors, contract.Error{
+					Type:             contract.ErrTypeConfigError,
+					ServerID:         t.ServerID,
+					Retryable:        true,
+					Message:          fmt.Sprintf("failed to degrade tool %q: %v", t.ToolRef, err),
+					AgentInstruction: "Check catalog storage permissions, then retry indexing.",
+				})
+			}
 		}
 	}
-	sort.Strings(stale)
-	return stale, nil
+
+	if len(toDelete) == 0 {
+		return nil
+	}
+	sort.Strings(toDelete)
+	if err := i.store.DeleteTools(ctx, toDelete); err != nil {
+		summary.OK = false
+		summary.Errors = append(summary.Errors, contract.Error{
+			Type:             contract.ErrTypeConfigError,
+			Retryable:        true,
+			Message:          fmt.Sprintf("failed to delete %d vanished tools: %v", len(toDelete), err),
+			AgentInstruction: "Check catalog storage permissions, then retry indexing.",
+		})
+		return nil
+	}
+	return toDelete
+}
+
+// configServer looks up a server in the resolved config, tolerating nil.
+func configServer(cfg *config.Config, serverID string) (config.ServerConfig, bool) {
+	if cfg == nil {
+		return config.ServerConfig{}, false
+	}
+	s, ok := cfg.MCP[serverID]
+	return s, ok
 }
 
 func (i *Indexer) recordServer(ctx context.Context, summary *Summary, serverID string, status catalog.ServerStatus) {
@@ -331,7 +386,12 @@ func (i *Indexer) recordServer(ctx context.Context, summary *Summary, serverID s
 	}
 }
 
-func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID string, server config.ServerConfig, session downstream.Session) []EmbedItem {
+// indexSession lists and persists one server's tools. It returns the embed
+// items, the set of toolRefs the server currently serves, and whether the
+// listing succeeded — only a successful listing grants deletion authority to
+// the reconciler. The discovered set includes tools that failed to normalize
+// or persist, because the server does still serve them.
+func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID string, server config.ServerConfig, session downstream.Session) ([]EmbedItem, map[string]bool, bool) {
 	listCtx, cancel := context.WithTimeout(ctx, server.DiscoveryTimeout())
 	defer cancel()
 	list, err := session.ListTools(listCtx, nil)
@@ -344,10 +404,12 @@ func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID s
 			Message:          fmt.Sprintf("tools/list failed: %v", scrub(err.Error(), server)),
 			AgentInstruction: "Check the downstream server health and retry indexing.",
 		})
-		return nil
+		return nil, nil, false
 	}
 	var embedded []EmbedItem
+	discovered := make(map[string]bool, len(list.Tools))
 	for _, tool := range list.Tools {
+		discovered[serverID+"."+tool.Name] = true
 		catalogTool, err := normalizeTool(serverID, tool, i.now())
 		if err != nil {
 			summary.Errors = append(summary.Errors, contract.Error{
@@ -373,7 +435,7 @@ func (i *Indexer) indexSession(ctx context.Context, summary *Summary, serverID s
 		summary.ToolsIndexed++
 		embedded = append(embedded, buildEmbedItem(catalogTool))
 	}
-	return embedded
+	return embedded, discovered, true
 }
 
 // buildEmbedItem renders the §10.2 indexed text for embedding. It is the same

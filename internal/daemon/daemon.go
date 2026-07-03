@@ -372,14 +372,6 @@ func (s *sink) VectorCount(ctx context.Context) (int, error) {
 	return st.VectorCount, nil
 }
 
-func (s *sink) List(ctx context.Context) ([]string, error) {
-	// The sidecar's Stats returns toolCount but not individual toolRefs.
-	// The index reconciliation needs a list; the v1 sidecar does not expose
-	// a list op (the protocol only has health/upsert/delete/query/stats).
-	// Until the sidecar adds a list op, skip reconciliation.
-	return nil, nil
-}
-
 func (s *sink) Persist(ctx context.Context) error {
 	// The sidecar persists its index on every upsert/delete batch. The
 	// explicit persist call is triggered by the indexer after reconciliation.

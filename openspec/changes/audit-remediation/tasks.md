@@ -10,11 +10,11 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 2. Catalog reconciliation (D2, D3)
 
-- [ ] 2.1 Add `DeleteTools(ctx, refs []string) error` to `catalog.Store`; implement in `memory.go` and `file.go` (persisted); tests for delete + survives restart
-- [ ] 2.2 Indexer reconciliation in `internal/index`: per server with successful `tools/list`, delete cataloged tools absent from the listing; delete tools of servers absent from config; degrade (stale, not callable, offline) tools of unreachable/disabled servers; never delete on a failed listing
-- [ ] 2.3 Push the run's deletions to the embedding sink via `sink.Delete`; remove the no-op `List`-based `reconcileStaleEmbeddings` path and the dead `List` method from the sink seam
-- [ ] 2.4 Add catalog age: expose age-since-last-index (never-indexed distinct), add `catalogAgeSeconds` to `contract.CatalogStats`, populate in broker responses
-- [ ] 2.5 Tests: vanished tool deleted (catalog + sink), removed-server tools deleted, flaky server degrades but keeps tools, failed listing deletes nothing, responses carry age and reconciled status
+- [x] 2.1 Add `DeleteTools(ctx, refs []string) error` to `catalog.Store`; implement in `memory.go` and `file.go` (persisted); tests for delete + survives restart (`internal/catalog/delete_test.go`)
+- [x] 2.2 Indexer reconciliation in `internal/index`: per server with successful `tools/list`, delete cataloged tools absent from the listing; delete tools of servers absent from config; degrade (stale, not callable, offline) tools of unreachable/disabled servers; never delete on a failed listing (note: a successful listing outranks config absence, so fixture configs can't self-delete)
+- [x] 2.3 Push the run's deletions to the embedding sink via `sink.Delete`; remove the no-op `List`-based `reconcileStaleEmbeddings` path and the dead `List` method from the sink seam
+- [x] 2.4 Add catalog age: expose age-since-last-index (never-indexed distinct → nil/omitted), add `catalogAgeSeconds` to `contract.CatalogStats`, populate in broker responses
+- [x] 2.5 Tests: vanished tool deleted (catalog + sink), removed-server tools deleted, flaky server degrades but keeps tools, failed listing deletes nothing (`internal/index/reconcile_test.go`); age assertion folded into group 4/8 response tests
 
 ## 3. In-band guidance and structural truncation (D4, D5)
 

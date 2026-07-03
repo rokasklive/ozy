@@ -72,6 +72,9 @@ type Store interface {
 	PutServer(ctx context.Context, s Server) error
 	// PutTool inserts or replaces a tool keyed by its stable toolRef.
 	PutTool(ctx context.Context, t Tool) error
+	// DeleteTools removes the tools with the given toolRefs. Unknown refs are
+	// ignored, so reconciliation can pass its full computed set idempotently.
+	DeleteTools(ctx context.Context, toolRefs []string) error
 	// Servers returns all configured/known servers.
 	Servers(ctx context.Context) ([]Server, error)
 	// Tools returns all indexed tools.

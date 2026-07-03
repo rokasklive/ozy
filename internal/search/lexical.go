@@ -256,6 +256,7 @@ func rankTools(query string, tools []catalog.Tool) []RankedEntry {
 			terms = append(terms, t)
 		}
 		sort.Strings(terms)
+		reasonTerms := topSignalTerms(terms, ls, maxReasonTerms)
 
 		type fieldScore struct {
 			name  string
@@ -274,7 +275,7 @@ func rankTools(query string, tools []catalog.Tool) []RankedEntry {
 			topFields = append(topFields, "description")
 		}
 
-		reason := fmt.Sprintf("Matched terms [%s] in %s", strings.Join(terms, ", "), strings.Join(topFields, ", "))
+		reason := fmt.Sprintf("Matched terms [%s] in %s", strings.Join(reasonTerms, ", "), strings.Join(topFields, ", "))
 		if len(terms) == 0 && len(tools) > 0 {
 			reason = "No direct term match"
 		}
@@ -289,6 +290,27 @@ func rankTools(query string, tools []catalog.Tool) []RankedEntry {
 		}
 	}
 	return result
+}
+
+// maxReasonTerms caps how many matched terms a reason string names.
+const maxReasonTerms = 4
+
+// topSignalTerms returns at most n matched terms ranked by corpus IDF
+// descending (ties alphabetical), so the reason presents the highest-signal
+// evidence and stopwords — high-df, low-idf terms like "the" — drop out
+// whenever stronger terms matched. No stopword list to maintain: the corpus
+// itself decides what carries signal.
+func topSignalTerms(terms []string, ls *lexicalScorer, n int) []string {
+	if len(terms) <= n {
+		return terms
+	}
+	ranked := append([]string(nil), terms...)
+	sort.SliceStable(ranked, func(i, j int) bool {
+		return ls.termStats[ranked[i]].idf > ls.termStats[ranked[j]].idf
+	})
+	ranked = ranked[:n]
+	sort.Strings(ranked)
+	return ranked
 }
 
 func gatherTokens(tool catalog.Tool) map[string]bool {

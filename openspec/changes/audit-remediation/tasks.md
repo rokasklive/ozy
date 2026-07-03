@@ -24,11 +24,11 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 4. findTool cost and credibility (D6, D7)
 
-- [ ] 4.1 Honor `budgets.findTool.maxResults` (default 5) in `live.FindTool`: alternatives = up to maxResults−1 runner-ups with one-line reasons
-- [ ] 4.2 Fast path: when selected tool's canonical `inputSchema` ≤ 2 KiB constant, inline full `inputSchema` + `recommendedCall` (skeleton from required fields) in `selected`, set `nextAction: callTool`, adjust `agentInstruction`; larger schemas keep preview + describe-first
-- [ ] 4.3 Match reasons: list at most the 4 highest-IDF matched terms in `internal/search/lexical.go` reason strings (drops stopwords adaptively)
-- [ ] 4.4 Ambiguous branch: instruction becomes compare-inlined-candidates-and-call; stop prescribing `describeTool` for inlined schemas
-- [ ] 4.5 Tests: maxResults bounds candidates; small schema → inline + callTool nextAction; large schema → preview + describeTool; reason has no stopwords for a stopword-heavy query; ambiguous instruction self-consistent
+- [x] 4.1 Honor `budgets.findTool.maxResults` (default 5, `EffectiveMaxResults()`) in `live.FindTool`: alternatives = up to maxResults−1 runner-ups from the ranking with one-line reasons
+- [x] 4.2 Fast path: canonical `inputSchema` ≤ 2 KiB (or `includeFullSchemas: true`, making that knob honest too) → inline full `inputSchema` + `recommendedCall` (typed skeleton from required fields), `nextAction: callTool`; larger schemas keep preview + describe-first
+- [x] 4.3 Match reasons: at most the 4 highest-IDF matched terms (`topSignalTerms` in `internal/search/lexical.go`); no stopword list — the corpus decides
+- [x] 4.4 Ambiguous branch: compare-inlined-candidates-and-call (`nextAction: callTool`, no auto-picked toolRef); `describeTool` no longer prescribed for delivered schemas
+- [x] 4.5 Tests: maxResults bounds candidates; small schema → inline + callTool nextAction; large schema → preview + describeTool; reason drops stopwords (`find_fastpath_test.go`, `search/reason_test.go`); ambiguous self-consistency in `find_nextaction_test.go`
 
 ## 5. Adapter honesty (D8, D9)
 

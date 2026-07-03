@@ -66,30 +66,46 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 	case search.DecisionUse:
 		result.Confidence = decision.Confidence
 		if decision.Selected != nil {
-			result.SelectedToolRef = decision.Selected.Tool.ToolRef
-			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
+			tool := decision.Selected.Tool
+			result.SelectedToolRef = tool.ToolRef
+			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(tool.InputSchema))
 			result.Reason = decision.Selected.Reason
-			result.Alternatives = l.alternatives(decision.RunnerUp)
-			result.NextAction = &contract.NextAction{
-				Tool:      "describeTool",
-				ToolRef:   decision.Selected.Tool.ToolRef,
-				Arguments: map[string]any{"toolRef": decision.Selected.Tool.ToolRef},
-				Reason:    "Inspect exact schema before invoking through callTool.",
+			result.Alternatives = l.alternatives(ranking)
+			if l.inlineFullSchema(tool.InputSchema) {
+				// Fast path: the schema is small enough to deliver now, so the
+				// describeTool hop becomes the exception rather than the ritual.
+				result.Selected.InputSchema = tool.InputSchema
+				result.Selected.SchemaPreview = nil
+				callArgs := map[string]any{"toolRef": tool.ToolRef, "arguments": argumentSkeleton(tool.InputSchema)}
+				result.Selected.RecommendedCall = &contract.RecommendedCall{Tool: "callTool", Arguments: callArgs}
+				result.NextAction = &contract.NextAction{
+					Tool:      "callTool",
+					ToolRef:   tool.ToolRef,
+					Arguments: callArgs,
+					Reason:    "The full inputSchema is inlined — invoke directly.",
+				}
+				result.AgentInstruction = "The selected tool's full inputSchema is inlined above. Call callTool directly " +
+					"with arguments matching it; use describeTool only if the schema is unclear."
+			} else {
+				result.NextAction = &contract.NextAction{
+					Tool:      "describeTool",
+					ToolRef:   tool.ToolRef,
+					Arguments: map[string]any{"toolRef": tool.ToolRef},
+					Reason:    "Inspect exact schema before invoking through callTool.",
+				}
+				result.AgentInstruction = "Use describeTool to inspect the selected tool's full schema before invoking it through callTool."
 			}
-			result.AgentInstruction = "Use describeTool to inspect the selected tool's full schema before invoking it through callTool."
 		}
 
 	case search.DecisionAmbiguous:
 		if decision.Selected != nil {
 			result.SelectedToolRef = decision.Selected.Tool.ToolRef
 			result.Selected = selectedToolFromEntry(decision.Selected, l.schemaPreview(decision.Selected.Tool.InputSchema))
-			result.Alternatives = l.alternatives(decision.RunnerUp)
+			result.Alternatives = l.alternatives(ranking)
 			result.Reason = fmt.Sprintf("Multiple tools match %q — top two are too close to separate confidently.", query)
 			result.NextAction = &contract.NextAction{
-				Tool:      "describeTool",
-				ToolRef:   decision.Selected.Tool.ToolRef,
-				Arguments: map[string]any{"toolRef": decision.Selected.Tool.ToolRef},
-				Reason:    "Inspect the close candidates' schemas with describeTool before choosing.",
+				Tool:   "callTool",
+				Reason: "Compare the candidates' inlined schemas and invoke the chosen toolRef.",
 			}
 		}
 		if decision.RunnerUp != nil {
@@ -98,7 +114,9 @@ func (l *live) FindTool(ctx context.Context, query string) (*contract.FindResult
 				catalogToolToCandidate(decision.RunnerUp),
 			}
 		}
-		result.AgentInstruction = "Two tools match closely. Use describeTool on both to inspect their schemas before choosing."
+		// The candidates already carry their full input schemas, so the agent is
+		// told to compare and call — never to re-fetch delivered bytes.
+		result.AgentInstruction = "Two tools match closely. Compare the candidates' inlined schemas and call the better fit with callTool."
 
 	case search.DecisionNoGoodMatch:
 		if decision.Selected != nil {
@@ -163,14 +181,65 @@ func (l *live) schemaPreview(schema map[string]any) *contract.SchemaPreview {
 	return preview
 }
 
-func (l *live) alternatives(entry *search.RankedEntry) []contract.Alternative {
-	if entry == nil {
-		return nil
+// fastPathSchemaBytes is the canonical-encoding size at or under which a
+// selected tool's full inputSchema is inlined in the findTool response, so the
+// agent can call directly instead of paying a describeTool round-trip.
+// ponytail: constant threshold; make it a budget knob only if real schemas demand tuning.
+const fastPathSchemaBytes = 2048
+
+// alternatives returns the runner-ups after the selected entry, bounded by
+// budgets.findTool.maxResults (selected + alternatives ≤ maxResults).
+func (l *live) alternatives(ranking *search.Ranking) []contract.Alternative {
+	maxResults := config.FindToolBudget{}.EffectiveMaxResults()
+	if l.cfg != nil {
+		maxResults = l.cfg.Budgets.FindTool.EffectiveMaxResults()
 	}
-	return []contract.Alternative{{
-		ToolRef: entry.Tool.ToolRef,
-		Reason:  entry.Reason,
-	}}
+	var out []contract.Alternative
+	for i := 1; i < len(ranking.Entries) && len(out) < maxResults-1; i++ {
+		e := &ranking.Entries[i]
+		out = append(out, contract.Alternative{
+			ToolRef: e.Tool.ToolRef,
+			Reason:  e.Reason,
+		})
+	}
+	return out
+}
+
+// inlineFullSchema reports whether the schema should ride inline in the
+// findTool response: always when budgets.findTool.includeFullSchemas forces it,
+// otherwise when its canonical encoding fits the fast-path threshold.
+func (l *live) inlineFullSchema(schema map[string]any) bool {
+	if len(schema) == 0 {
+		return false
+	}
+	if l.cfg != nil && l.cfg.Budgets.FindTool.IncludeFullSchemas {
+		return true
+	}
+	data, err := json.Marshal(schema)
+	return err == nil && len(data) <= fastPathSchemaBytes
+}
+
+// argumentSkeleton builds a callTool arguments placeholder from the schema's
+// required fields, typed from their declared property types, so the
+// recommended call shows the shape to fill rather than an empty object.
+func argumentSkeleton(schema map[string]any) map[string]any {
+	out := map[string]any{}
+	req, _ := schema["required"].([]any)
+	props, _ := schema["properties"].(map[string]any)
+	for _, r := range req {
+		name, ok := r.(string)
+		if !ok {
+			continue
+		}
+		typ := "value"
+		if p, ok := props[name].(map[string]any); ok {
+			if s, ok := p["type"].(string); ok && s != "" {
+				typ = s
+			}
+		}
+		out[name] = "<" + typ + ">"
+	}
+	return out
 }
 
 func selectedToolFromEntry(entry *search.RankedEntry, preview *contract.SchemaPreview) *contract.SelectedTool {

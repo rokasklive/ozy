@@ -37,12 +37,17 @@ type SchemaPreview struct {
 }
 
 // SelectedTool is the best-match summary embedded in a findTool response.
+// Small schemas ride inline (fast path): when InputSchema is set the agent can
+// go straight to callTool using RecommendedCall, skipping the describeTool hop;
+// SchemaPreview is the bounded fallback for schemas too large to inline.
 type SelectedTool struct {
-	ToolRef       string         `json:"toolRef"`
-	Title         string         `json:"title,omitempty"`
-	CallableNow   bool           `json:"callableNow"`
-	ServerStatus  string         `json:"serverStatus,omitempty"`
-	SchemaPreview *SchemaPreview `json:"schemaPreview,omitempty"`
+	ToolRef         string           `json:"toolRef"`
+	Title           string           `json:"title,omitempty"`
+	CallableNow     bool             `json:"callableNow"`
+	ServerStatus    string           `json:"serverStatus,omitempty"`
+	SchemaPreview   *SchemaPreview   `json:"schemaPreview,omitempty"`
+	InputSchema     map[string]any   `json:"inputSchema,omitempty"`
+	RecommendedCall *RecommendedCall `json:"recommendedCall,omitempty"`
 }
 
 // NextAction tells the agent the next concrete Ozy call to make.

@@ -293,10 +293,24 @@ type BudgetsConfig struct {
 	CallTool     CallToolBudget     `json:"callTool,omitempty"`
 }
 
-// FindToolBudget bounds findTool responses.
+// DefaultFindToolMaxResults bounds the candidates a findTool response surfaces
+// (selected plus alternatives) when budgets.findTool.maxResults is omitted.
+const DefaultFindToolMaxResults = 5
+
+// FindToolBudget bounds findTool responses. MaxResults caps selected plus
+// alternatives; IncludeFullSchemas forces schema inlining regardless of the
+// fast-path size threshold.
 type FindToolBudget struct {
 	MaxResults         int  `json:"maxResults"`
 	IncludeFullSchemas bool `json:"includeFullSchemas"`
+}
+
+// EffectiveMaxResults returns MaxResults with the documented default applied.
+func (b FindToolBudget) EffectiveMaxResults() int {
+	if b.MaxResults > 0 {
+		return b.MaxResults
+	}
+	return DefaultFindToolMaxResults
 }
 
 // DescribeToolBudget bounds describeTool responses.

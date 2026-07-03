@@ -52,7 +52,7 @@ Ozy fixes that by acting as a single, brokered entry point:
 1. Install Ozy:
 
 ```bash
-go install github.com/rokasklive/ozy/cmd/ozy@latest
+go run github.com/rokasklive/ozy/cmd/ozy-install@latest
 ```
 
 2. Scaffold the default config:

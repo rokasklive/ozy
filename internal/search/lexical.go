@@ -295,22 +295,51 @@ func rankTools(query string, tools []catalog.Tool) []RankedEntry {
 // maxReasonTerms caps how many matched terms a reason string names.
 const maxReasonTerms = 4
 
+// reasonIdfFloor drops a matched term from the reason when its IDF falls under
+// this fraction of the strongest matched term's IDF, so corpus-specific noise
+// is trimmed relative to the real evidence.
+const reasonIdfFloor = 0.4
+
+// reasonStopwords are English function words excluded from reason strings —
+// display only, never from scoring. Small catalogs compress IDF too much for
+// the corpus alone to separate connectives from evidence ("and" at df 30/69
+// still clears any sane relative floor), and presenting "and"/"the" as match
+// evidence makes the ranking read like a toy keyword matcher.
+var reasonStopwords = map[string]bool{
+	"a": true, "an": true, "and": true, "are": true, "as": true, "at": true,
+	"be": true, "by": true, "for": true, "from": true, "in": true, "is": true,
+	"it": true, "my": true, "of": true, "on": true, "or": true, "the": true,
+	"to": true, "with": true,
+}
+
 // topSignalTerms returns at most n matched terms ranked by corpus IDF
-// descending (ties alphabetical), so the reason presents the highest-signal
-// evidence and stopwords — high-df, low-idf terms like "the" — drop out
-// whenever stronger terms matched. No stopword list to maintain: the corpus
-// itself decides what carries signal.
+// descending: the highest-signal evidence. Function-word stopwords and terms
+// under the relative IDF floor are dropped from the display (scoring is
+// untouched); when only stopwords matched, the strongest of them is kept so a
+// matched entry never shows an empty reason.
 func topSignalTerms(terms []string, ls *lexicalScorer, n int) []string {
-	if len(terms) <= n {
+	if len(terms) == 0 {
 		return terms
 	}
 	ranked := append([]string(nil), terms...)
 	sort.SliceStable(ranked, func(i, j int) bool {
 		return ls.termStats[ranked[i]].idf > ls.termStats[ranked[j]].idf
 	})
-	ranked = ranked[:n]
-	sort.Strings(ranked)
-	return ranked
+	floor := ls.termStats[ranked[0]].idf * reasonIdfFloor
+	kept := make([]string, 0, len(ranked))
+	for _, t := range ranked {
+		if !reasonStopwords[t] && ls.termStats[t].idf >= floor {
+			kept = append(kept, t)
+		}
+	}
+	if len(kept) == 0 {
+		kept = ranked[:1]
+	}
+	if len(kept) > n {
+		kept = kept[:n]
+	}
+	sort.Strings(kept)
+	return kept
 }
 
 func gatherTokens(tool catalog.Tool) map[string]bool {

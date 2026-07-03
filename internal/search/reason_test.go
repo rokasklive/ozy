@@ -10,11 +10,11 @@ import (
 // reasonTermList extracts the bracketed term list from a rankTools reason.
 func reasonTermList(t *testing.T, reason string) []string {
 	t.Helper()
-	open, close := strings.IndexByte(reason, '['), strings.IndexByte(reason, ']')
-	if open < 0 || close <= open {
+	start, end := strings.IndexByte(reason, '['), strings.IndexByte(reason, ']')
+	if start < 0 || end <= start {
 		t.Fatalf("reason has no term list: %q", reason)
 	}
-	return strings.Split(reason[open+1:close], ", ")
+	return strings.Split(reason[start+1:end], ", ")
 }
 
 func TestRankTools_ReasonPrefersHighSignalTerms(t *testing.T) {

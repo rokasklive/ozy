@@ -130,7 +130,8 @@ in unchanged.
       "cwd": "/path/to/workspace",
       "environment": { "OZY_ROOT": "{env:OZY_ROOT}" },
       "enabled": true,
-      "timeout": 5000
+      "timeout": 5000,        // discovery/connect budget (ms) used when indexing
+      "callTimeout": 60000    // per-callTool budget (ms): connect + execute
     },
     "atlassian": {
       "type": "remote",
@@ -178,9 +179,12 @@ background: it brings up the embedding sidecar and indexes the catalog without
 blocking the MCP handshake, so `findTool` answers immediately (lexical at first,
 upgrading to hybrid semantic once embeddings are ready). The sidecar's lifetime
 is bound to the connection — it shuts down when your agent does. When the agent
-calls `findTool`, Ozy returns stable `toolRef`s (e.g. `atlassian.confluence_search`)
-with `title`, `description`, and `inputSchema`; the agent then calls `callTool`
-with that `toolRef` — no `ozy index` or `ozy daemon` required beforehand.
+calls `findTool`, Ozy returns a ranked decision over the indexed catalog with a
+stable `toolRef` (e.g. `atlassian.confluence_search`); small input schemas are
+inlined so the agent can go straight to `callTool`, larger ones are one
+`describeTool` away — no `ozy index` or `ozy daemon` required beforehand.
+Tool calls run under a per-server `callTimeout` (default 60s), separate from
+the 5s discovery timeout, and truncated or cached results say so in-band.
 
 ## The three tools
 

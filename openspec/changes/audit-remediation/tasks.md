@@ -50,7 +50,7 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 8. Docs, SPEC, and verification
 
-- [ ] 8.1 README honesty pass: correct "Use Ozy as an MCP server" (findTool ranks the indexed catalog; index runs per the zero-touch lifecycle), document `callTimeout`, remove/adjust claims for removed contract states
-- [ ] 8.2 SPEC.md §9/§13 pass: remove deleted decisions/error type, add `catalogAgeSeconds`, `cachedAgeSeconds`, fast-path and trailer contracts, reserved note for `TOOL_SCHEMA_CHANGED`
-- [ ] 8.3 Full `go test ./...`, `golangci-lint`, `ozy eval run` green; update eval fixtures/corpus only where contract fields were added
-- [ ] 8.4 Live smoke over stdio (mcp probe): trailer on truncation, cache stamp, instructions at initialize, fast-path findTool, non-null find error; then `graphify update .`
+- [x] 8.1 README honesty pass: MCP section already corrected by zero-touch recovery; added `callTimeout` docs + fast-path/notice sentence to "Use Ozy as an MCP server"
+- [x] 8.2 SPEC.md §9/§11/§13 pass: decisions trimmed to emittable set, `RESULT_TRUNCATED` removed (truncation = labeled in-band partial success), `TOOL_SCHEMA_CHANGED` marked reserved, `catalogAgeSeconds`/`cachedAgeSeconds`/`notices` added, fast-path + bounded-alternatives + reconciled-status requirements, `callTimeout` + budgets comments in the config example
+- [x] 8.3 Full `go test ./...` green, `golangci-lint` 0 issues, `ozy eval run` 21 gates passed / 0 failed; no corpus updates needed
+- [x] 8.4 Live smoke over stdio: instructions at initialize ✓, fast-path findTool (inlined schema + recommendedCall + callTool nextAction) ✓, bounded alternatives (4) ✓, catalogAgeSeconds ✓, stopword-free reasons ✓ (required a display stopword list on top of IDF — design D7 amended); truncation trailer + cache stamp + non-null find error verified by unit tests (`truncation_test`, `trailer_test`, `cache_stamp_test`, `honesty_test`); `graphify update .` run

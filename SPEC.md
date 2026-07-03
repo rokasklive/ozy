@@ -375,14 +375,14 @@ Response requirements:
 
 - return a decision, not only a list;
 - include selected best tool when confidence allows;
-- include confidence and reason;
-- include `callableNow` and server status;
-- include schema preview, not full schema by default;
-- include next action;
+- include confidence and reason (the reason names the highest-signal matched terms, ranked by corpus IDF — never stopword noise);
+- include `callableNow` and server status as reconciled state from the most recent index run;
+- include the schema preview for large schemas — but inline the full `inputSchema` plus a `recommendedCall` when the schema is small (the fast path), so the agent can invoke directly and `describeTool` becomes the exception;
+- include next action (`callTool` on the fast path, `describeTool` otherwise);
 - include likely follow-up tools when obvious;
-- include alternatives only when useful;
+- include up to `budgets.findTool.maxResults − 1` ranked alternatives, each with a one-line reason;
 - include avoid/repair guidance where useful;
-- include lightweight catalog health when it materially affects confidence, such as `catalogStats`;
+- include lightweight catalog health (`catalogStats`), including `catalogAgeSeconds` — seconds since the last successful index run (omitted when never indexed) — so the agent can weigh how current the reported state is;
 - explicitly handle empty-catalog and no-indexed-tool states;
 - stay within response-size budgets.
 
@@ -409,7 +409,8 @@ Example shape:
     "configuredServers": 3,
     "indexedTools": 42,
     "freshTools": 38,
-    "staleTools": 4
+    "staleTools": 4,
+    "catalogAgeSeconds": 5400
   },
   "nextAction": {
     "tool": "describeTool",
@@ -431,18 +432,16 @@ Example shape:
 }
 ```
 
-Decision values should be explicit, for example:
+Decision values are explicit, and every listed value is emittable by the live broker — advertising unreachable states is the lying-interface failure this contract exists to prevent:
 
 - `use`
-- `choose_from_candidates`
-- `known_but_unavailable`
 - `no_good_match`
 - `ambiguous`
 - `catalog_empty`
 
 `catalog_empty` means Ozy has no indexed tools to search. It must instruct the agent not to infer absence of capability and should direct the user or agent toward `ozy doctor`, indexing, or configuration repair.
 
-Even ambiguous responses must be instructional.
+Even ambiguous responses must be instructional — and self-consistent: an `ambiguous` response inlines the close candidates' schemas, so its instruction directs the agent to compare the inlined candidates and call the chosen one, never to re-fetch those same schemas with `describeTool`.
 
 ### 9.2 `describeTool`
 
@@ -564,6 +563,10 @@ Success response shape:
   "toolRef": "atlassian.confluence_search",
   "result": {},
   "resultSummary": "Found relevant Confluence pages.",
+  "notices": [
+    "result truncated: showing 12 of 40 items (budgets.callTool.maxResultBytes=65536); narrow the call for the rest"
+  ],
+  "cachedAgeSeconds": 42,
   "nextActions": [
     {
       "recommended": true,
@@ -599,18 +602,19 @@ Failure response shape:
 }
 ```
 
-`agentInstruction` on failures must explicitly state whether the agent should retry, avoid retrying, refresh/describe again, choose another tool, ask the user, or report the failure. If Ozy performs internal retries, the response must not cause retry amplification; it must clearly state whether additional agent-side retry is recommended.
+`agentInstruction` on failures must explicitly state whether the agent should retry, avoid retrying, refresh/describe again, choose another tool, ask the user, or report the failure. If Ozy performs internal retries, the response must not cause retry amplification; it must clearly state whether additional agent-side retry is recommended. Failures caused by budgets Ozy itself imposed — the per-server `callTimeout`, the byte budget — are never marked `retryable: true`, because repeating the identical call cannot succeed.
+
+`notices` carries actionable in-band messages (truncation recovery, staleness); `cachedAgeSeconds` is present only when the result was served from the result cache. Truncation is a labeled partial success delivered in-band, not an error type: arrays lose whole trailing elements (what remains is valid JSON, with an "N of M items" notice), text is cut at a line or word boundary. Adapters must deliver notices inside the response content the agent reads — never only in out-of-band metadata such as MCP `_meta`, which major clients do not surface to the model.
 
 Common error types:
 
 - `TOOL_NOT_FOUND`
 - `DOWNSTREAM_SERVER_OFFLINE`
 - `ARGUMENT_VALIDATION_FAILED`
-- `TOOL_SCHEMA_CHANGED`
+- `TOOL_SCHEMA_CHANGED` — reserved: names the planned schema-drift failure (cataloged schema no longer matching the live tool). The eval corpus exercises its shape; the live broker does not emit it yet.
 - `DOWNSTREAM_CALL_FAILED`
 - `AUTH_UNAVAILABLE`
 - `SEMANTIC_SEARCH_UNAVAILABLE`
-- `RESULT_TRUNCATED`
 - `CONFIG_ERROR`
 
 ---
@@ -743,6 +747,9 @@ servers:
     args: []
     env:
       OPENGROK_URL: "https://opengrok.home"
+    timeout: 5000        # discovery/connect budget (ms), used when indexing
+    callTimeout: 60000   # per-callTool budget (ms): connect + execute; a call
+                         # killed by this deadline reports retryable: false
 
 embedding:
   provider: python-local
@@ -757,8 +764,8 @@ search:
 
 budgets:
   findTool:
-    maxResults: 5
-    includeFullSchemas: false
+    maxResults: 5              # bounds selected + alternatives in a findTool response
+    includeFullSchemas: false  # force schema inlining regardless of the fast-path size threshold
   describeTool:
     includeExamples: true
   callTool:

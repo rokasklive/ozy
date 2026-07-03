@@ -4,7 +4,8 @@
 **Document status:** Living project specification  
 **Audience:** Maintainer, contributors, coding agents, OpenSpec proposal authors, reviewers  
 **Owner:** Project maintainer  
-**Last reviewed:** 2026-06-12
+**Last reviewed:** 2026-06-12  
+**Last updated:** 2026-07-03  
 **Review-board clarifications:** Applied 2026-06-12 — freshness value set, `catalog_empty`, `catalogStats`, `agentInstruction` quality criteria, retry-amplification guard, Ozy tool contract versioning, grader approach, and post-baseline token-economy target rule.
 
 ---

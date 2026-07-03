@@ -167,26 +167,6 @@ Semantic search is on by default. The Python embedding sidecar is
 fallback); if it is unavailable, Ozy falls back to lexical-only `findTool`
 and surfaces the degraded mode rather than failing.
 
-## Use Ozy as an MCP server
-
-Add Ozy to your agent's MCP config:
-
-```jsonc
-{
-  "mcp": {
-    "ozy": {
-      "type": "local",
-      "command": ["ozy", "mcp"]
-    }
-  }
-}
-```
-
-On startup `ozy mcp` loads `~/.config/ozy/ozy.jsonc` and serves the indexed tool
-catalog through three stable tools. Run `ozy index` after changing downstream
-MCP entries, and use `ozy doctor` to catch config, catalog, and embedding
-sidecar issues before connecting your agent.
-
 ## The three tools
 
 Ozy exposes exactly three stable MCP tools (see [SPEC.md](SPEC.md) §9):

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"sync"
 	"testing"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -22,7 +23,7 @@ func connect(t *testing.T) *mcpsdk.ClientSession {
 	t.Cleanup(cancel)
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewSkeleton(catalog.NewMemory()), "test", "")
+	adapter := New(StaticProvider(broker.NewSkeleton(catalog.NewMemory())), "test", "")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -105,6 +106,85 @@ func TestAdapter_FindToolReturnsCatalogEmptyShape(t *testing.T) {
 	}
 }
 
+// swapProvider is a BrokerProvider whose broker can be swapped at runtime, used
+// to assert the adapter reads the broker per request rather than capturing it.
+type swapProvider struct {
+	mu sync.Mutex
+	b  broker.Broker
+}
+
+func (s *swapProvider) Broker() broker.Broker {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.b
+}
+
+func (s *swapProvider) set(b broker.Broker) {
+	s.mu.Lock()
+	s.b = b
+	s.mu.Unlock()
+}
+
+// TestAdapter_ReadsBrokerPerRequestSeesSwap covers task 2.4: a background
+// provisioning pass that swaps the runtime's broker (lexical -> hybrid) must be
+// visible to an already-serving adapter, because the adapter reads the provider
+// on each call. Here the swap goes empty-catalog -> primed-catalog mid-session.
+func TestAdapter_ReadsBrokerPerRequestSeesSwap(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	prov := &swapProvider{b: broker.NewSkeleton(catalog.NewMemory())}
+
+	serverT, clientT := mcpsdk.NewInMemoryTransports()
+	adapter := New(prov, "test", "")
+	go func() { _ = adapter.Server().Run(ctx, serverT) }()
+
+	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
+	cs, err := client.Connect(ctx, clientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+
+	// Before swap: empty catalog yields catalog_empty.
+	res, err := cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name:      "findTool",
+		Arguments: map[string]any{"query": "search confluence"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(findTool) before swap: %v", err)
+	}
+	if got := textPayload(t, res)["decision"]; got != "catalog_empty" {
+		t.Fatalf("before swap decision = %v, want catalog_empty", got)
+	}
+
+	// Swap in a primed catalog-backed broker, as a background provisioning pass would.
+	store := catalog.NewMemory()
+	_ = store.PutTool(context.Background(), catalog.Tool{
+		ToolRef:            "atlassian.confluence_search",
+		ServerID:           "atlassian",
+		DownstreamToolName: "confluence_search",
+		Title:              "Confluence Search",
+		Description:        "Search Confluence wiki",
+		ServerStatus:       catalog.ServerOnline,
+		CallableNow:        true,
+	})
+	prov.set(broker.NewLive(store, &config.Config{}, fakeLiveConnector{}, search.New(store, nil)))
+
+	// After swap: the same session now sees the primed broker.
+	res, err = cs.CallTool(context.Background(), &mcpsdk.CallToolParams{
+		Name:      "findTool",
+		Arguments: map[string]any{"query": "search confluence"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool(findTool) after swap: %v", err)
+	}
+	if got := textPayload(t, res)["decision"]; got != "use" {
+		t.Errorf("after swap decision = %v, want use (adapter must read broker per request)", got)
+	}
+}
+
 type fakeLiveConnector struct {
 	results []downstream.Result
 }
@@ -153,7 +233,7 @@ func connectLive(t *testing.T) *mcpsdk.ClientSession {
 	})
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewLive(store, &config.Config{}, fakeLiveConnector{}, search.New(store, nil)), "test", "")
+	adapter := New(StaticProvider(broker.NewLive(store, &config.Config{}, fakeLiveConnector{}, search.New(store, nil))), "test", "")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -200,7 +280,7 @@ func TestAdapter_FindToolReportsEmptyLiveDiscovery(t *testing.T) {
 	}}
 
 	serverT, clientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector, search.New(catalog.NewMemory(), nil)), "test", "")
+	adapter := New(StaticProvider(broker.NewLive(catalog.NewMemory(), &config.Config{}, emptyConnector, search.New(catalog.NewMemory(), nil))), "test", "")
 
 	go func() { _ = adapter.Server().Run(ctx, serverT) }()
 
@@ -289,7 +369,7 @@ func TestAdapter_IntegrationWithFixtureDownstreamServer(t *testing.T) {
 
 	// Wire the MCP adapter.
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test", "")
+	adapter := New(StaticProvider(liveBroker), "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
@@ -400,7 +480,7 @@ func TestAdapter_CallToolInvokesFixtureDownstreamAndNormalizesResult(t *testing.
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test", "")
+	adapter := New(StaticProvider(liveBroker), "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
@@ -491,7 +571,7 @@ func TestAdapter_CallToolStructuredResultCarriedOnceInContent(t *testing.T) {
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test", "")
+	adapter := New(StaticProvider(liveBroker), "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)
@@ -571,7 +651,7 @@ func TestAdapter_FindToolThenCallToolEndToEndWithoutIndex(t *testing.T) {
 	}, connector, search.New(catalog.NewMemory(), nil))
 
 	ozyServerT, ozyClientT := mcpsdk.NewInMemoryTransports()
-	adapter := New(liveBroker, "test", "")
+	adapter := New(StaticProvider(liveBroker), "test", "")
 	go func() { _ = adapter.Server().Run(ctx, ozyServerT) }()
 
 	client := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "0"}, nil)

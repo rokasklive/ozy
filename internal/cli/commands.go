@@ -34,22 +34,6 @@ func (a *app) initCmd() *cobra.Command {
 	}
 }
 
-func (a *app) daemonCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "daemon",
-		Short: "Run the Ozy daemon",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			d, ok := a.load()
-			if !ok {
-				return nil
-			}
-			ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-			defer stop()
-			return d.Run(ctx, a.errOut)
-		},
-	}
-}
-
 func (a *app) mcpCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "mcp",
@@ -61,10 +45,17 @@ func (a *app) mcpCmd() *cobra.Command {
 			}
 			ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 			defer stop()
-			adapter := ozymcp.New(d.Broker(), Version, mcpBreadcrumb(d.Config()))
-			// stdout carries the JSON-RPC stream, so diagnostics go to stderr only.
-			// A cancelled context (signal) or client disconnect (EOF) is a clean
-			// shutdown, not a failure.
+			// Self-provision the sidecar and conditionally index in the background
+			// so the MCP initialize handshake is never blocked by a cold model
+			// download: findTool serves the lexical baseline until the sidecar is
+			// ready, then upgrades in place (the adapter reads the broker per
+			// request). The sidecar's lifetime is bound to this connection.
+			go d.Start(ctx)
+			defer d.Shutdown()
+			adapter := ozymcp.New(d, Version, mcpBreadcrumb(d.Config()))
+			// stdout carries the JSON-RPC stream, so diagnostics go to the log file
+			// (and stderr) only. A cancelled context (signal) or client disconnect
+			// (EOF) is a clean shutdown, not a failure.
 			err := adapter.Serve(ctx)
 			if err != nil && ctx.Err() == nil && !errors.Is(err, io.EOF) {
 				fmt.Fprintln(a.errOut, "ozy mcp: "+err.Error())
@@ -101,9 +92,9 @@ func (a *app) indexCmd() *cobra.Command {
 				return nil
 			}
 			// Index provisions the sidecar and embeds when semantic is enabled —
-			// the same path the daemon uses — so the CLI never silently runs
+			// the same path the runtime uses — so the CLI never silently runs
 			// lexical-only. Shut the one-shot sidecar down before exiting.
-			summary := d.Index(context.Background(), a.errOut)
+			summary := d.Index(context.Background())
 			d.Shutdown()
 			a.emit(summary)
 			if !summary.OK {
@@ -144,9 +135,16 @@ func (a *app) searchCmd() *cobra.Command {
 			if !ok {
 				return nil
 			}
+			// Provision the sidecar and conditionally index on demand so CLI search
+			// returns hybrid semantic results out of the box — identical to the MCP
+			// surface — then release the sidecar. Degrades to lexical if the sidecar
+			// cannot be provisioned. (list/describe/call stay catalog-only.)
+			ctx := context.Background()
+			d.Start(ctx)
+			defer d.Shutdown()
 			// FindTool encodes outcomes (including catalog_empty) as decisions,
 			// never Go errors, so this is always an exit-0 instructional result.
-			res, _ := d.Broker().FindTool(context.Background(), args[0])
+			res, _ := d.Broker().FindTool(ctx, args[0])
 			a.emit(res)
 			return nil
 		},

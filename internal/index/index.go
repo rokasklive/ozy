@@ -217,19 +217,21 @@ func (i *Indexer) Run(ctx context.Context, cfg *config.Config) *Summary {
 	}
 	if i.sink != nil && i.sink.Available() {
 		i.flushEmbeddings(ctx, summary, embedded)
-		// Loud-fail guard: semantic is enabled and the sidecar is available,
-		// yet the catalog holds tools while vector storage is empty. That is the
-		// silent "indexed-but-not-embedded" failure; report it rather than
-		// claiming success on an empty vector store.
-		if summary.ToolsIndexed > 0 && summary.VectorCount == 0 {
+		// Loud-fail guard: semantic is enabled and the sidecar is available, yet
+		// the catalog holds more tools than the vector store has queryable
+		// vectors. That is the silent "indexed-but-not-embedded" (or partially
+		// embedded) failure; report it rather than claiming success on an
+		// incomplete vector store. Firing on undercount, not only on exactly
+		// zero, catches the stale-partial-embed case.
+		if summary.ToolsIndexed > 0 && summary.VectorCount < summary.ToolsIndexed {
 			summary.OK = false
 			summary.Errors = append(summary.Errors, contract.Error{
 				Type:             contract.ErrTypeSemanticSearchUnavailable,
 				Retryable:        true,
-				Message:          fmt.Sprintf("semantic search is enabled and the sidecar is available, but %d indexed tools produced zero queryable vectors", summary.ToolsIndexed),
+				Message:          fmt.Sprintf("semantic search is enabled and the sidecar is available, but only %d of %d indexed tools are queryable as vectors", summary.VectorCount, summary.ToolsIndexed),
 				AgentInstruction: "Run `ozy doctor` to check the embedding sidecar, then re-run `ozy index`. Lexical search still serves from the catalog.",
 			})
-			summary.AgentInstruction = "Semantic search is enabled but no tools were embedded. Run `ozy doctor`, then re-run `ozy index`."
+			summary.AgentInstruction = "Semantic search is enabled but some indexed tools are not embedded. Run `ozy doctor`, then re-run `ozy index`."
 		}
 	}
 	return summary

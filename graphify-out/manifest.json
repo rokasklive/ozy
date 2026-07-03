@@ -45,23 +45,23 @@
     "semantic_hash": "56799453c41b7c2e195eae2936b21980"
   },
   "internal/cli/cli.go": {
-    "mtime": 1781504607.4522383,
-    "ast_hash": "d0f56e5b3a30153ebe95002491c2f88e",
-    "semantic_hash": "d0f56e5b3a30153ebe95002491c2f88e"
+    "mtime": 1781953139.0120864,
+    "ast_hash": "032e243a3c8522471b3bd94cb75a26c6",
+    "semantic_hash": ""
   },
   "internal/cli/cli_test.go": {
-    "mtime": 1781700682.7378516,
-    "ast_hash": "d3d5c78a8a1b58656cf6239ae43a08d6",
+    "mtime": 1781954355.7433352,
+    "ast_hash": "8be7be02de20eb42f0dd06a97aec8d23",
     "semantic_hash": ""
   },
   "internal/cli/commands.go": {
-    "mtime": 1781700432.8325524,
-    "ast_hash": "7c41b38f64ec0aff6fa0ad24a0102d89",
+    "mtime": 1781953166.5927587,
+    "ast_hash": "272a931475de224a0b368e1c081690be",
     "semantic_hash": ""
   },
   "internal/cli/doctor.go": {
-    "mtime": 1781698689.1631668,
-    "ast_hash": "c844fa0114a9422fc2baf6ef36ec9d27",
+    "mtime": 1781953236.1580083,
+    "ast_hash": "7e1daa7b7e5cc70f45d74f529b5610b7",
     "semantic_hash": ""
   },
   "internal/config/config.go": {
@@ -100,13 +100,13 @@
     "semantic_hash": "8cea3691353ecfcda202b2b43768a10f"
   },
   "internal/daemon/daemon.go": {
-    "mtime": 1781698689.163695,
-    "ast_hash": "d26b07c69e3f95b011538c37e3ba4e57",
+    "mtime": 1781953070.5276122,
+    "ast_hash": "1bc27a863f929d43fc07576217aa4b2d",
     "semantic_hash": ""
   },
   "internal/daemon/daemon_test.go": {
-    "mtime": 1781698689.1639144,
-    "ast_hash": "19670e864b31c8490d4f4d296ed2ce47",
+    "mtime": 1781953437.0023687,
+    "ast_hash": "6f4ac60fb1b02bdb85c3a7939cd81b56",
     "semantic_hash": ""
   },
   "internal/downstream/connector.go": {
@@ -120,23 +120,23 @@
     "semantic_hash": ""
   },
   "internal/index/index.go": {
-    "mtime": 1781698689.1650395,
-    "ast_hash": "b190ea6dc5a4e0671b13dc1d116104f3",
+    "mtime": 1781953209.4704187,
+    "ast_hash": "da78689ab28fadb53e108b766a852b42",
     "semantic_hash": ""
   },
   "internal/index/index_test.go": {
-    "mtime": 1781698689.165267,
-    "ast_hash": "7a76d0d86886899380126a8a1b326e14",
+    "mtime": 1781953644.610779,
+    "ast_hash": "967e15ee6ebe9affdfac3b4e833247cc",
     "semantic_hash": ""
   },
   "internal/mcp/adapter.go": {
-    "mtime": 1781700547.0671103,
-    "ast_hash": "e718fdb4d8d58fbef3b05a93eebb2b0e",
+    "mtime": 1781953095.1250875,
+    "ast_hash": "330084185bd5e48062218daf55dbdac5",
     "semantic_hash": ""
   },
   "internal/mcp/adapter_test.go": {
-    "mtime": 1781700564.2414036,
-    "ast_hash": "5141dc7f11cf18a7729fbd91b3f0b709",
+    "mtime": 1781953478.93373,
+    "ast_hash": "d327e57b590daa83ad7846a081f199de",
     "semantic_hash": ""
   },
   "internal/render/render.go": {
@@ -165,9 +165,9 @@
     "semantic_hash": "4781511e3f5a54e3e95af483232a85ef"
   },
   "README.md": {
-    "mtime": 1781510258.6472864,
-    "ast_hash": "870fa8f131fc8c573233b134e9d603ed",
-    "semantic_hash": "870fa8f131fc8c573233b134e9d603ed"
+    "mtime": 1781954083.9645977,
+    "ast_hash": "385be7b936d09e39abb75e4425421e1a",
+    "semantic_hash": ""
   },
   "SPEC.md": {
     "mtime": 1781510258.6478643,
@@ -745,8 +745,8 @@
     "semantic_hash": "556233768f2ee6f610562b7080381352"
   },
   "internal/eval/parity.go": {
-    "mtime": 1781700661.9087932,
-    "ast_hash": "6518a63e04685d54f3ca7ae8cfae6124",
+    "mtime": 1781953247.1598856,
+    "ast_hash": "c36b021f7726e0c55abbd53e7832db75",
     "semantic_hash": ""
   },
   "internal/eval/perf_test.go": {
@@ -1250,8 +1250,8 @@
     "semantic_hash": ""
   },
   "internal/bench/mcp.go": {
-    "mtime": 1781698689.160873,
-    "ast_hash": "98413bc24b27ce065b9133363daa2f8c",
+    "mtime": 1781701410.959855,
+    "ast_hash": "a80f0b42810868a48de9b3ef3d193984",
     "semantic_hash": ""
   },
   "internal/bench/mcp_test.go": {
@@ -1355,8 +1355,8 @@
     "semantic_hash": ""
   },
   "internal/cli/doctor_test.go": {
-    "mtime": 1781698689.1634767,
-    "ast_hash": "98fe8c2e9260ea2ed2bd1979f1f13b16",
+    "mtime": 1781953572.870173,
+    "ast_hash": "b5026036608405b7019f680506fb0fb8",
     "semantic_hash": ""
   },
   "openspec/changes/semantic-search-robustness/.openspec.yaml": {
@@ -1415,8 +1415,8 @@
     "semantic_hash": ""
   },
   "internal/mcp/breadcrumb_test.go": {
-    "mtime": 1781700596.4723623,
-    "ast_hash": "4dfb23c901b91c0ede01d4553916fd21",
+    "mtime": 1781953571.532043,
+    "ast_hash": "6152cd60fa69f506315c3ac85d72929b",
     "semantic_hash": ""
   },
   "internal/schema/schema.go": {
@@ -1465,8 +1465,58 @@
     "semantic_hash": ""
   },
   "openspec/changes/broker-response-guardrails/tasks.md": {
-    "mtime": 1781700747.962514,
-    "ast_hash": "63262870bb6804a598656ca02837acf4",
+    "mtime": 1781701274.726067,
+    "ast_hash": "9b7e631967d06b325c2d3a398cd5ea78",
+    "semantic_hash": ""
+  },
+  "internal/cli/logging.go": {
+    "mtime": 1781954026.2619045,
+    "ast_hash": "29eb360fa8f407047b56c6c42136a87e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/.openspec.yaml": {
+    "mtime": 1781951640.7029917,
+    "ast_hash": "7a86170687cf7c283ea92402da648fc1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/design.md": {
+    "mtime": 1781952481.0626051,
+    "ast_hash": "68b02c9e75239e091177d20912f8f456",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/proposal.md": {
+    "mtime": 1781952443.2312984,
+    "ast_hash": "f72918de8754c49d269acb580b3c5657",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/specs/cli-interface/spec.md": {
+    "mtime": 1781952455.9293785,
+    "ast_hash": "2ef765b0b8e4e274214e8b2ac7d8d36c",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/specs/daemon-runtime/spec.md": {
+    "mtime": 1781951951.4573812,
+    "ast_hash": "06a5f31153914e6ca41f877dba79eb4d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/specs/embedding-sidecar/spec.md": {
+    "mtime": 1781951959.8233962,
+    "ast_hash": "1bbd5a9d5a9242b411414156c4641f75",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/specs/mcp-adapter/spec.md": {
+    "mtime": 1781951935.5243423,
+    "ast_hash": "574645ecee76e0707578305d391177b5",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/specs/runtime-logging/spec.md": {
+    "mtime": 1781951962.4837086,
+    "ast_hash": "de8fa3dfb3a44c0216308b91c2123cb1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/zero-touch-lifecycle/tasks.md": {
+    "mtime": 1781954389.438637,
+    "ast_hash": "8e3f0518378270caa470b7669a1126b8",
     "semantic_hash": ""
   }
 }

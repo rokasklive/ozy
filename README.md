@@ -62,11 +62,18 @@ It is dry-run-first, consent-based, and safe to rerun. Then:
 # 1. Declare your downstream MCP servers in your ozy.jsonc
 #    (copy-paste your existing mcp.json entries — the shape is opencode-compatible)
 
-# 2. Index, then run
-ozy index                # connect, discover, persist the catalog
-ozy search "confluence"  # find the right tool
-ozy mcp                  # expose Ozy to your agent
+# 2. Point your agent at `ozy mcp` — that's the only step.
+#    On start it self-provisions: indexes, embeds, and serves hybrid semantic
+#    search. No separate index/daemon command, no sidecar to manage.
+ozy mcp                  # expose Ozy to your agent (auto-indexes + embeds)
+
+# Optional terminal use — also zero-setup:
+ozy search "confluence"  # find a tool (provisions embeddings on demand)
 ```
+
+The first-ever start downloads a small embedding model (one time); later starts
+are fast. Ozy writes structured logs to a `logs/` directory next to your
+`ozy.jsonc` (e.g. `~/.config/ozy/logs/ozy.log`).
 
 Prefer to manage the binary yourself? Install it directly and scaffold a config:
 
@@ -84,14 +91,13 @@ kept unless you pass `--purge`.
 
 ```bash
 ozy init                       # scaffold a starter config
-ozy doctor                     # diagnose config, env, catalog, and server health
-ozy index                      # connect to MCP servers and persist tools
-ozy list                       # list indexed tools
-ozy search "search confluence wiki"
+ozy mcp                        # serve to your agent — self-provisions + indexes + embeds
+ozy search "search confluence wiki"   # find a tool (provisions on demand)
 ozy describe atlassian.confluence_search
 ozy call  atlassian.confluence_search --json '{"query":"billing migration","limit":5}'
-ozy daemon                     # run the daemon
-ozy mcp                        # serve the MCP adapter over stdio
+ozy list                       # list indexed tools
+ozy index                      # (optional) force a catalog + embedding refresh
+ozy doctor                     # (optional) diagnose config, env, catalog, embedding health
 ozy eval run                   # run the eval suite over the committed corpus
 ozy uninstall                  # remove Ozy (plan-first; keeps config unless --purge)
 ```
@@ -167,12 +173,14 @@ Add Ozy to your agent's MCP config:
 }
 ```
 
-On startup `ozy mcp` loads `~/.config/ozy/ozy.jsonc`. When the agent calls
-`findTool`, Ozy connects to every enabled downstream server, runs `tools/list`,
-and returns stable `toolRef`s (e.g. `atlassian.confluence_search`) with
-`title`, `description`, and `inputSchema`. The agent then calls `callTool`
-with that `toolRef` and the arguments from the candidate's `inputSchema` —
-no `ozy index` required beforehand.
+On startup `ozy mcp` loads `~/.config/ozy/ozy.jsonc` and self-provisions in the
+background: it brings up the embedding sidecar and indexes the catalog without
+blocking the MCP handshake, so `findTool` answers immediately (lexical at first,
+upgrading to hybrid semantic once embeddings are ready). The sidecar's lifetime
+is bound to the connection — it shuts down when your agent does. When the agent
+calls `findTool`, Ozy returns stable `toolRef`s (e.g. `atlassian.confluence_search`)
+with `title`, `description`, and `inputSchema`; the agent then calls `callTool`
+with that `toolRef` — no `ozy index` or `ozy daemon` required beforehand.
 
 ## The three tools
 

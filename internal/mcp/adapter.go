@@ -72,22 +72,40 @@ const (
 		"live downstream server."
 )
 
-// Adapter serves the Ozy MCP tools by delegating to a shared broker.
+// BrokerProvider yields the current shared broker. The adapter reads it per
+// request rather than capturing it once, so a background sidecar provisioning
+// pass that swaps the runtime's broker (lexical -> hybrid) is seen immediately
+// without reconstructing the adapter. *daemon.Daemon satisfies this.
+type BrokerProvider interface {
+	Broker() broker.Broker
+}
+
+// staticProvider wraps a fixed broker for callers and tests that do not swap.
+type staticProvider struct{ b broker.Broker }
+
+func (s staticProvider) Broker() broker.Broker { return s.b }
+
+// StaticProvider adapts a fixed broker to a BrokerProvider for callers that
+// never swap (evals, tests).
+func StaticProvider(b broker.Broker) BrokerProvider { return staticProvider{b} }
+
+// Adapter serves the Ozy MCP tools by delegating to a shared broker read from
+// the provider on each call.
 type Adapter struct {
-	broker          broker.Broker
+	provider        BrokerProvider
 	version         string
 	findDescription string
 }
 
-// New returns an MCP adapter backed by the given broker. A non-empty breadcrumb
-// (see Breadcrumb) is appended to the findTool description so the agent sees the
-// available downstream servers before its first call.
-func New(b broker.Broker, version, breadcrumb string) *Adapter {
+// New returns an MCP adapter backed by the given broker provider. A non-empty
+// breadcrumb (see Breadcrumb) is appended to the findTool description so the
+// agent sees the available downstream servers before its first call.
+func New(p BrokerProvider, version, breadcrumb string) *Adapter {
 	desc := OzyFindDescription
 	if breadcrumb != "" {
 		desc += "\n\n" + breadcrumb
 	}
-	return &Adapter{broker: b, version: version, findDescription: desc}
+	return &Adapter{provider: p, version: version, findDescription: desc}
 }
 
 type findInput struct {
@@ -139,12 +157,12 @@ func (a *Adapter) Serve(ctx context.Context) error {
 }
 
 func (a *Adapter) handleFind(ctx context.Context, _ *mcpsdk.CallToolRequest, in findInput) (*mcpsdk.CallToolResult, any, error) {
-	res, _ := a.broker.FindTool(ctx, in.Query)
+	res, _ := a.provider.Broker().FindTool(ctx, in.Query)
 	return jsonResult(res, false), nil, nil
 }
 
 func (a *Adapter) handleDescribe(ctx context.Context, _ *mcpsdk.CallToolRequest, in describeInput) (*mcpsdk.CallToolResult, any, error) {
-	res, err := a.broker.DescribeTool(ctx, in.ToolRef)
+	res, err := a.provider.Broker().DescribeTool(ctx, in.ToolRef)
 	if err != nil {
 		return jsonResult(contract.NewErrorEnvelope(asContractError(err)), true), nil, nil
 	}
@@ -152,7 +170,7 @@ func (a *Adapter) handleDescribe(ctx context.Context, _ *mcpsdk.CallToolRequest,
 }
 
 func (a *Adapter) handleCall(ctx context.Context, _ *mcpsdk.CallToolRequest, in callInput) (*mcpsdk.CallToolResult, any, error) {
-	res, err := a.broker.CallTool(ctx, in.ToolRef, in.Arguments)
+	res, err := a.provider.Broker().CallTool(ctx, in.ToolRef, in.Arguments)
 	if err != nil {
 		return jsonResult(contract.NewErrorEnvelope(asContractError(err)), true), nil, nil
 	}

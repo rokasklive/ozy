@@ -187,6 +187,7 @@ func (a *app) runDoctor() *contract.DoctorResult {
 		res.AgentInstruction = "Set the missing environment variables, then re-run `ozy doctor`."
 	}
 
+	catalogTotal := 0
 	toolCounts, err := indexedToolCounts()
 	if err != nil {
 		res.OK = false
@@ -196,14 +197,13 @@ func (a *app) runDoctor() *contract.DoctorResult {
 			Detail: fmt.Sprintf("could not read catalog: %v", err),
 		})
 	} else {
-		total := 0
 		for _, count := range toolCounts {
-			total += count
+			catalogTotal += count
 		}
 		res.Checks = append(res.Checks, contract.DoctorCheck{
 			Name:   "catalog",
 			Status: contract.CheckOK,
-			Detail: fmt.Sprintf("%d indexed tools", total),
+			Detail: fmt.Sprintf("%d indexed tools", catalogTotal),
 		})
 	}
 
@@ -233,16 +233,18 @@ func (a *app) runDoctor() *contract.DoctorResult {
 	// embedding check gets a generous ceiling; the probe's own liveness step
 	// still fails fast on a dead sidecar.
 	embCtx, embCancel := context.WithTimeout(context.Background(), sidecar.DefaultProvisionTimeout)
-	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector))
+	res.Checks = append(res.Checks, embeddingCheck(embCtx, sidecarInspector, catalogTotal))
 	embCancel()
 
 	return res
 }
 
 // embeddingCheck turns a SidecarStatus into one DoctorCheck. The check is OK
-// when the sidecar is up; WARN otherwise (the user is still served lexical
-// search — degradation is the supported safety net, not a failure).
-func embeddingCheck(ctx context.Context, inspector SidecarInspector) contract.DoctorCheck {
+// when the sidecar is up AND vector coverage matches the catalog; WARN otherwise
+// (the user is still served lexical search — degradation is the supported safety
+// net, not a failure). catalogTotal is the catalog tool count for the coverage
+// cross-check.
+func embeddingCheck(ctx context.Context, inspector SidecarInspector, catalogTotal int) contract.DoctorCheck {
 	if inspector == nil {
 		return contract.DoctorCheck{
 			Name:   "embedding",
@@ -258,10 +260,20 @@ func embeddingCheck(ctx context.Context, inspector SidecarInspector) contract.Do
 			Detail: "semantic unavailable (lexical-only)" + reasonSuffix(st.Reason),
 		}
 	}
+	// Coverage cross-check: the sidecar is up, but if the catalog holds more
+	// tools than the vector store has vectors, semantic results are partial or
+	// stale. Surface it rather than reporting two independently green checks.
+	if catalogTotal > 0 && st.VectorCount < catalogTotal {
+		return contract.DoctorCheck{
+			Name:   "embedding",
+			Status: contract.CheckWarn,
+			Detail: fmt.Sprintf("partial embedding coverage: %d vectors for %d catalog tools — run `ozy index` to rebuild", st.VectorCount, catalogTotal),
+		}
+	}
 	return contract.DoctorCheck{
 		Name:   "embedding",
 		Status: contract.CheckOK,
-		Detail: fmt.Sprintf("ready; backend=%s model=%s dim=%d indexed_tools=%d", st.Backend, st.Model, st.Dim, st.ToolCount),
+		Detail: fmt.Sprintf("ready; backend=%s model=%s dim=%d vectors=%d catalog_tools=%d", st.Backend, st.Model, st.Dim, st.VectorCount, catalogTotal),
 	}
 }
 

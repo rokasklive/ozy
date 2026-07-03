@@ -92,6 +92,15 @@ func (s *skeleton) DescribeTool(ctx context.Context, toolRef string) (*contract.
 		Title:       tool.Title,
 		Description: tool.Description,
 		InputSchema: tool.InputSchema,
+		// The tool description promises a recommended call shape, so deliver
+		// one: a callTool skeleton typed from the schema's required fields.
+		RecommendedCall: &contract.RecommendedCall{
+			Tool: "callTool",
+			Arguments: map[string]any{
+				"toolRef":   tool.ToolRef,
+				"arguments": argumentSkeleton(tool.InputSchema),
+			},
+		},
 		Status: &contract.ToolStatus{
 			CallableNow:      tool.CallableNow,
 			ServerStatus:     string(tool.ServerStatus),

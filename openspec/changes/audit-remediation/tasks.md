@@ -32,10 +32,10 @@ Prerequisite (separate change, do first): recover `zero-touch-lifecycle` from `g
 
 ## 5. Adapter honesty (D8, D9)
 
-- [ ] 5.1 Fix `handleFind`: broker error → §9.3 error envelope with `isError: true` (mirror `handleDescribe`); test that content is never `null`
-- [ ] 5.2 Set MCP `ServerOptions.Instructions` at server construction: when-to-use guidance + breadcrumb (honor `surface.capabilityBreadcrumb`); test presence and breadcrumb toggle
-- [ ] 5.3 Populate `DescribeResult.RecommendedCall` from the cataloged schema's required fields; trim `OzyDescribeDescription` to promise only delivered fields; test recommendedCall present
-- [ ] 5.4 Remove never-emitted surface: `DecisionChooseFromCandidates`, `DecisionKnownButUnavailable`, `ErrTypeResultTruncated` from `internal/contract`; mark `TOOL_SCHEMA_CHANGED` as reserved (not yet emitted) in SPEC §9; fix the stale `ConnectAll powers FindTool` comment in `internal/broker/live.go`
+- [x] 5.1 Fix `handleFind`: broker error → §9.3 error envelope with `isError: true`; non-contract failures synthesized as `CONFIG_ERROR` (a find failure is local, not downstream); test asserts never-`null`
+- [x] 5.2 Set MCP `ServerOptions.Instructions` (`OzyServerInstructions` + breadcrumb when enabled); tests cover presence and breadcrumb toggle (`internal/mcp/honesty_test.go`)
+- [x] 5.3 Populate `DescribeResult.RecommendedCall` (typed skeleton from required fields); trimmed `OzyDescribeDescription` to promise only delivered fields (`describe_recommended_test.go`)
+- [x] 5.4 Removed `DecisionChooseFromCandidates`, `DecisionKnownButUnavailable`, `ErrTypeResultTruncated` from `internal/contract` (+ eval `knownDecision` trimmed); `TOOL_SCHEMA_CHANGED` marked reserved in the constant doc (SPEC §9 pass lands in 8.2); fixed stale `ConnectAll powers FindTool` comment
 
 ## 6. Cache visibility (D10)
 

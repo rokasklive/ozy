@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// Decision values for findTool (SPEC.md §9.1). They are explicit so an agent can
-// branch on intent rather than parsing prose.
+// Decision values for findTool (SPEC.md §9.1). They are explicit so an agent
+// can branch on intent rather than parsing prose. Every value listed here is
+// emittable by the live broker — advertised-but-unreachable states are the
+// lying-interface failure this contract exists to prevent.
 const (
-	DecisionUse                  = "use"
-	DecisionChooseFromCandidates = "choose_from_candidates"
-	DecisionKnownButUnavailable  = "known_but_unavailable"
-	DecisionNoGoodMatch          = "no_good_match"
-	DecisionAmbiguous            = "ambiguous"
-	DecisionCatalogEmpty         = "catalog_empty"
+	DecisionUse          = "use"
+	DecisionNoGoodMatch  = "no_good_match"
+	DecisionAmbiguous    = "ambiguous"
+	DecisionCatalogEmpty = "catalog_empty"
 )
 
 // CatalogStats is lightweight catalog health surfaced when it affects confidence.
@@ -70,9 +70,9 @@ type Alternative struct {
 	Reason  string `json:"reason,omitempty"`
 }
 
-// Candidate is a live-discovered downstream tool surfaced in a findTool
-// choose_from_candidates response. Each candidate carries enough metadata for an
-// agent to select and call describeTool.
+// Candidate is a close-match tool surfaced in a findTool ambiguous response.
+// Each candidate carries enough metadata — including its full input schema —
+// for the agent to compare the candidates and invoke the chosen one directly.
 type Candidate struct {
 	ToolRef            string         `json:"toolRef"`
 	ServerID           string         `json:"serverId"`

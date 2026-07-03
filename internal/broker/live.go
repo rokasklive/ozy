@@ -17,9 +17,10 @@ import (
 	"github.com/rokasklive/ozy/internal/search"
 )
 
-// Connector is the downstream seam used by the live broker. ConnectAll powers
-// FindTool; Connect is the single-server connection used by CallTool so only
-// the target server is contacted for a single invocation.
+// Connector is the downstream seam used by the live broker. FindTool never
+// connects downstream — it ranks the persistent catalog; ConnectAll serves
+// indexing and doctor. Connect is the single-server connection used by
+// CallTool so only the target server is contacted for a single invocation.
 type Connector interface {
 	ConnectAll(ctx context.Context, cfg *config.Config) []downstream.Result
 	Connect(ctx context.Context, serverID string, server config.ServerConfig) downstream.Result

@@ -5,7 +5,6 @@
     "filesystem": {
       "type": "local",
       "command": ["filesystem-mcp", "--root", "."],
-      "cwd": "/path/to/workspace",
       "environment": {
         "OZY_ROOT": "{env:OZY_ROOT}"
       },

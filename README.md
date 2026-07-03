@@ -48,39 +48,49 @@ Ozy fixes that by acting as a single, brokered entry point:
 
 ## Quick start
 
-The one-line bootstrap inspects your machine, prints a plan (nothing changes
-until you confirm), then installs the `ozy` binary, writes a starter config,
-provisions the embedding sidecar, and puts `ozy` on your `PATH`:
-
-```bash
-go run github.com/rokasklive/ozy/cmd/ozy-install@latest
-```
-
-It is dry-run-first, consent-based, and safe to rerun. Then:
-
-```bash
-# 1. Declare your downstream MCP servers in your ozy.jsonc
-#    (copy-paste your existing mcp.json entries — the shape is opencode-compatible)
-
-# 2. Point your agent at `ozy mcp` — that's the only step.
-#    On start it self-provisions: indexes, embeds, and serves hybrid semantic
-#    search. No separate index/daemon command, no sidecar to manage.
-ozy mcp                  # expose Ozy to your agent (auto-indexes + embeds)
-
-# Optional terminal use — also zero-setup:
-ozy search "confluence"  # find a tool (provisions embeddings on demand)
-```
-
-The first-ever start downloads a small embedding model (one time); later starts
-are fast. Ozy writes structured logs to a `logs/` directory next to your
-`ozy.jsonc` (e.g. `~/.config/ozy/logs/ozy.log`).
-
-Prefer to manage the binary yourself? Install it directly and scaffold a config:
+1. Install Ozy:
 
 ```bash
 go install github.com/rokasklive/ozy/cmd/ozy@latest
+```
+
+2. Scaffold the default config:
+
+```bash
 ozy init
 ```
+
+3. Add Ozy to your opencode MCP config:
+
+```jsonc
+{
+  "mcp": {
+    "ozy": {
+      "type": "local",
+      "command": ["ozy", "mcp"]
+    }
+  }
+}
+```
+
+4. Add your downstream MCP servers to `~/.config/ozy/ozy.jsonc`, keeping the
+   same opencode-compatible `mcp` shape.
+
+5. Build the catalog:
+
+```bash
+ozy index
+```
+
+6. Verify health:
+
+```bash
+ozy doctor
+```
+
+`ozy doctor` verifies config, catalog, and embedding-sidecar health. Missing
+infrastructure such as `uvx` usually surfaces there with a repair-oriented
+error.
 
 To remove Ozy, run `ozy uninstall` (or
 `go run github.com/rokasklive/ozy/cmd/ozy-install@latest uninstall`). It is
@@ -94,7 +104,7 @@ ozy init                       # scaffold a starter config
 ozy mcp                        # serve to your agent — self-provisions + indexes + embeds
 ozy search "search confluence wiki"   # find a tool (provisions on demand)
 ozy describe atlassian.confluence_search
-ozy call  atlassian.confluence_search --json '{"query":"billing migration","limit":5}'
+ozy call  atlassian.confluence_search --json '{"query":"crm migration","limit":5}'
 ozy list                       # list indexed tools
 ozy index                      # (optional) force a catalog + embedding refresh
 ozy doctor                     # (optional) diagnose config, env, catalog, embedding health
@@ -102,9 +112,8 @@ ozy eval run                   # run the eval suite over the committed corpus
 ozy uninstall                  # remove Ozy (plan-first; keeps config unless --purge)
 ```
 
-Install and removal run through a separate bootstrap so they work before `ozy`
-exists: `go run github.com/rokasklive/ozy/cmd/ozy-install@latest` to set up, and
-`… /cmd/ozy-install@latest uninstall` (or `ozy uninstall`) to remove.
+For a plan-first bootstrap installer, run
+`go run github.com/rokasklive/ozy/cmd/ozy-install@latest`.
 
 Every command accepts a global `--format` flag: `human` (default), `json`
 (single machine-readable document for agents and evals), or `concise`.
@@ -127,7 +136,6 @@ in unchanged.
     "filesystem": {
       "type": "local",
       "command": ["filesystem-mcp", "--root", "."],
-      "cwd": "/path/to/workspace",
       "environment": { "OZY_ROOT": "{env:OZY_ROOT}" },
       "enabled": true,
       "timeout": 5000,        // discovery/connect budget (ms) used when indexing
@@ -167,24 +175,16 @@ Add Ozy to your agent's MCP config:
   "mcp": {
     "ozy": {
       "type": "local",
-      "command": ["ozy", "mcp"],
-      "cwd": "/path/to/your/project"
+      "command": ["ozy", "mcp"]
     }
   }
 }
 ```
 
-On startup `ozy mcp` loads `~/.config/ozy/ozy.jsonc` and self-provisions in the
-background: it brings up the embedding sidecar and indexes the catalog without
-blocking the MCP handshake, so `findTool` answers immediately (lexical at first,
-upgrading to hybrid semantic once embeddings are ready). The sidecar's lifetime
-is bound to the connection — it shuts down when your agent does. When the agent
-calls `findTool`, Ozy returns a ranked decision over the indexed catalog with a
-stable `toolRef` (e.g. `atlassian.confluence_search`); small input schemas are
-inlined so the agent can go straight to `callTool`, larger ones are one
-`describeTool` away — no `ozy index` or `ozy daemon` required beforehand.
-Tool calls run under a per-server `callTimeout` (default 60s), separate from
-the 5s discovery timeout, and truncated or cached results say so in-band.
+On startup `ozy mcp` loads `~/.config/ozy/ozy.jsonc` and serves the indexed tool
+catalog through three stable tools. Run `ozy index` after changing downstream
+MCP entries, and use `ozy doctor` to catch config, catalog, and embedding
+sidecar issues before connecting your agent.
 
 ## The three tools
 

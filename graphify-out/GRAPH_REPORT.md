@@ -1,16 +1,16 @@
 # Graph Report - ozy  (2026-07-03)
 
 ## Corpus Check
-- 298 files · ~262,926 words
+- 298 files · ~262,770 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4547 nodes · 7000 edges · 305 communities (288 shown, 17 thin omitted)
+- 4547 nodes · 7000 edges · 306 communities (289 shown, 17 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 708 edges (avg confidence: 0.77)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e2b3c9ce`
+- Built from commit: `67c003c0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -314,6 +314,7 @@
 - [[_COMMUNITY_Community 302|Community 302]]
 - [[_COMMUNITY_Community 303|Community 303]]
 - [[_COMMUNITY_Community 304|Community 304]]
+- [[_COMMUNITY_Community 305|Community 305]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `NewMemory()` - 65 edges
@@ -362,7 +363,7 @@
 - **CI pipeline composition: build-test + cross-platform installer + lint** — workflows_ci_workflow, workflows_ci_build_test_job, workflows_ci_installer_job, workflows_ci_lint_job [EXTRACTED 1.00]
 - **Ozy Mascot Visual Design Composition** — assets_ozy_bear_character, assets_ozy_pixel_art_style, assets_ozy_wire_glasses, assets_ozy_brown_jacket, assets_ozy_striped_shirt, assets_ozy_grumpy_expression [EXTRACTED 0.95]
 
-## Communities (305 total, 17 thin omitted)
+## Communities (306 total, 17 thin omitted)
 
 ### Community 0 - "Installer & Uninstaller"
 Cohesion: 0.06
@@ -541,8 +542,8 @@ Cohesion: 0.15
 Nodes (16): firstAcceptableRank(), isWrongServerPick(), opToken(), rankedRefs(), RunDiscovery(), splitRef(), discoveryAcc, DiscoveryMetrics (+8 more)
 
 ### Community 44 - "Module Cluster 44"
-Cohesion: 0.16
-Nodes (13): max3(), ozyToolDefs(), RunTokenEconomy(), TestRunTokenEconomy(), TestTokenEstimatorIsSwappable(), toolSchemaDoc(), fixedEstimator, TokenEconomyMetrics (+5 more)
+Cohesion: 0.29
+Nodes (9): max3(), ozyToolDefs(), RunTokenEconomy(), toolSchemaDoc(), TokenEconomyMetrics, CatalogTool, Context, Corpus (+1 more)
 
 ### Community 45 - "Module Cluster 45"
 Cohesion: 0.20
@@ -609,8 +610,8 @@ Cohesion: 0.21
 Nodes (8): CacheConfig, cloneConfig(), cloneServerConfig(), cloneStringMap(), ServerConfig, serverConfigJSON, Duration, RawMessage
 
 ### Community 61 - "Module Cluster 61"
-Cohesion: 0.15
-Nodes (25): asContractErr(), callWithModeling(), corpusConfig(), errorIsClear(), isNonAmplifying(), newCorpusBroker(), RunInvocation(), scoreInvocation() (+17 more)
+Cohesion: 0.18
+Nodes (18): asContractErr(), callWithModeling(), corpusConfig(), errorIsClear(), isNonAmplifying(), newCorpusBroker(), RunInvocation(), scoreInvocation() (+10 more)
 
 ### Community 62 - "Module Cluster 62"
 Cohesion: 0.24
@@ -1258,7 +1259,7 @@ Nodes (7): TestFindTool_AmbiguousCarriesNextAction(), TestFindTool_NoGoodMatchCa
 
 ### Community 238 - "Community 238"
 Cohesion: 0.33
-Nodes (6): Requirements, Requirement: Actionable errors, Requirement: Success summary and MCP handoff, Scenario: Doctor run before summary, Scenario: Failure is descriptive, Scenario: Summary and handoff printed
+Nodes (6): Requirements, Requirement: Actionable errors, Requirement: Dry-run-first default behavior, Scenario: Decline leaves system untouched, Scenario: Failure is descriptive, Scenario: Plan shown before any change
 
 ### Community 239 - "Community 239"
 Cohesion: 0.40
@@ -1337,8 +1338,8 @@ Cohesion: 0.67
 Nodes (3): Requirement: Dependency report, Scenario: Optional dependency absent, Scenario: Required dependency missing
 
 ### Community 260 - "Community 260"
-Cohesion: 0.67
-Nodes (3): Requirement: Dry-run-first default behavior, Scenario: Decline leaves system untouched, Scenario: Plan shown before any change
+Cohesion: 0.22
+Nodes (11): TestRunTokenEconomy(), TestTokenEstimatorIsSwappable(), fixedEstimator, mustLoad(), TestInvocationOfflineIsNonAmplifying(), TestInvocationRepairLoop(), TestInvocationSchemaDriftDetected(), TestRunInvocationEmbedded() (+3 more)
 
 ### Community 261 - "Community 261"
 Cohesion: 0.67
@@ -1491,6 +1492,10 @@ Nodes (4): properties(), required(), typeMatches(), Validate()
 ### Community 304 - "Community 304"
 Cohesion: 0.83
 Nodes (3): T, reasonTermList(), TestRankTools_ReasonPrefersHighSignalTerms()
+
+### Community 305 - "Community 305"
+Cohesion: 0.67
+Nodes (3): Requirement: Success summary and MCP handoff, Scenario: Doctor run before summary, Scenario: Summary and handoff printed
 
 ## Ambiguous Edges - Review These
 - `Eval command runs the eval suite` → `eval harness (external, runs ozy eval run)`  [AMBIGUOUS]

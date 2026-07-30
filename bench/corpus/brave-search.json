@@ -1,0 +1,115 @@
+{
+  "server": "brave-search",
+  "mirrorSource": "synthesized (near-miss for the canonical duckduckgo search)",
+  "tools": [
+    {
+      "name": "image_search",
+      "description": "Search for images matching a query.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Number of images.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Image search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "local_search",
+      "description": "Search for local businesses and points of interest.",
+      "inputSchema": {
+        "properties": {
+          "location": {
+            "description": "Location to search near.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Local query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "news_search",
+      "description": "Search recent news articles.",
+      "inputSchema": {
+        "properties": {
+          "freshness": {
+            "description": "Recency window.",
+            "type": "string"
+          },
+          "query": {
+            "description": "News query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "video_search",
+      "description": "Search for videos matching a query.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Number of videos.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Video query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "web_search",
+      "description": "Search the web and return ranked results with titles, URLs, and descriptions.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Number of results.",
+            "type": "integer"
+          },
+          "country": {
+            "description": "Country code for localization.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    }
+  ]
+}

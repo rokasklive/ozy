@@ -1,0 +1,146 @@
+{
+  "server": "climate-analytics",
+  "mirrorSource": "synthesized (near-miss for the canonical weather historical data)",
+  "tools": [
+    {
+      "name": "get_climate_normals",
+      "description": "Return 30-year climate normals for a location and month.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          },
+          "month": {
+            "description": "Month number 1-12.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "get_emissions_data",
+      "description": "Return greenhouse-gas emissions for a country and year.",
+      "inputSchema": {
+        "properties": {
+          "country": {
+            "description": "Country code.",
+            "type": "string"
+          },
+          "gas": {
+            "description": "Gas species, e.g. CO2.",
+            "type": "string"
+          },
+          "year": {
+            "description": "Year.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "country",
+          "year"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "get_sea_level",
+      "description": "Return sea-level rise projections for a coastal location.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          },
+          "year": {
+            "description": "Projection year.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "get_temperature_anomaly",
+      "description": "Return the temperature anomaly versus a baseline period.",
+      "inputSchema": {
+        "properties": {
+          "baseline": {
+            "description": "Baseline period.",
+            "type": "string"
+          },
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          },
+          "year": {
+            "description": "Year to compare.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "year"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "project_scenario",
+      "description": "Project temperature change under an emissions scenario.",
+      "inputSchema": {
+        "properties": {
+          "horizon": {
+            "description": "Projection year.",
+            "type": "integer"
+          },
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          },
+          "scenario": {
+            "description": "Scenario, e.g. RCP4.5.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "scenario"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    }
+  ]
+}

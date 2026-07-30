@@ -1,0 +1,899 @@
+{
+  "server": "github",
+  "mirrorSource": "github-mcp-server (github/github-mcp-server), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_issue_comment",
+      "description": "Post a comment on an issue or pull request.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Comment body in Markdown.",
+            "type": "string"
+          },
+          "issue_number": {
+            "description": "Issue or PR number.",
+            "type": "integer"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "issue_number",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_labels_to_issue",
+      "description": "Add one or more labels to an issue.",
+      "inputSchema": {
+        "properties": {
+          "issue_number": {
+            "description": "Issue number.",
+            "type": "integer"
+          },
+          "labels": {
+            "description": "Labels to add.",
+            "type": "array"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "issue_number",
+          "labels"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_branch",
+      "description": "Create a new branch pointing at a base branch's head commit.",
+      "inputSchema": {
+        "properties": {
+          "branch": {
+            "description": "New branch name.",
+            "type": "string"
+          },
+          "from_branch": {
+            "description": "Base branch to fork from.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "branch"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_issue",
+      "description": "Open a new issue in a repository with a title, body, labels, and assignees.",
+      "inputSchema": {
+        "properties": {
+          "assignees": {
+            "description": "Usernames to assign.",
+            "type": "array"
+          },
+          "body": {
+            "description": "Issue body in Markdown.",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Label names to apply.",
+            "type": "array"
+          },
+          "owner": {
+            "description": "Repository owner or organization.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Issue title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_or_update_file",
+      "description": "Create or update a single file in a repository with a commit.",
+      "inputSchema": {
+        "properties": {
+          "branch": {
+            "description": "Target branch.",
+            "type": "string"
+          },
+          "content": {
+            "description": "New file content.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Commit message.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "path": {
+            "description": "File path.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "path",
+          "content",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_pull_request",
+      "description": "Open a pull request from a head branch into a base branch.",
+      "inputSchema": {
+        "properties": {
+          "base": {
+            "description": "Target branch.",
+            "type": "string"
+          },
+          "body": {
+            "description": "PR description.",
+            "type": "string"
+          },
+          "draft": {
+            "description": "Open as a draft.",
+            "type": "boolean"
+          },
+          "head": {
+            "description": "Source branch.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Pull request title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "title",
+          "head",
+          "base"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_pull_request_review",
+      "description": "Submit a review on a pull request as approve, request changes, or comment.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Review summary.",
+            "type": "string"
+          },
+          "event": {
+            "description": "APPROVE, REQUEST_CHANGES, or COMMENT.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "pull_number": {
+            "description": "Pull request number.",
+            "type": "integer"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "pull_number",
+          "event"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_release",
+      "description": "Publish a new release from a tag with release notes.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Release notes.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Release title.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "prerelease": {
+            "description": "Mark as a pre-release.",
+            "type": "boolean"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "tag_name": {
+            "description": "Git tag to release.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "tag_name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_repository",
+      "description": "Create a new repository under a user or organization.",
+      "inputSchema": {
+        "properties": {
+          "auto_init": {
+            "description": "Initialize with a README.",
+            "type": "boolean"
+          },
+          "description": {
+            "description": "Short description.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "private": {
+            "description": "Create as private.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_file",
+      "description": "Delete a file from a repository with a commit.",
+      "inputSchema": {
+        "properties": {
+          "branch": {
+            "description": "Target branch.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Commit message.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "path": {
+            "description": "File path to delete.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "path",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "fork_repository",
+      "description": "Fork a repository into the authenticated account or an organization.",
+      "inputSchema": {
+        "properties": {
+          "organization": {
+            "description": "Destination org.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Source repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Source repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_commit",
+      "description": "Fetch a commit with its message, author, and changed files.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "ref": {
+            "description": "Commit SHA or ref.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "ref"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_file_contents",
+      "description": "Read the contents of a file or list a directory at a given ref.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "path": {
+            "description": "File or directory path.",
+            "type": "string"
+          },
+          "ref": {
+            "description": "Branch, tag, or commit SHA.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "Fetch a single issue by number, including its state, labels, and body.",
+      "inputSchema": {
+        "properties": {
+          "issue_number": {
+            "description": "Issue number.",
+            "type": "integer"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pull_request",
+      "description": "Retrieve a pull request with its state, mergeability, and review status.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "pull_number": {
+            "description": "Pull request number.",
+            "type": "integer"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pull_request_diff",
+      "description": "Return the unified diff for a pull request.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "pull_number": {
+            "description": "Pull request number.",
+            "type": "integer"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pull_request_files",
+      "description": "List the files changed in a pull request with additions and deletions.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "pull_number": {
+            "description": "Pull request number.",
+            "type": "integer"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_workflow_run",
+      "description": "Get a single Actions workflow run with its conclusion and timing.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "run_id": {
+            "description": "Workflow run ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "run_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_branches",
+      "description": "List the branches of a repository.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_commits",
+      "description": "List commits on a branch, optionally filtered by path or author.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "path": {
+            "description": "Only commits touching this path.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "sha": {
+            "description": "Branch or commit to start from.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues in a repository filtered by state, labels, assignee, and milestone.",
+      "inputSchema": {
+        "properties": {
+          "assignee": {
+            "description": "Filter by assignee username.",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Restrict to issues with these labels.",
+            "type": "array"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "state": {
+            "description": "Filter by open, closed, or all.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_pull_requests",
+      "description": "List pull requests filtered by state, head, and base branch.",
+      "inputSchema": {
+        "properties": {
+          "base": {
+            "description": "Filter by base branch.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "state": {
+            "description": "Filter by open, closed, or all.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_releases",
+      "description": "List releases for a repository.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_workflow_runs",
+      "description": "List Actions workflow runs for a repository, filtered by workflow and status.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Filter by run status.",
+            "type": "string"
+          },
+          "workflow_id": {
+            "description": "Workflow file name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "merge_pull_request",
+      "description": "Merge a pull request using a merge, squash, or rebase strategy.",
+      "inputSchema": {
+        "properties": {
+          "merge_method": {
+            "description": "One of merge, squash, or rebase.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "pull_number": {
+            "description": "Pull request number.",
+            "type": "integer"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "push_files",
+      "description": "Push multiple file changes to a branch in a single commit.",
+      "inputSchema": {
+        "properties": {
+          "branch": {
+            "description": "Target branch.",
+            "type": "string"
+          },
+          "files": {
+            "description": "List of path/content pairs.",
+            "type": "array"
+          },
+          "message": {
+            "description": "Commit message.",
+            "type": "string"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "branch",
+          "files",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "rerun_workflow",
+      "description": "Re-run a failed Actions workflow run.",
+      "inputSchema": {
+        "properties": {
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "run_id": {
+            "description": "Workflow run ID to re-run.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "run_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_code",
+      "description": "Search code across repositories using GitHub code search syntax.",
+      "inputSchema": {
+        "properties": {
+          "order": {
+            "description": "asc or desc.",
+            "type": "string"
+          },
+          "q": {
+            "description": "Code search query.",
+            "type": "string"
+          },
+          "sort": {
+            "description": "Sort field.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_repositories",
+      "description": "Search for repositories matching a query.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Repository search query.",
+            "type": "string"
+          },
+          "sort": {
+            "description": "Sort by stars, forks, or updated.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_issue",
+      "description": "Edit an existing issue's title, body, state, labels, or assignees.",
+      "inputSchema": {
+        "properties": {
+          "issue_number": {
+            "description": "Issue number.",
+            "type": "integer"
+          },
+          "owner": {
+            "description": "Repository owner.",
+            "type": "string"
+          },
+          "repo": {
+            "description": "Repository name.",
+            "type": "string"
+          },
+          "state": {
+            "description": "Set to open or closed.",
+            "type": "string"
+          },
+          "title": {
+            "description": "New title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -1,0 +1,426 @@
+{
+  "server": "gitlab",
+  "mirrorSource": "GitLab MCP server (modelcontextprotocol/servers gitlab), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_merge_request_comment",
+      "description": "Comment on a merge request.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Comment body.",
+            "type": "string"
+          },
+          "merge_request_iid": {
+            "description": "MR internal ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "merge_request_iid",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_branch",
+      "description": "Create a branch from a ref.",
+      "inputSchema": {
+        "properties": {
+          "branch": {
+            "description": "New branch name.",
+            "type": "string"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "ref": {
+            "description": "Source ref.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "branch",
+          "ref"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_commit",
+      "description": "Commit multiple file actions to a branch.",
+      "inputSchema": {
+        "properties": {
+          "actions": {
+            "description": "File create/update/delete actions.",
+            "type": "array"
+          },
+          "branch": {
+            "description": "Target branch.",
+            "type": "string"
+          },
+          "commit_message": {
+            "description": "Commit message.",
+            "type": "string"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "branch",
+          "commit_message",
+          "actions"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_issue",
+      "description": "Create an issue in a project.",
+      "inputSchema": {
+        "properties": {
+          "description": {
+            "description": "Issue description.",
+            "type": "string"
+          },
+          "labels": {
+            "description": "Labels to apply.",
+            "type": "array"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Issue title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_merge_request",
+      "description": "Open a merge request between two branches.",
+      "inputSchema": {
+        "properties": {
+          "description": {
+            "description": "MR description.",
+            "type": "string"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "source_branch": {
+            "description": "Source branch.",
+            "type": "string"
+          },
+          "target_branch": {
+            "description": "Target branch.",
+            "type": "string"
+          },
+          "title": {
+            "description": "MR title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "source_branch",
+          "target_branch",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new project.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Project name.",
+            "type": "string"
+          },
+          "visibility": {
+            "description": "private, internal, or public.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_file",
+      "description": "Read a file's contents at a ref.",
+      "inputSchema": {
+        "properties": {
+          "file_path": {
+            "description": "File path.",
+            "type": "string"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "ref": {
+            "description": "Branch, tag, or commit.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "file_path",
+          "ref"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "Fetch an issue by internal ID.",
+      "inputSchema": {
+        "properties": {
+          "issue_iid": {
+            "description": "Issue internal ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "issue_iid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_merge_request",
+      "description": "Fetch a merge request by internal ID.",
+      "inputSchema": {
+        "properties": {
+          "merge_request_iid": {
+            "description": "MR internal ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "merge_request_iid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pipeline",
+      "description": "Fetch a pipeline by ID.",
+      "inputSchema": {
+        "properties": {
+          "pipeline_id": {
+            "description": "Pipeline ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "pipeline_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_branches",
+      "description": "List branches in a project.",
+      "inputSchema": {
+        "properties": {
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues in a project filtered by state.",
+      "inputSchema": {
+        "properties": {
+          "labels": {
+            "description": "Filter by labels.",
+            "type": "array"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "state": {
+            "description": "opened or closed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_merge_requests",
+      "description": "List merge requests in a project.",
+      "inputSchema": {
+        "properties": {
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "state": {
+            "description": "opened, closed, or merged.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_pipeline_jobs",
+      "description": "List the jobs of a pipeline.",
+      "inputSchema": {
+        "properties": {
+          "pipeline_id": {
+            "description": "Pipeline ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "pipeline_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_pipelines",
+      "description": "List CI pipelines for a project.",
+      "inputSchema": {
+        "properties": {
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Filter by pipeline status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_projects",
+      "description": "List accessible projects.",
+      "inputSchema": {
+        "properties": {
+          "owned": {
+            "description": "Only owned projects.",
+            "type": "boolean"
+          },
+          "search": {
+            "description": "Search term.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "merge_merge_request",
+      "description": "Merge a merge request.",
+      "inputSchema": {
+        "properties": {
+          "merge_request_iid": {
+            "description": "MR internal ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          },
+          "squash": {
+            "description": "Squash commits on merge.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "project_id",
+          "merge_request_iid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "retry_pipeline",
+      "description": "Retry failed jobs in a pipeline.",
+      "inputSchema": {
+        "properties": {
+          "pipeline_id": {
+            "description": "Pipeline ID.",
+            "type": "integer"
+          },
+          "project_id": {
+            "description": "Project ID or path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "pipeline_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

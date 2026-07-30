@@ -1,0 +1,181 @@
+{
+  "server": "postgres",
+  "mirrorSource": "Postgres MCP server (modelcontextprotocol/servers postgres), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "describe_table",
+      "description": "Return a table's columns, types, and constraints.",
+      "inputSchema": {
+        "properties": {
+          "schema": {
+            "description": "Schema name.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "explain_query",
+      "description": "Return the query plan for a SQL statement.",
+      "inputSchema": {
+        "properties": {
+          "analyze": {
+            "description": "Run EXPLAIN ANALYZE.",
+            "type": "boolean"
+          },
+          "sql": {
+            "description": "SQL statement to explain.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_slow_queries",
+      "description": "Return the slowest recent queries from pg_stat_statements.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Number of queries to return.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_table_size",
+      "description": "Return the on-disk size of a table.",
+      "inputSchema": {
+        "properties": {
+          "table": {
+            "description": "Table name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_table_stats",
+      "description": "Return row counts and size statistics for a table.",
+      "inputSchema": {
+        "properties": {
+          "table": {
+            "description": "Table name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_connections",
+      "description": "List active connections and their queries.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_databases",
+      "description": "List databases on the server.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_indexes",
+      "description": "List indexes on a table.",
+      "inputSchema": {
+        "properties": {
+          "schema": {
+            "description": "Schema name.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_schemas",
+      "description": "List the database's schemas.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List tables in a schema.",
+      "inputSchema": {
+        "properties": {
+          "schema": {
+            "description": "Schema name, default public.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_views",
+      "description": "List views defined in a schema.",
+      "inputSchema": {
+        "properties": {
+          "schema": {
+            "description": "Schema name.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "run_query",
+      "description": "Run a read-only SQL query and return rows.",
+      "inputSchema": {
+        "properties": {
+          "params": {
+            "description": "Positional bind parameters.",
+            "type": "array"
+          },
+          "sql": {
+            "description": "SQL SELECT statement.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

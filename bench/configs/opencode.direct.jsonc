@@ -1,39 +1,30 @@
 {
-  // OpenCode config for DIRECT mode — all 7 fixture MCP servers exposed directly.
+  // OpenCode config for DIRECT mode — the historical-weather-report scenario's
+  // functional fixture toolsets exposed directly. This template is a reference:
+  // the runner writes its own config per run from the scenario's declared server
+  // set (the same source), and when the scenario sets corpus:true the ≥500 corpus
+  // servers attach on top of these — not enumerated here to keep the reference
+  // readable. The wired *functional* server set is asserted against the runner by
+  // TestModeTemplatesMatchRunner.
   "mcp": {
-    "code-search": {
+    "weather": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "code-search", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "command": ["ozy-bench", "mcp", "--toolset", "weather", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
       "enabled": true
     },
-    "git": {
+    "duckduckgo": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "git", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "command": ["ozy-bench", "mcp", "--toolset", "duckduckgo", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
       "enabled": true
     },
-    "incident-db": {
+    "wikipedia": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "incident-db", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "command": ["ozy-bench", "mcp", "--toolset", "wikipedia", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
       "enabled": true
     },
-    "filesystem": {
+    "pdf-toolkit": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "filesystem", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
-      "enabled": true
-    },
-    "time": {
-      "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "time"],
-      "enabled": true
-    },
-    "memory": {
-      "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "memory"],
-      "enabled": true
-    },
-    "notes": {
-      "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "notes"],
+      "command": ["ozy-bench", "mcp", "--toolset", "pdf-toolkit"],
       "enabled": true
     }
   }

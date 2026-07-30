@@ -18,6 +18,17 @@ type ScenarioConfig struct {
 	TaskFile string `json:"taskFile"`
 	Fixture  string `json:"fixture"`
 
+	// Toolsets are the functional fixture MCP servers this scenario needs
+	// (e.g. weather, duckduckgo, pdf-toolkit). The direct-mode agent config,
+	// ozy's downstream config, and the surface enumeration all derive their
+	// server set from this list — no hardcoded toolsets in the harness.
+	Toolsets []string `json:"toolsets"`
+
+	// Corpus controls whether the ≥500-tool corpus attaches to the scenario's
+	// environment (default true). Both modes face the identical estate. A nil
+	// pointer means "unset" so applyDefaults can distinguish it from false.
+	Corpus *bool `json:"corpus"`
+
 	Model struct {
 		NameEnv       string `json:"nameEnv"`
 		BaseURLEnv    string `json:"baseURLEnv"`
@@ -62,6 +73,8 @@ type scenarioConfigJSON struct {
 	Name               string          `json:"name"`
 	TaskFile           string          `json:"taskFile"`
 	Fixture            string          `json:"fixture"`
+	Toolsets           []string        `json:"toolsets"`
+	Corpus             *bool           `json:"corpus"`
 	Model              json.RawMessage `json:"model"`
 	AgentConfigs       json.RawMessage `json:"agentConfigs"`
 	Limits             json.RawMessage `json:"limits"`
@@ -96,6 +109,8 @@ func LoadScenario(path string) (*ScenarioConfig, error) {
 		Name:               raw.Name,
 		TaskFile:           raw.TaskFile,
 		Fixture:            raw.Fixture,
+		Toolsets:           raw.Toolsets,
+		Corpus:             raw.Corpus,
 		GroundTruth:        raw.GroundTruth,
 		ForbiddenTools:     raw.ForbiddenTools,
 		ForbiddenBehaviors: raw.ForbiddenBehaviors,
@@ -115,6 +130,15 @@ func applyDefaults(cfg *ScenarioConfig) {
 	if cfg.Limits.TimeoutSeconds == 0 {
 		cfg.Limits.TimeoutSeconds = 600
 	}
+	if cfg.Corpus == nil {
+		on := true
+		cfg.Corpus = &on
+	}
+}
+
+// CorpusEnabled reports whether the scenario attaches the tool corpus.
+func (cfg *ScenarioConfig) CorpusEnabled() bool {
+	return cfg.Corpus == nil || *cfg.Corpus
 }
 
 // ResolveRunCount returns the effective run count: CLI flag, then BENCH_RUNS

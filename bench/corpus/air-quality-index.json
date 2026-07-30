@@ -1,0 +1,119 @@
+{
+  "server": "air-quality-index",
+  "mirrorSource": "synthesized (near-miss for the canonical weather data)",
+  "tools": [
+    {
+      "name": "get_aqi",
+      "description": "Return the current air quality index for a location.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pm25_forecast",
+      "description": "Return the fine-particulate (PM2.5) forecast for a location.",
+      "inputSchema": {
+        "properties": {
+          "hours": {
+            "description": "Forecast horizon in hours.",
+            "type": "integer"
+          },
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pollen",
+      "description": "Return the current pollen forecast for a location.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_uv_index",
+      "description": "Return the UV index forecast for a location.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_monitoring_stations",
+      "description": "List air-quality monitoring stations near a point.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          },
+          "radius": {
+            "description": "Search radius in km.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -90,28 +90,6 @@ func TestLoadScenarioEnvSubstitution(t *testing.T) {
 	// os.LookupEnv during the live tier, not during loading.
 }
 
-func TestSanitizeBaseURL(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		raw  string
-		want string
-	}{
-		{"http://localhost:8080/v1/chat", "http://localhost:8080"},
-		{"https://api.openai.com/v1", "https://api.openai.com"},
-		{"http://host.docker.internal:1234", "http://host.docker.internal:1234"},
-		{"invalid-url", "****"},
-		{"", "****"},
-	}
-
-	for _, tt := range tests {
-		got := SanitizeBaseURL(tt.raw)
-		if got != tt.want {
-			t.Errorf("SanitizeBaseURL(%q) = %q, want %q", tt.raw, got, tt.want)
-		}
-	}
-}
-
 func TestResolveRunCount(t *testing.T) {
 	// Not parallel — uses t.Setenv.
 

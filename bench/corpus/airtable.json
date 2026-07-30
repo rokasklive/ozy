@@ -1,0 +1,323 @@
+{
+  "server": "airtable",
+  "mirrorSource": "Airtable MCP server (domdomegg/airtable-mcp-server), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "batch_create_records",
+      "description": "Create up to ten records in one call.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "records": {
+            "description": "Records with field values.",
+            "type": "array"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "records"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "batch_update_records",
+      "description": "Update multiple records in one call.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "records": {
+            "description": "Records with IDs and field values.",
+            "type": "array"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "records"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_field",
+      "description": "Add a field to a table.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Field name.",
+            "type": "string"
+          },
+          "table_id": {
+            "description": "Table ID.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Field type.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table_id",
+          "name",
+          "type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_record",
+      "description": "Create a record with field values.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Field values.",
+            "type": "object"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "fields"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_table",
+      "description": "Create a table with a set of fields.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Field definitions.",
+            "type": "array"
+          },
+          "name": {
+            "description": "Table name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "name",
+          "fields"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_record",
+      "description": "Delete a record by ID.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "record_id": {
+            "description": "Record ID.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "record_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_base_schema",
+      "description": "Return the full schema of a base.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_record",
+      "description": "Fetch a single record by ID.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "record_id": {
+            "description": "Record ID.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "record_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_bases",
+      "description": "List the accessible bases.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_records",
+      "description": "List records from a table with optional filtering and sorting.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "filter_by_formula": {
+            "description": "Airtable formula filter.",
+            "type": "string"
+          },
+          "max_records": {
+            "description": "Maximum records.",
+            "type": "integer"
+          },
+          "sort": {
+            "description": "Sort specifications.",
+            "type": "array"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List the tables in a base with their fields.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_records",
+      "description": "Search records across fields for a text value.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Text to search for.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_record",
+      "description": "Update a record's fields.",
+      "inputSchema": {
+        "properties": {
+          "base_id": {
+            "description": "Base ID.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Field values to update.",
+            "type": "object"
+          },
+          "record_id": {
+            "description": "Record ID.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table name or ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "base_id",
+          "table",
+          "record_id",
+          "fields"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

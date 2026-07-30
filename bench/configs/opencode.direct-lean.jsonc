@@ -1,0 +1,38 @@
+{
+  // OpenCode config for DIRECT-LEAN mode — the "installed only the MCPs I need"
+  // baseline. It wires the historical-weather-report scenario's functional fixture
+  // toolsets whole (every tool each ships, task-critical and sibling alike) but
+  // NEVER the ≥500-tool corpus that direct mode attaches on top. This is the
+  // honest real-world comparison against ozy: a careful operator wouldn't install
+  // 500 tools they don't need.
+  //
+  // This template is a reference: the runner writes its own config per run from
+  // the scenario's declared server set (the same source), dropping corpus servers
+  // for this mode. Because the direct template already lists only the functional
+  // servers, the wired set here matches it — the difference between direct and
+  // direct-lean is purely the corpus, which neither template enumerates. The
+  // wired functional server set is asserted against the runner by
+  // TestModeTemplatesMatchRunner.
+  "mcp": {
+    "weather": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "weather", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "duckduckgo": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "duckduckgo", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "wikipedia": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "wikipedia", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "enabled": true
+    },
+    "pdf-toolkit": {
+      "type": "local",
+      "command": ["ozy-bench", "mcp", "--toolset", "pdf-toolkit"],
+      "enabled": true
+    }
+  }
+}

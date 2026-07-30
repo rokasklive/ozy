@@ -1,0 +1,213 @@
+{
+  "server": "sendgrid",
+  "mirrorSource": "SendGrid MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_contact",
+      "description": "Add or update a marketing contact.",
+      "inputSchema": {
+        "properties": {
+          "custom_fields": {
+            "description": "Custom field values.",
+            "type": "object"
+          },
+          "email": {
+            "description": "Contact email.",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name.",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_campaign",
+      "description": "Create a single-send marketing campaign.",
+      "inputSchema": {
+        "properties": {
+          "list_ids": {
+            "description": "Recipient list IDs.",
+            "type": "array"
+          },
+          "name": {
+            "description": "Campaign name.",
+            "type": "string"
+          },
+          "sender_id": {
+            "description": "Verified sender ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "sender_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_list",
+      "description": "Create a contact list.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "List name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_template",
+      "description": "Create a new dynamic email template.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Template name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_stats",
+      "description": "Fetch email delivery statistics for a date range.",
+      "inputSchema": {
+        "properties": {
+          "aggregated_by": {
+            "description": "day, week, or month.",
+            "type": "string"
+          },
+          "end_date": {
+            "description": "End date.",
+            "type": "string"
+          },
+          "start_date": {
+            "description": "Start date.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_contacts",
+      "description": "List marketing contacts.",
+      "inputSchema": {
+        "properties": {
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_templates",
+      "description": "List dynamic email templates.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "send_email",
+      "description": "Send a transactional email to one or more recipients.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "HTML or text body.",
+            "type": "string"
+          },
+          "from": {
+            "description": "Verified sender address.",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Email subject.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Recipient addresses.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "subject",
+          "content"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "send_template_email",
+      "description": "Send an email using a dynamic template and data.",
+      "inputSchema": {
+        "properties": {
+          "dynamic_data": {
+            "description": "Template substitution data.",
+            "type": "object"
+          },
+          "from": {
+            "description": "Verified sender.",
+            "type": "string"
+          },
+          "template_id": {
+            "description": "Dynamic template ID.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Recipient addresses.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "template_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "validate_email",
+      "description": "Validate an email address for deliverability.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Email address to validate.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

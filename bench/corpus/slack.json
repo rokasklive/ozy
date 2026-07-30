@@ -1,0 +1,350 @@
+{
+  "server": "slack",
+  "mirrorSource": "Slack MCP server (modelcontextprotocol/servers slack), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_reaction",
+      "description": "Add an emoji reaction to a message.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Emoji name without colons.",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "Message timestamp.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "timestamp",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "archive_channel",
+      "description": "Archive a channel.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID to archive.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_channel",
+      "description": "Create a new public or private channel.",
+      "inputSchema": {
+        "properties": {
+          "is_private": {
+            "description": "Create as private.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Channel name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_message",
+      "description": "Delete a Slack message.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID.",
+            "type": "string"
+          },
+          "ts": {
+            "description": "Timestamp of the message to delete.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "ts"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_channel_history",
+      "description": "Fetch recent messages from a channel.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Number of messages.",
+            "type": "integer"
+          },
+          "oldest": {
+            "description": "Only messages after this timestamp.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_user_info",
+      "description": "Fetch a user's profile by ID.",
+      "inputSchema": {
+        "properties": {
+          "user": {
+            "description": "User ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "invite_to_channel",
+      "description": "Invite one or more users to a channel.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID.",
+            "type": "string"
+          },
+          "users": {
+            "description": "User IDs to invite.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "channel",
+          "users"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_channels",
+      "description": "List public channels in the workspace.",
+      "inputSchema": {
+        "properties": {
+          "cursor": {
+            "description": "Pagination cursor.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum channels to return.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_users",
+      "description": "List members of the workspace.",
+      "inputSchema": {
+        "properties": {
+          "cursor": {
+            "description": "Pagination cursor.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum users to return.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "open_dm",
+      "description": "Open a direct-message conversation with a user.",
+      "inputSchema": {
+        "properties": {
+          "users": {
+            "description": "User IDs for the DM.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "users"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "post_message",
+      "description": "Send a message to a Slack channel.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID or name.",
+            "type": "string"
+          },
+          "text": {
+            "description": "Message text.",
+            "type": "string"
+          },
+          "thread_ts": {
+            "description": "Reply in this thread timestamp.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "text"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "schedule_message",
+      "description": "Schedule a message to be posted at a future time.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID.",
+            "type": "string"
+          },
+          "post_at": {
+            "description": "Unix time to post at.",
+            "type": "integer"
+          },
+          "text": {
+            "description": "Message text.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "text",
+          "post_at"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_messages",
+      "description": "Search messages across the workspace.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Results per page.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "set_status",
+      "description": "Set the authenticated user's status text and emoji.",
+      "inputSchema": {
+        "properties": {
+          "status_emoji": {
+            "description": "Status emoji.",
+            "type": "string"
+          },
+          "status_expiration": {
+            "description": "Unix time to clear at.",
+            "type": "integer"
+          },
+          "status_text": {
+            "description": "Status message.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status_text"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_message",
+      "description": "Edit an existing Slack message.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel ID.",
+            "type": "string"
+          },
+          "text": {
+            "description": "New message text.",
+            "type": "string"
+          },
+          "ts": {
+            "description": "Timestamp of the message to edit.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "ts",
+          "text"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "upload_file",
+      "description": "Upload a file and share it into a channel.",
+      "inputSchema": {
+        "properties": {
+          "channels": {
+            "description": "Channel IDs to share into.",
+            "type": "array"
+          },
+          "content": {
+            "description": "File content.",
+            "type": "string"
+          },
+          "filename": {
+            "description": "File name.",
+            "type": "string"
+          },
+          "title": {
+            "description": "File title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channels",
+          "content"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

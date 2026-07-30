@@ -1,0 +1,141 @@
+{
+  "server": "doc-converter",
+  "mirrorSource": "synthesized (near-miss for the canonical pdf-toolkit)",
+  "tools": [
+    {
+      "name": "convert_docx_to_pdf",
+      "description": "Convert a Word document to PDF.",
+      "inputSchema": {
+        "properties": {
+          "input_path": {
+            "description": "Source .docx path.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .pdf path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_path",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "convert_html_to_pdf",
+      "description": "Render an HTML document to PDF.",
+      "inputSchema": {
+        "properties": {
+          "html": {
+            "description": "HTML source.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .pdf path.",
+            "type": "string"
+          },
+          "page_size": {
+            "description": "Page size.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "html",
+          "output_path"
+        ],
+        "type": "object"
+      },
+      "behavior": "functional:pdf"
+    },
+    {
+      "name": "convert_image_to_pdf",
+      "description": "Combine one or more images into a PDF.",
+      "inputSchema": {
+        "properties": {
+          "images": {
+            "description": "Image file paths.",
+            "type": "array"
+          },
+          "output_path": {
+            "description": "Destination .pdf path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "images",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "convert_pdf_to_docx",
+      "description": "Convert a PDF to an editable Word document.",
+      "inputSchema": {
+        "properties": {
+          "input_path": {
+            "description": "Source .pdf path.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .docx path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_path",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "convert_pptx_to_pdf",
+      "description": "Convert a PowerPoint deck to PDF.",
+      "inputSchema": {
+        "properties": {
+          "input_path": {
+            "description": "Source .pptx path.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .pdf path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_path",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "convert_xlsx_to_csv",
+      "description": "Convert a spreadsheet worksheet to CSV.",
+      "inputSchema": {
+        "properties": {
+          "input_path": {
+            "description": "Source .xlsx path.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .csv path.",
+            "type": "string"
+          },
+          "sheet": {
+            "description": "Worksheet name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_path",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

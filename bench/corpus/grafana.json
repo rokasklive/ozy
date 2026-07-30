@@ -1,0 +1,232 @@
+{
+  "server": "grafana",
+  "mirrorSource": "Grafana MCP server (grafana/mcp-grafana), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "create_alert_rule",
+      "description": "Create an alert rule with a condition.",
+      "inputSchema": {
+        "properties": {
+          "condition": {
+            "description": "Condition reference.",
+            "type": "string"
+          },
+          "folder_uid": {
+            "description": "Destination folder.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Rule title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "condition"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_annotation",
+      "description": "Create an annotation on dashboards.",
+      "inputSchema": {
+        "properties": {
+          "tags": {
+            "description": "Annotation tags.",
+            "type": "array"
+          },
+          "text": {
+            "description": "Annotation text.",
+            "type": "string"
+          },
+          "time": {
+            "description": "Annotation time in ms.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "text",
+          "time"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_dashboard",
+      "description": "Create or update a dashboard from a model.",
+      "inputSchema": {
+        "properties": {
+          "dashboard": {
+            "description": "Dashboard JSON model.",
+            "type": "object"
+          },
+          "folder_uid": {
+            "description": "Destination folder.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboard"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_datasource",
+      "description": "Add a new data source.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Data source name.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Data source type.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Endpoint URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_dashboard",
+      "description": "Delete a dashboard by UID.",
+      "inputSchema": {
+        "properties": {
+          "uid": {
+            "description": "Dashboard UID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_alert",
+      "description": "Fetch an alert rule by UID.",
+      "inputSchema": {
+        "properties": {
+          "uid": {
+            "description": "Alert rule UID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_dashboard",
+      "description": "Fetch a dashboard by UID.",
+      "inputSchema": {
+        "properties": {
+          "uid": {
+            "description": "Dashboard UID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_alert_rules",
+      "description": "List Grafana-managed alert rules.",
+      "inputSchema": {
+        "properties": {
+          "folder_uid": {
+            "description": "Filter by folder.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_dashboards",
+      "description": "List dashboards, optionally filtered by tag.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Search text.",
+            "type": "string"
+          },
+          "tag": {
+            "description": "Filter by tag.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_datasources",
+      "description": "List configured data sources.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_folders",
+      "description": "List dashboard folders.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_users",
+      "description": "List Grafana org users.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "query_datasource",
+      "description": "Run a query against a data source over a time range.",
+      "inputSchema": {
+        "properties": {
+          "datasource_uid": {
+            "description": "Data source UID.",
+            "type": "string"
+          },
+          "from": {
+            "description": "Start time.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Query expression.",
+            "type": "string"
+          },
+          "to": {
+            "description": "End time.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "datasource_uid",
+          "query"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

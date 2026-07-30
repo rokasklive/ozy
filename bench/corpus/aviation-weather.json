@@ -1,0 +1,115 @@
+{
+  "server": "aviation-weather",
+  "mirrorSource": "synthesized (near-miss for the canonical weather data)",
+  "tools": [
+    {
+      "name": "get_metar",
+      "description": "Return the latest METAR observation for an airport.",
+      "inputSchema": {
+        "properties": {
+          "station": {
+            "description": "ICAO airport code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "station"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_notams",
+      "description": "Return NOTAMs for an airport.",
+      "inputSchema": {
+        "properties": {
+          "station": {
+            "description": "ICAO airport code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "station"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pirep",
+      "description": "Return recent pilot weather reports near a location.",
+      "inputSchema": {
+        "properties": {
+          "latitude": {
+            "description": "Latitude.",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude.",
+            "type": "number"
+          },
+          "radius": {
+            "description": "Search radius in nautical miles.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_sigmet",
+      "description": "Return active SIGMET hazard advisories for a region.",
+      "inputSchema": {
+        "properties": {
+          "region": {
+            "description": "FIR or region code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "region"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_taf",
+      "description": "Return the terminal aerodrome forecast for an airport.",
+      "inputSchema": {
+        "properties": {
+          "station": {
+            "description": "ICAO airport code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "station"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_winds_aloft",
+      "description": "Return forecast winds and temperatures aloft.",
+      "inputSchema": {
+        "properties": {
+          "altitude": {
+            "description": "Altitude in feet.",
+            "type": "integer"
+          },
+          "station": {
+            "description": "Station code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "station"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

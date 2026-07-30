@@ -1,0 +1,21 @@
+{
+  "answer_must_contain": [
+    "25.3",
+    "14.9",
+    "Neris",
+    "Lithuania"
+  ],
+  "required_tools": [
+    { "server": "weather", "tool": "get_historical_weather" },
+    { "server": "duckduckgo", "tool": "search" },
+    { "server": "wikipedia", "tool": "" },
+    { "server": "pdf-toolkit", "tool": "" }
+  ],
+  "artifacts": [
+    {
+      "path": "output/report.pdf",
+      "type": "pdf",
+      "must_contain": ["25.3", "14.9", "Neris", "Lithuania"]
+    }
+  ]
+}

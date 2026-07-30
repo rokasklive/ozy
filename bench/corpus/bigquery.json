@@ -1,0 +1,196 @@
+{
+  "server": "bigquery",
+  "mirrorSource": "Google BigQuery MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "create_dataset",
+      "description": "Create a dataset in a location.",
+      "inputSchema": {
+        "properties": {
+          "dataset": {
+            "description": "Dataset ID.",
+            "type": "string"
+          },
+          "location": {
+            "description": "Dataset location.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "estimate_query_cost",
+      "description": "Estimate the bytes a query will scan.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Standard SQL query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "export_table",
+      "description": "Export a table to a destination URI.",
+      "inputSchema": {
+        "properties": {
+          "dataset": {
+            "description": "Dataset ID.",
+            "type": "string"
+          },
+          "destination_uri": {
+            "description": "GCS destination URI.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset",
+          "table",
+          "destination_uri"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_job_status",
+      "description": "Fetch the status of a query or load job.",
+      "inputSchema": {
+        "properties": {
+          "job_id": {
+            "description": "Job ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_table_schema",
+      "description": "Return a table's column schema.",
+      "inputSchema": {
+        "properties": {
+          "dataset": {
+            "description": "Dataset ID.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset",
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_datasets",
+      "description": "List datasets in the project.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_jobs",
+      "description": "List recent jobs in the project.",
+      "inputSchema": {
+        "properties": {
+          "state_filter": {
+            "description": "Filter by job state.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List tables in a dataset.",
+      "inputSchema": {
+        "properties": {
+          "dataset": {
+            "description": "Dataset ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "load_data",
+      "description": "Load rows into a table from a source URI.",
+      "inputSchema": {
+        "properties": {
+          "dataset": {
+            "description": "Dataset ID.",
+            "type": "string"
+          },
+          "format": {
+            "description": "Source format.",
+            "type": "string"
+          },
+          "source_uri": {
+            "description": "GCS source URI.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Table ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset",
+          "table",
+          "source_uri"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "run_query",
+      "description": "Run a SQL query and return the result rows.",
+      "inputSchema": {
+        "properties": {
+          "dry_run": {
+            "description": "Validate and estimate without running.",
+            "type": "boolean"
+          },
+          "max_results": {
+            "description": "Maximum rows to return.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Standard SQL query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

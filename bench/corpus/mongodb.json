@@ -1,0 +1,283 @@
+{
+  "server": "mongodb",
+  "mirrorSource": "MongoDB MCP server (mongodb-js/mongodb-mcp-server), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "aggregate",
+      "description": "Run an aggregation pipeline on a collection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "pipeline": {
+            "description": "Aggregation stages.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "collection",
+          "pipeline"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "count_documents",
+      "description": "Count documents matching a filter.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Match filter.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_collection",
+      "description": "Create a new collection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "options": {
+            "description": "Creation options.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_index",
+      "description": "Create an index on a collection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "keys": {
+            "description": "Index key specification.",
+            "type": "object"
+          },
+          "unique": {
+            "description": "Enforce uniqueness.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "collection",
+          "keys"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_document",
+      "description": "Delete documents matching a filter.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Match filter.",
+            "type": "object"
+          },
+          "many": {
+            "description": "Delete all matches.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "collection",
+          "filter"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "distinct",
+      "description": "Return the distinct values of a field.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "field": {
+            "description": "Field name.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Match filter.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection",
+          "field"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "drop_collection",
+      "description": "Drop a collection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collection"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "explain_query",
+      "description": "Explain the execution plan for a query.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Query filter.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection",
+          "filter"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "find_documents",
+      "description": "Query a collection with a filter and projection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Query filter document.",
+            "type": "object"
+          },
+          "limit": {
+            "description": "Maximum documents.",
+            "type": "integer"
+          },
+          "projection": {
+            "description": "Fields to include or exclude.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection",
+          "filter"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "insert_document",
+      "description": "Insert a single document into a collection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "document": {
+            "description": "Document to insert.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection",
+          "document"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_collections",
+      "description": "List collections in the database.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_indexes",
+      "description": "List indexes on a collection.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collection"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_document",
+      "description": "Update documents matching a filter.",
+      "inputSchema": {
+        "properties": {
+          "collection": {
+            "description": "Collection name.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Match filter.",
+            "type": "object"
+          },
+          "many": {
+            "description": "Update all matches.",
+            "type": "boolean"
+          },
+          "update": {
+            "description": "Update operators.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "collection",
+          "filter",
+          "update"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

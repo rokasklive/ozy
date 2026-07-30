@@ -1,0 +1,252 @@
+{
+  "server": "shopify",
+  "mirrorSource": "Shopify MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "adjust_inventory",
+      "description": "Adjust the available quantity of an inventory item.",
+      "inputSchema": {
+        "properties": {
+          "available_adjustment": {
+            "description": "Signed quantity change.",
+            "type": "integer"
+          },
+          "inventory_item_id": {
+            "description": "Inventory item ID.",
+            "type": "string"
+          },
+          "location_id": {
+            "description": "Location ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "inventory_item_id",
+          "location_id",
+          "available_adjustment"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_customer",
+      "description": "Create a customer record.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Customer email.",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name.",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_discount",
+      "description": "Create a discount code.",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "description": "Discount code.",
+            "type": "string"
+          },
+          "value": {
+            "description": "Discount value.",
+            "type": "number"
+          },
+          "value_type": {
+            "description": "percentage or fixed_amount.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "value"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_order",
+      "description": "Create an order with line items.",
+      "inputSchema": {
+        "properties": {
+          "customer": {
+            "description": "Customer details.",
+            "type": "object"
+          },
+          "financial_status": {
+            "description": "Payment status.",
+            "type": "string"
+          },
+          "line_items": {
+            "description": "Order line items.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "line_items"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_product",
+      "description": "Create a product with variants.",
+      "inputSchema": {
+        "properties": {
+          "body_html": {
+            "description": "Product description HTML.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Product title.",
+            "type": "string"
+          },
+          "variants": {
+            "description": "Product variants.",
+            "type": "array"
+          },
+          "vendor": {
+            "description": "Vendor name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "fulfill_order",
+      "description": "Create a fulfillment for an order.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID.",
+            "type": "string"
+          },
+          "tracking_number": {
+            "description": "Shipment tracking number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_order",
+      "description": "Fetch an order by ID.",
+      "inputSchema": {
+        "properties": {
+          "order_id": {
+            "description": "Order ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_product",
+      "description": "Fetch a product by ID.",
+      "inputSchema": {
+        "properties": {
+          "product_id": {
+            "description": "Product ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_customers",
+      "description": "List customers.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_orders",
+      "description": "List orders filtered by status.",
+      "inputSchema": {
+        "properties": {
+          "financial_status": {
+            "description": "Filter by payment status.",
+            "type": "string"
+          },
+          "status": {
+            "description": "open, closed, or any.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_products",
+      "description": "List products with pagination.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          },
+          "vendor": {
+            "description": "Filter by vendor.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_product",
+      "description": "Update product fields.",
+      "inputSchema": {
+        "properties": {
+          "fields": {
+            "description": "Fields to update.",
+            "type": "object"
+          },
+          "product_id": {
+            "description": "Product ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

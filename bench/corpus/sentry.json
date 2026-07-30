@@ -1,0 +1,344 @@
+{
+  "server": "sentry",
+  "mirrorSource": "Sentry MCP server (getsentry/sentry-mcp), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "assign_issue",
+      "description": "Assign an issue to a user or team.",
+      "inputSchema": {
+        "properties": {
+          "assignee": {
+            "description": "User or team identifier.",
+            "type": "string"
+          },
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "assignee"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_alert_rule",
+      "description": "Create an alert rule with conditions and actions.",
+      "inputSchema": {
+        "properties": {
+          "actions": {
+            "description": "Actions to fire.",
+            "type": "array"
+          },
+          "conditions": {
+            "description": "Trigger conditions.",
+            "type": "array"
+          },
+          "name": {
+            "description": "Rule name.",
+            "type": "string"
+          },
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project",
+          "name",
+          "conditions"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new project in a team.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Project name.",
+            "type": "string"
+          },
+          "organization": {
+            "description": "Organization slug.",
+            "type": "string"
+          },
+          "platform": {
+            "description": "Platform identifier.",
+            "type": "string"
+          },
+          "team": {
+            "description": "Team slug.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "organization",
+          "team",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_release",
+      "description": "Create a release and associate commits.",
+      "inputSchema": {
+        "properties": {
+          "projects": {
+            "description": "Project slugs.",
+            "type": "array"
+          },
+          "refs": {
+            "description": "Commit refs to associate.",
+            "type": "array"
+          },
+          "version": {
+            "description": "Release version.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "projects"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_event",
+      "description": "Fetch a single event with its stack trace.",
+      "inputSchema": {
+        "properties": {
+          "event_id": {
+            "description": "Event ID.",
+            "type": "string"
+          },
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project",
+          "event_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "Fetch a Sentry issue with its culprit and event count.",
+      "inputSchema": {
+        "properties": {
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_project_stats",
+      "description": "Get event volume statistics for a project.",
+      "inputSchema": {
+        "properties": {
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          },
+          "resolution": {
+            "description": "Time bucket size.",
+            "type": "string"
+          },
+          "stat": {
+            "description": "received, rejected, or blacklisted.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_release",
+      "description": "Fetch a release by version.",
+      "inputSchema": {
+        "properties": {
+          "version": {
+            "description": "Release version.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "ignore_issue",
+      "description": "Ignore an issue, optionally until a condition.",
+      "inputSchema": {
+        "properties": {
+          "ignore_duration": {
+            "description": "Minutes to ignore.",
+            "type": "integer"
+          },
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_alerts",
+      "description": "List metric and issue alert rules for a project.",
+      "inputSchema": {
+        "properties": {
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_events",
+      "description": "List events for an issue.",
+      "inputSchema": {
+        "properties": {
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum events.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List error-tracking issues for a project.",
+      "inputSchema": {
+        "properties": {
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Search filter query.",
+            "type": "string"
+          },
+          "status": {
+            "description": "unresolved, resolved, or ignored.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_projects",
+      "description": "List projects in the organization.",
+      "inputSchema": {
+        "properties": {
+          "organization": {
+            "description": "Organization slug.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_releases",
+      "description": "List releases for a project.",
+      "inputSchema": {
+        "properties": {
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "resolve_issue",
+      "description": "Mark an issue as resolved.",
+      "inputSchema": {
+        "properties": {
+          "in_next_release": {
+            "description": "Resolve in the next release.",
+            "type": "boolean"
+          },
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_issue_status",
+      "description": "Bulk update the status of matching issues.",
+      "inputSchema": {
+        "properties": {
+          "project": {
+            "description": "Project slug.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Issue filter query.",
+            "type": "string"
+          },
+          "status": {
+            "description": "New status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project",
+          "query",
+          "status"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

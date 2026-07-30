@@ -6,50 +6,42 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 )
 
-// EnvironmentRecord captures the model and runtime provenance for a benchmark run.
+// EnvironmentRecord captures the model, runtime, and tooling provenance for a
+// benchmark run. It holds no credential of any kind: the live tier drives
+// OpenCode's built-in models, so there is no key, token, or endpoint to record.
 type EnvironmentRecord struct {
-	ModelName     string   `json:"modelName"`
-	ModelBaseURL  string   `json:"modelBaseURL"`
-	Temperature   string   `json:"temperature"`
-	MaxTokens     int      `json:"maxTokens"`
-	ContextWindow int      `json:"contextWindow"`
-	Timestamp     string   `json:"timestamp"`
-	OzyGitSHA     string   `json:"ozyGitSHA"`
-	ScenarioHash  string   `json:"scenarioHash"`
-	Modes         []string `json:"modes"`
-	RunCount      int      `json:"runCount"`
+	ModelID         string   `json:"modelId"`
+	Timestamp       string   `json:"timestamp"`
+	OzyGitDescribe  string   `json:"ozyGitDescribe"`
+	OzyGitSHA       string   `json:"ozyGitSHA"`
+	OpenCodeVersion string   `json:"openCodeVersion"`
+	TokenEstimator  string   `json:"tokenEstimator"`
+	UsageSource     string   `json:"usageSource"` // measured | estimated | mixed | skipped
+	Retrieval       string   `json:"retrieval"`   // semantic | lexical (what ozy actually exercised)
+	ScenarioHash    string   `json:"scenarioHash"`
+	Modes           []string `json:"modes"`
+	RunCount        int      `json:"runCount"`
 }
 
-// SanitizeBaseURL strips path and query components, keeping only scheme://host[:port].
-func SanitizeBaseURL(raw string) string {
-	// Remove everything after the host:port
-	re := regexp.MustCompile(`^(https?://[^/]+)`)
-	m := re.FindStringSubmatch(raw)
-	if len(m) > 1 {
-		return m[1]
-	}
-	// Fallback: mask everything if we can't parse it.
-	return "****"
-}
-
-// BuildProvenance collects the model and runtime metadata for the run.
-func BuildProvenance(cfg *ScenarioConfig, modes []string, runCount int) (*EnvironmentRecord, error) {
-	baseURL := os.Getenv(cfg.Model.BaseURLEnv)
+// BuildProvenance collects the model, runtime, and tooling metadata for the run.
+// estimator names the token estimator; usageSource records whether token
+// accounting was agent-reported (measured), estimated, mixed, or skipped.
+func BuildProvenance(cfg *ScenarioConfig, modes []string, runCount int, estimator, usageSource string) (*EnvironmentRecord, error) {
 	record := &EnvironmentRecord{
-		ModelName:     os.Getenv(cfg.Model.NameEnv),
-		ModelBaseURL:  SanitizeBaseURL(baseURL),
-		Temperature:   cfg.Model.Temperature,
-		MaxTokens:     cfg.Model.MaxTokens,
-		ContextWindow: cfg.Model.ContextWindow,
-		Timestamp:     time.Now().UTC().Format(time.RFC3339),
-		OzyGitSHA:     resolveGitSHA(),
-		Modes:         modes,
-		RunCount:      runCount,
+		ModelID:         benchModel(),
+		Timestamp:       time.Now().UTC().Format(time.RFC3339),
+		OzyGitDescribe:  resolveGitDescribe(),
+		OzyGitSHA:       resolveGitSHA(),
+		OpenCodeVersion: resolveOpenCodeVersion(),
+		TokenEstimator:  estimator,
+		UsageSource:     usageSource,
+		Retrieval:       resolveRetrievalStack(),
+		Modes:           modes,
+		RunCount:        runCount,
 	}
 
 	var err error
@@ -59,6 +51,44 @@ func BuildProvenance(cfg *ScenarioConfig, modes []string, runCount int) (*Enviro
 	}
 
 	return record, nil
+}
+
+// resolveRetrievalStack reports which retrieval stack ozy exercised. The value
+// is pinned at image build time (task 1.2 verifies it in the hermetic image and
+// sets OZY_BENCH_RETRIEVAL); it is never assumed. "unknown" until verified.
+func resolveRetrievalStack() string {
+	if v := strings.TrimSpace(os.Getenv("OZY_BENCH_RETRIEVAL")); v != "" {
+		return v
+	}
+	return "unknown"
+}
+
+// resolveGitDescribe returns a human-readable ozy version (tag+distance+sha),
+// falling back to the short SHA and then "unknown".
+func resolveGitDescribe() string {
+	out, err := exec.Command("git", "describe", "--tags", "--always", "--dirty").Output()
+	if err != nil {
+		return "unknown"
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// resolveOpenCodeVersion reads the pinned OpenCode version, preferring the
+// build-time OPENCODE_VERSION baked into the image, then `opencode --version`.
+func resolveOpenCodeVersion() string {
+	if v := os.Getenv("OPENCODE_VERSION"); v != "" {
+		return strings.TrimSpace(v)
+	}
+	openCode := os.Getenv("OPENCODE_PATH")
+	if openCode == "" {
+		openCode = "opencode"
+	}
+	//nolint:gosec // G204: opencode is the pinned agent binary in the bench image.
+	out, err := exec.Command(openCode, "--version").Output()
+	if err != nil {
+		return "unknown"
+	}
+	return strings.TrimSpace(string(out))
 }
 
 // WriteProvenance writes the environment record as JSON to the given path.

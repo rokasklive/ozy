@@ -45,6 +45,7 @@ func (a *app) rootCmd() *cobra.Command {
 		a.runCmd(),
 		a.mcpCmd(),
 		a.fixtureCmd(),
+		a.captureCmd(),
 	)
 	return root
 }

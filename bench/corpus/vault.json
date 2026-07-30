@@ -1,0 +1,170 @@
+{
+  "server": "vault",
+  "mirrorSource": "HashiCorp Vault MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "create_token",
+      "description": "Create a token with policies and a TTL.",
+      "inputSchema": {
+        "properties": {
+          "policies": {
+            "description": "Policies to attach.",
+            "type": "array"
+          },
+          "ttl": {
+            "description": "Token time-to-live.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_secret",
+      "description": "Delete the latest version of a secret.",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Secret path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "enable_engine",
+      "description": "Enable a secrets engine at a mount path.",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Mount path.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Engine type.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_policy",
+      "description": "Read a named policy document.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Policy name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_secrets",
+      "description": "List secret keys under a path.",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Path prefix.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "read_secret",
+      "description": "Read a secret at a KV path.",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Secret path.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Secret version.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "revoke_token",
+      "description": "Revoke a token by accessor.",
+      "inputSchema": {
+        "properties": {
+          "accessor": {
+            "description": "Token accessor.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessor"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "write_policy",
+      "description": "Create or update a policy document.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Policy name.",
+            "type": "string"
+          },
+          "policy": {
+            "description": "HCL policy document.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "policy"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "write_secret",
+      "description": "Write key-value data to a KV path.",
+      "inputSchema": {
+        "properties": {
+          "data": {
+            "description": "Key-value secret data.",
+            "type": "object"
+          },
+          "path": {
+            "description": "Secret path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "data"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

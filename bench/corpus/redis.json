@@ -1,0 +1,256 @@
+{
+  "server": "redis",
+  "mirrorSource": "Redis MCP server (redis/mcp-redis), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "delete",
+      "description": "Delete one or more keys.",
+      "inputSchema": {
+        "properties": {
+          "keys": {
+            "description": "Keys to delete.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "expire",
+      "description": "Set a key's time-to-live.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "Key name.",
+            "type": "string"
+          },
+          "seconds": {
+            "description": "TTL in seconds.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "seconds"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get",
+      "description": "Get the string value of a key.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "Key name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "hget",
+      "description": "Get a field from a hash.",
+      "inputSchema": {
+        "properties": {
+          "field": {
+            "description": "Field name.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Hash key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "field"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "hset",
+      "description": "Set a field in a hash.",
+      "inputSchema": {
+        "properties": {
+          "field": {
+            "description": "Field name.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Hash key.",
+            "type": "string"
+          },
+          "value": {
+            "description": "Field value.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "incr",
+      "description": "Atomically increment a numeric key.",
+      "inputSchema": {
+        "properties": {
+          "by": {
+            "description": "Increment amount.",
+            "type": "integer"
+          },
+          "key": {
+            "description": "Key name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "keys",
+      "description": "Find keys matching a glob pattern.",
+      "inputSchema": {
+        "properties": {
+          "pattern": {
+            "description": "Glob match pattern.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "lpush",
+      "description": "Prepend values to a list.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "List key.",
+            "type": "string"
+          },
+          "values": {
+            "description": "Values to prepend.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "values"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "lrange",
+      "description": "Return a range of elements from a list.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "List key.",
+            "type": "string"
+          },
+          "start": {
+            "description": "Start index.",
+            "type": "integer"
+          },
+          "stop": {
+            "description": "Stop index.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "start",
+          "stop"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "publish",
+      "description": "Publish a message to a channel.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "Channel name.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message payload.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "scan",
+      "description": "Incrementally iterate keys matching a pattern.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Hint for keys per step.",
+            "type": "integer"
+          },
+          "cursor": {
+            "description": "Iteration cursor.",
+            "type": "integer"
+          },
+          "match": {
+            "description": "Glob pattern.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "set",
+      "description": "Set the string value of a key with an optional TTL.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "Key name.",
+            "type": "string"
+          },
+          "ttl": {
+            "description": "Expiry in seconds.",
+            "type": "integer"
+          },
+          "value": {
+            "description": "Value to store.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

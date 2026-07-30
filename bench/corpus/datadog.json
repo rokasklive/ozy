@@ -1,0 +1,425 @@
+{
+  "server": "datadog",
+  "mirrorSource": "Datadog MCP server (winor30/mcp-server-datadog), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "aggregate_logs",
+      "description": "Aggregate logs into a computed measure grouped by facets.",
+      "inputSchema": {
+        "properties": {
+          "group_by": {
+            "description": "Facets to group by.",
+            "type": "array"
+          },
+          "measure": {
+            "description": "Numeric measure to compute.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Log filter query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_dashboard",
+      "description": "Create a dashboard from a set of widgets.",
+      "inputSchema": {
+        "properties": {
+          "layout_type": {
+            "description": "ordered or free.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Dashboard title.",
+            "type": "string"
+          },
+          "widgets": {
+            "description": "Widget definitions.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "title",
+          "widgets"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_incident",
+      "description": "Declare a new incident.",
+      "inputSchema": {
+        "properties": {
+          "commander": {
+            "description": "Incident commander.",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Severity level.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Incident title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_monitor",
+      "description": "Create a monitor with a query and alert thresholds.",
+      "inputSchema": {
+        "properties": {
+          "message": {
+            "description": "Alert message.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Monitor name.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Monitor query.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Monitor type.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "query",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_slo",
+      "description": "Create a service level objective.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "SLO name.",
+            "type": "string"
+          },
+          "thresholds": {
+            "description": "Target and warning thresholds.",
+            "type": "array"
+          },
+          "type": {
+            "description": "metric or monitor.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_metric_metadata",
+      "description": "Fetch the unit and description metadata for a metric.",
+      "inputSchema": {
+        "properties": {
+          "metric": {
+            "description": "Metric name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_monitor",
+      "description": "Fetch a monitor's definition and state.",
+      "inputSchema": {
+        "properties": {
+          "monitor_id": {
+            "description": "Monitor ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "monitor_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_slo_status",
+      "description": "Get the current attainment of an SLO.",
+      "inputSchema": {
+        "properties": {
+          "slo_id": {
+            "description": "SLO ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slo_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_trace",
+      "description": "Fetch a distributed trace by ID.",
+      "inputSchema": {
+        "properties": {
+          "trace_id": {
+            "description": "Trace ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trace_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_dashboards",
+      "description": "List dashboards in the account.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_hosts",
+      "description": "List reporting hosts and their status.",
+      "inputSchema": {
+        "properties": {
+          "filter": {
+            "description": "Host filter query.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_incidents",
+      "description": "List declared incidents filtered by state.",
+      "inputSchema": {
+        "properties": {
+          "state": {
+            "description": "active or resolved.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_logs",
+      "description": "Search logs over a time range with a query.",
+      "inputSchema": {
+        "properties": {
+          "from": {
+            "description": "Start time.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum log lines.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Log search query.",
+            "type": "string"
+          },
+          "to": {
+            "description": "End time.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_monitors",
+      "description": "List monitors filtered by tag or name.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Filter by name substring.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Filter by tags.",
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "mute_host",
+      "description": "Mute alerting for a host.",
+      "inputSchema": {
+        "properties": {
+          "end": {
+            "description": "Unix time to unmute at.",
+            "type": "integer"
+          },
+          "hostname": {
+            "description": "Host name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hostname"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "mute_monitor",
+      "description": "Mute a monitor, optionally until a time.",
+      "inputSchema": {
+        "properties": {
+          "end": {
+            "description": "Unix time to unmute at.",
+            "type": "integer"
+          },
+          "monitor_id": {
+            "description": "Monitor ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "monitor_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "post_event",
+      "description": "Post an event to the event stream.",
+      "inputSchema": {
+        "properties": {
+          "alert_type": {
+            "description": "info, warning, or error.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Tags to attach.",
+            "type": "array"
+          },
+          "text": {
+            "description": "Event body.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Event title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "text"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "query_metrics",
+      "description": "Query a metric time series over a window.",
+      "inputSchema": {
+        "properties": {
+          "from": {
+            "description": "Start Unix time.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Metric query string.",
+            "type": "string"
+          },
+          "to": {
+            "description": "End Unix time.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_events",
+      "description": "Search the event stream over a time window.",
+      "inputSchema": {
+        "properties": {
+          "from": {
+            "description": "Start Unix time.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Event search query.",
+            "type": "string"
+          },
+          "to": {
+            "description": "End Unix time.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "submit_metric",
+      "description": "Submit metric points to a metric series.",
+      "inputSchema": {
+        "properties": {
+          "metric": {
+            "description": "Metric name.",
+            "type": "string"
+          },
+          "points": {
+            "description": "Timestamp/value pairs.",
+            "type": "array"
+          },
+          "tags": {
+            "description": "Tags to attach.",
+            "type": "array"
+          },
+          "type": {
+            "description": "gauge, count, or rate.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric",
+          "points"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

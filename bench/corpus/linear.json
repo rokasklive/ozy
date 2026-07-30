@@ -1,0 +1,415 @@
+{
+  "server": "linear",
+  "mirrorSource": "Linear MCP server (linear/linear-mcp), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_issue_to_cycle",
+      "description": "Move an issue into a cycle.",
+      "inputSchema": {
+        "properties": {
+          "cycle_id": {
+            "description": "Cycle ID.",
+            "type": "string"
+          },
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "cycle_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "archive_issue",
+      "description": "Archive an issue.",
+      "inputSchema": {
+        "properties": {
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "assign_issue",
+      "description": "Assign an issue to a user.",
+      "inputSchema": {
+        "properties": {
+          "assignee_id": {
+            "description": "Assignee user ID.",
+            "type": "string"
+          },
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "assignee_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_comment",
+      "description": "Comment on an issue.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Comment body in Markdown.",
+            "type": "string"
+          },
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_cycle",
+      "description": "Create a cycle (sprint) for a team.",
+      "inputSchema": {
+        "properties": {
+          "ends_at": {
+            "description": "Cycle end date.",
+            "type": "string"
+          },
+          "starts_at": {
+            "description": "Cycle start date.",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Team ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id",
+          "starts_at",
+          "ends_at"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_issue",
+      "description": "Create an issue in a team with a title and description.",
+      "inputSchema": {
+        "properties": {
+          "assignee_id": {
+            "description": "Assignee user ID.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Issue description.",
+            "type": "string"
+          },
+          "priority": {
+            "description": "Priority 0-4.",
+            "type": "integer"
+          },
+          "team_id": {
+            "description": "Team ID.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Issue title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_issue_relation",
+      "description": "Relate two issues as blocks, blocked-by, or duplicate.",
+      "inputSchema": {
+        "properties": {
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          },
+          "related_issue_id": {
+            "description": "Related issue ID.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Relation type.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "related_issue_id",
+          "type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_label",
+      "description": "Create an issue label for a team.",
+      "inputSchema": {
+        "properties": {
+          "color": {
+            "description": "Label color hex.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Label name.",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Team ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_milestone",
+      "description": "Create a milestone within a project.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Milestone name.",
+            "type": "string"
+          },
+          "project_id": {
+            "description": "Project ID.",
+            "type": "string"
+          },
+          "target_date": {
+            "description": "Target date.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_project",
+      "description": "Create a project with a name and target date.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Project name.",
+            "type": "string"
+          },
+          "target_date": {
+            "description": "Target completion date.",
+            "type": "string"
+          },
+          "team_ids": {
+            "description": "Teams the project belongs to.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "team_ids"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "Fetch an issue by ID or identifier.",
+      "inputSchema": {
+        "properties": {
+          "issue_id": {
+            "description": "Issue ID or identifier, e.g. ENG-42.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_project",
+      "description": "Fetch a project by ID.",
+      "inputSchema": {
+        "properties": {
+          "project_id": {
+            "description": "Project ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_team",
+      "description": "Fetch a team by ID.",
+      "inputSchema": {
+        "properties": {
+          "team_id": {
+            "description": "Team ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_cycles",
+      "description": "List a team's cycles.",
+      "inputSchema": {
+        "properties": {
+          "team_id": {
+            "description": "Team ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues filtered by team, state, or assignee.",
+      "inputSchema": {
+        "properties": {
+          "assignee_id": {
+            "description": "Filter by assignee.",
+            "type": "string"
+          },
+          "state": {
+            "description": "Filter by workflow state.",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Filter by team.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_projects",
+      "description": "List projects, optionally filtered by team.",
+      "inputSchema": {
+        "properties": {
+          "team_id": {
+            "description": "Filter by team.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_teams",
+      "description": "List the workspace's teams.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_workflow_states",
+      "description": "List a team's workflow states.",
+      "inputSchema": {
+        "properties": {
+          "team_id": {
+            "description": "Team ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_issues",
+      "description": "Full-text search across issues.",
+      "inputSchema": {
+        "properties": {
+          "first": {
+            "description": "Maximum results.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_issue",
+      "description": "Update an issue's fields or state.",
+      "inputSchema": {
+        "properties": {
+          "issue_id": {
+            "description": "Issue ID.",
+            "type": "string"
+          },
+          "priority": {
+            "description": "Priority 0-4.",
+            "type": "integer"
+          },
+          "state_id": {
+            "description": "Workflow state ID.",
+            "type": "string"
+          },
+          "title": {
+            "description": "New title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

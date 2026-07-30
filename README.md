@@ -186,13 +186,28 @@ CLI and MCP paths cannot drift.
   the full architecture, contract, and design.
 - [**evals/BENCHMARKS.md**](evals/BENCHMARKS.md) — public discovery / invocation
   scoreboard over the committed corpus.
+- [**bench/README.md**](bench/README.md) — the scenario benchmark: `direct`
+  (full ≥500-tool estate), `direct-lean` (only the MCPs the task needs — the
+  real-world baseline), and Ozy-brokered agent runs over an identical estate,
+  measuring **retrieval reliability at scale** (does Ozy resolve the right tool
+  out of hundreds?) alongside tool-surface and token economy. The
+  `ozy − direct-lean` delta is the primary comparison.
 - [**examples/ozy.jsonc**](examples/ozy.jsonc) — annotated starter config.
 - [**CONTRIBUTING.md**](CONTRIBUTING.md) — build, test, lint, and how to
   contribute.
 
 ## Acknowledgments
 
-[ContextSpy](https://github.com/RimantasZ/contextspy) by [RimantasZ](https://github.com/RimantasZ) — used in the bench harness to intercept and measure model API calls during scenario benchmarking.
+[ContextSpy](https://github.com/RimantasZ/contextspy) by [RimantasZ](https://github.com/RimantasZ) — was used in an earlier bench harness to intercept and measure model API calls during scenario benchmarking. The harness now takes token metrics from the agent's own usage events, so it no longer depends on ContextSpy.
+
+The scenario benchmark's four functional fixture toolsets mirror the tool
+surfaces of these real public MCP servers (reimplemented as hermetic Go fixtures
+over baked data — no live upstreams): [weather-mcp](https://github.com/weather-mcp/weather-mcp),
+[nickclyde/duckduckgo-mcp-server](https://github.com/nickclyde/duckduckgo-mcp-server),
+[Rudra-ravi/wikipedia-mcp](https://github.com/Rudra-ravi/wikipedia-mcp), and
+[AryanBV/pdf-toolkit-mcp](https://github.com/AryanBV/pdf-toolkit-mcp). The
+≥500-tool corpus mirrors many more documented servers; see
+[bench/corpus/README.md](bench/corpus/README.md).
 
 ## License
 

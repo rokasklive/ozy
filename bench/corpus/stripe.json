@@ -1,0 +1,567 @@
+{
+  "server": "stripe",
+  "mirrorSource": "Stripe MCP server (stripe/agent-toolkit), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "cancel_subscription",
+      "description": "Cancel a subscription immediately or at period end.",
+      "inputSchema": {
+        "properties": {
+          "at_period_end": {
+            "description": "Cancel at the end of the billing period.",
+            "type": "boolean"
+          },
+          "subscription_id": {
+            "description": "Subscription ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subscription_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "confirm_payment_intent",
+      "description": "Confirm a PaymentIntent to attempt payment.",
+      "inputSchema": {
+        "properties": {
+          "payment_intent_id": {
+            "description": "PaymentIntent ID.",
+            "type": "string"
+          },
+          "payment_method": {
+            "description": "Payment method ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_intent_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_charge",
+      "description": "Create a one-time charge against a customer or source.",
+      "inputSchema": {
+        "properties": {
+          "amount": {
+            "description": "Amount in the smallest currency unit.",
+            "type": "integer"
+          },
+          "currency": {
+            "description": "Three-letter currency code.",
+            "type": "string"
+          },
+          "customer": {
+            "description": "Customer ID to charge.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Charge description.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_checkout_session",
+      "description": "Create a hosted Checkout session for a set of line items.",
+      "inputSchema": {
+        "properties": {
+          "line_items": {
+            "description": "Line items with price and quantity.",
+            "type": "array"
+          },
+          "mode": {
+            "description": "payment, subscription, or setup.",
+            "type": "string"
+          },
+          "success_url": {
+            "description": "Redirect URL on success.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "line_items",
+          "mode"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_coupon",
+      "description": "Create a discount coupon.",
+      "inputSchema": {
+        "properties": {
+          "amount_off": {
+            "description": "Fixed discount amount.",
+            "type": "integer"
+          },
+          "duration": {
+            "description": "once, repeating, or forever.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Coupon ID.",
+            "type": "string"
+          },
+          "percent_off": {
+            "description": "Percent discount.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_customer",
+      "description": "Create a customer record with email and metadata.",
+      "inputSchema": {
+        "properties": {
+          "description": {
+            "description": "Internal description.",
+            "type": "string"
+          },
+          "email": {
+            "description": "Customer email.",
+            "type": "string"
+          },
+          "metadata": {
+            "description": "Key-value metadata.",
+            "type": "object"
+          },
+          "name": {
+            "description": "Customer name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_dispute_evidence",
+      "description": "Submit evidence for a disputed charge.",
+      "inputSchema": {
+        "properties": {
+          "dispute_id": {
+            "description": "Dispute ID.",
+            "type": "string"
+          },
+          "evidence": {
+            "description": "Evidence fields.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "dispute_id",
+          "evidence"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_invoice",
+      "description": "Create a draft invoice for a customer.",
+      "inputSchema": {
+        "properties": {
+          "auto_advance": {
+            "description": "Automatically finalize and send.",
+            "type": "boolean"
+          },
+          "customer": {
+            "description": "Customer ID.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Invoice memo.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_payment_intent",
+      "description": "Create a PaymentIntent to collect a payment.",
+      "inputSchema": {
+        "properties": {
+          "amount": {
+            "description": "Amount in the smallest currency unit.",
+            "type": "integer"
+          },
+          "currency": {
+            "description": "Currency code.",
+            "type": "string"
+          },
+          "customer": {
+            "description": "Customer ID.",
+            "type": "string"
+          },
+          "payment_method": {
+            "description": "Payment method ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_payment_link",
+      "description": "Create a shareable payment link for prices.",
+      "inputSchema": {
+        "properties": {
+          "line_items": {
+            "description": "Line items with price and quantity.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "line_items"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_payout",
+      "description": "Send a payout to the connected bank account.",
+      "inputSchema": {
+        "properties": {
+          "amount": {
+            "description": "Amount in the smallest currency unit.",
+            "type": "integer"
+          },
+          "currency": {
+            "description": "Currency code.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Payout description.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_price",
+      "description": "Create a price for a product.",
+      "inputSchema": {
+        "properties": {
+          "currency": {
+            "description": "Currency code.",
+            "type": "string"
+          },
+          "product": {
+            "description": "Product ID.",
+            "type": "string"
+          },
+          "recurring": {
+            "description": "Recurring interval settings.",
+            "type": "object"
+          },
+          "unit_amount": {
+            "description": "Price in the smallest currency unit.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "product",
+          "unit_amount",
+          "currency"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_product",
+      "description": "Create a product that prices attach to.",
+      "inputSchema": {
+        "properties": {
+          "active": {
+            "description": "Whether the product is active.",
+            "type": "boolean"
+          },
+          "description": {
+            "description": "Product description.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Product name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_refund",
+      "description": "Refund a charge or payment intent in full or part.",
+      "inputSchema": {
+        "properties": {
+          "amount": {
+            "description": "Amount to refund; omit for full.",
+            "type": "integer"
+          },
+          "charge": {
+            "description": "Charge ID to refund.",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Refund reason.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "charge"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_subscription",
+      "description": "Subscribe a customer to one or more prices.",
+      "inputSchema": {
+        "properties": {
+          "customer": {
+            "description": "Customer ID.",
+            "type": "string"
+          },
+          "items": {
+            "description": "Subscription items with price IDs.",
+            "type": "array"
+          },
+          "trial_period_days": {
+            "description": "Free trial length.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "customer",
+          "items"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "finalize_invoice",
+      "description": "Finalize a draft invoice so it can be paid.",
+      "inputSchema": {
+        "properties": {
+          "invoice_id": {
+            "description": "Invoice ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_customer",
+      "description": "Retrieve a customer by ID.",
+      "inputSchema": {
+        "properties": {
+          "customer_id": {
+            "description": "Customer ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_charges",
+      "description": "List charges, optionally filtered by customer.",
+      "inputSchema": {
+        "properties": {
+          "customer": {
+            "description": "Filter by customer ID.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_customers",
+      "description": "List customers, optionally filtered by email.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Filter by email.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_invoices",
+      "description": "List invoices, filtered by customer or status.",
+      "inputSchema": {
+        "properties": {
+          "customer": {
+            "description": "Filter by customer ID.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          },
+          "status": {
+            "description": "draft, open, paid, or void.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_payouts",
+      "description": "List payouts filtered by status.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          },
+          "status": {
+            "description": "pending, paid, or failed.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_prices",
+      "description": "List prices, optionally filtered by product.",
+      "inputSchema": {
+        "properties": {
+          "active": {
+            "description": "Only active prices.",
+            "type": "boolean"
+          },
+          "product": {
+            "description": "Filter by product ID.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "retrieve_balance",
+      "description": "Retrieve the current account balance.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_customer",
+      "description": "Update a customer's details.",
+      "inputSchema": {
+        "properties": {
+          "customer_id": {
+            "description": "Customer ID.",
+            "type": "string"
+          },
+          "email": {
+            "description": "New email.",
+            "type": "string"
+          },
+          "name": {
+            "description": "New name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_subscription",
+      "description": "Change the items or settings on a subscription.",
+      "inputSchema": {
+        "properties": {
+          "items": {
+            "description": "Updated subscription items.",
+            "type": "array"
+          },
+          "proration_behavior": {
+            "description": "How to prorate the change.",
+            "type": "string"
+          },
+          "subscription_id": {
+            "description": "Subscription ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subscription_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "void_invoice",
+      "description": "Void a finalized invoice.",
+      "inputSchema": {
+        "properties": {
+          "invoice_id": {
+            "description": "Invoice ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

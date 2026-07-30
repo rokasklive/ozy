@@ -1,0 +1,248 @@
+{
+  "server": "confluence",
+  "mirrorSource": "Atlassian Confluence MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_comment",
+      "description": "Add a comment to a page.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Comment body.",
+            "type": "string"
+          },
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_label",
+      "description": "Add a label to a page.",
+      "inputSchema": {
+        "properties": {
+          "label": {
+            "description": "Label name.",
+            "type": "string"
+          },
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "label"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "attach_file",
+      "description": "Attach a file to a page.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "File content.",
+            "type": "string"
+          },
+          "filename": {
+            "description": "Attachment file name.",
+            "type": "string"
+          },
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "filename",
+          "content"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_page",
+      "description": "Create a Confluence page in a space.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Page body in storage format.",
+            "type": "string"
+          },
+          "parent_id": {
+            "description": "Parent page ID.",
+            "type": "string"
+          },
+          "space_key": {
+            "description": "Space key.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Page title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "space_key",
+          "title",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_space",
+      "description": "Create a new space.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "Space key.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Space name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_page",
+      "description": "Delete a page.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_page",
+      "description": "Fetch a page by ID with its body.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_page_children",
+      "description": "List the child pages of a page.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_page_history",
+      "description": "List the version history of a page.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_spaces",
+      "description": "List spaces the user can view.",
+      "inputSchema": {
+        "properties": {
+          "type": {
+            "description": "global or personal.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_content",
+      "description": "Search content with a CQL query.",
+      "inputSchema": {
+        "properties": {
+          "cql": {
+            "description": "Confluence Query Language string.",
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum results.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cql"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_page",
+      "description": "Update a page's title or body, bumping its version.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "New body.",
+            "type": "string"
+          },
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Current version number.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "page_id",
+          "body",
+          "version"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

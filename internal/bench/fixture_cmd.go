@@ -2,6 +2,7 @@ package bench
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -24,14 +25,29 @@ func (a *app) fixtureCmd() *cobra.Command {
 				out = "/tmp/ozy-bench-fixture-" + scenario
 			}
 
-			meta, err := GenerateFixture(out)
+			// Data-only scenarios materialize by copying their checked-in baked
+			// fixture (weather/search/wikipedia JSON) into the target dir.
+			var (
+				meta *FixtureMeta
+				err  error
+			)
+			switch scenario {
+			case "historical-weather-report":
+				src := filepath.Join("scenarios", scenario, "fixture")
+				meta, err = GenerateCopyFixture(src, out)
+			default:
+				fmt.Fprintf(a.errOut, "ozy-bench fixture: unknown scenario %q\n", scenario)
+				return nil
+			}
 			if err != nil {
 				fmt.Fprintf(a.errOut, "ozy-bench fixture: %v\n", err)
 				return nil
 			}
 
 			fmt.Fprintf(a.out, "Fixture generated at %s\n", meta.TargetDir)
-			fmt.Fprintf(a.out, "  Culprit commit: %s (%s)\n", meta.CulpritHash, meta.CulpritSubject)
+			if meta.CulpritHash != "" {
+				fmt.Fprintf(a.out, "  Culprit commit: %s (%s)\n", meta.CulpritHash, meta.CulpritSubject)
+			}
 			return nil
 		},
 	}

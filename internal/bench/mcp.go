@@ -1,23 +1,23 @@
 package bench
 
 import (
+	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"sync"
 	"syscall"
-	"time"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 )
+
+// outputDirEnv names the per-run agent workspace where functional tools (the
+// pdf-toolkit) resolve relative output paths, so the grader finds deliverables.
+const outputDirEnv = "OZY_BENCH_OUTPUT_DIR"
 
 // jsonResult marshals v into a CallToolResult containing JSON text content.
 // Compact (not indented): these tool results are agent-facing context, so
@@ -34,67 +34,30 @@ func jsonResult(v any) *mcpsdk.CallToolResult {
 	}
 }
 
-// safePath returns the absolute path resolved under fixtureDir, rejecting
-// paths that contain ".." to prevent directory traversal.
-func safePath(fixtureDir, relPath string) (string, error) {
-	if strings.Contains(relPath, "..") {
-		return "", fmt.Errorf("path traversal not allowed: %s", relPath)
-	}
-	return filepath.Join(fixtureDir, relPath), nil
-}
-
-// execOutput runs cmd and returns trimmed stdout, or stderr on failure.
-func execOutput(cmd *exec.Cmd) (string, error) {
-	out, err := cmd.Output()
-	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			return "", fmt.Errorf("%w: %s", err, string(exitErr.Stderr))
-		}
-		return "", err
-	}
-	return strings.TrimSpace(string(out)), nil
-}
-
-// runRg runs ripgrep with the given args in dir and returns the output.
-// ripgrep exits 1 when there are no matches — a valid empty result, not an
-// error; only exit code >= 2 is a real failure.
-func runRg(dir string, args ...string) (string, error) {
-	//nolint:gosec // G204: ripgrep is invoked intentionally for bench code search.
-	cmd := exec.Command("rg", args...)
-	cmd.Dir = dir
-	out, err := cmd.Output()
-	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			if exitErr.ExitCode() == 1 {
-				return "", nil
-			}
-			return "", fmt.Errorf("%w: %s", err, string(exitErr.Stderr))
-		}
-		return "", err
-	}
-	return strings.TrimSpace(string(out)), nil
-}
-
-// runGit runs git with the given args in dir and returns the output.
-//
-//nolint:gosec // G204: git subprocess is intentional for bench fixture.
-func runGit(dir string, args ...string) (string, error) {
-	cmd := exec.Command("git", args...)
-	cmd.Dir = dir
-	return execOutput(cmd)
-}
-
 // ServeMCP creates an MCP server for the given toolset and serves it over
-// stdio. fixtureDir is used by toolsets that need access to the fixture
-// directory (code-search, git, incident-db, filesystem).
+// stdio. fixtureDir is used by toolsets that read baked fixture data
+// (weather, duckduckgo, wikipedia).
 func ServeMCP(toolset, fixtureDir string) error {
 	srv, err := newMCPServer(toolset, fixtureDir)
 	if err != nil {
 		return fmt.Errorf("create mcp server: %w", err)
 	}
+	return serveStdio(srv)
+}
 
+// ServeCorpus serves a data-defined corpus server over stdio. fixtureDir feeds
+// the `functional:search` backend (baked search corpus); functional:pdf writes to
+// the agent workspace (OZY_BENCH_OUTPUT_DIR) and needs no fixtureDir.
+func ServeCorpus(name, corpusDir, fixtureDir string) error {
+	srv, err := newCorpusServer(name, corpusDir, fixtureDir)
+	if err != nil {
+		return fmt.Errorf("create corpus server: %w", err)
+	}
+	return serveStdio(srv)
+}
+
+// serveStdio runs srv over stdio until SIGINT/SIGTERM.
+func serveStdio(srv *mcpsdk.Server) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -120,608 +83,171 @@ func newMCPServer(toolset, fixtureDir string) (*mcpsdk.Server, error) {
 	}, nil)
 
 	switch toolset {
-	case "code-search":
-		registerCodeSearch(srv, fixtureDir)
-	case "git":
-		registerGit(srv, fixtureDir)
-	case "incident-db":
-		registerIncidentDB(srv, fixtureDir)
-	case "filesystem":
-		registerFilesystem(srv, fixtureDir)
-	case "time":
-		registerTime(srv)
-	case "memory":
-		registerMemory(srv)
-	case "notes":
-		registerNotes(srv)
+	case "weather":
+		registerWeather(srv, fixtureDir)
+	case "duckduckgo":
+		registerDuckDuckGo(srv, fixtureDir)
+	case "wikipedia":
+		registerWikipedia(srv, fixtureDir)
+	case "pdf-toolkit":
+		registerPDFToolkit(srv)
 	default:
-		return nil, fmt.Errorf("unknown toolset: %s (valid: code-search, git, incident-db, filesystem, time, memory, notes)", toolset)
+		return nil, fmt.Errorf("unknown toolset: %s (valid: weather, duckduckgo, wikipedia, pdf-toolkit)", toolset)
 	}
 
+	// Server-side invocation logging covers this toolset's tools (D4).
+	srv.AddReceivingMiddleware(callLogMiddleware(toolset))
 	return srv, nil
 }
 
-// ---------------------------------------------------------------------------
-// code-search toolset
-// ---------------------------------------------------------------------------
-
-type searchTextInput struct {
-	Query string `json:"query"`
-}
-
-type searchSymbolInput struct {
-	Symbol string `json:"symbol"`
-}
-
-type readFileInput struct {
-	Path string `json:"path"`
-}
-
-type findReferencesInput struct {
-	Symbol string `json:"symbol"`
-}
-
-func registerCodeSearch(srv *mcpsdk.Server, fixtureDir string) {
-	searchRoot := filepath.Join(fixtureDir, "src")
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "search_text",
-		Title:       "Search text in fixture source files",
-		Description: "Case-insensitive full-text search across all source files using ripgrep. Returns matching lines with file paths and line numbers.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in searchTextInput) (*mcpsdk.CallToolResult, any, error) {
-		out, err := runRg(searchRoot, "-n", "-i", "--no-heading", in.Query)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "query": in.Query}), nil, nil
-		}
-		return jsonResult(map[string]any{"query": in.Query, "results": out}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "search_symbol",
-		Title:       "Search for a symbol in fixture source files",
-		Description: "Word-boundary symbol search across all source files using ripgrep. Returns matching lines with file paths and line numbers.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in searchSymbolInput) (*mcpsdk.CallToolResult, any, error) {
-		out, err := runRg(searchRoot, "-n", "-w", in.Symbol)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "symbol": in.Symbol}), nil, nil
-		}
-		return jsonResult(map[string]any{"symbol": in.Symbol, "results": out}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "read_file",
-		Title:       "Read a file from the fixture directory",
-		Description: "Read and return the full content of a file within the fixture directory. Path is relative to the fixture root.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in readFileInput) (*mcpsdk.CallToolResult, any, error) {
-		fullPath, err := safePath(fixtureDir, in.Path)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
-		}
-		//nolint:gosec // G304: path is validated by safePath above.
-		data, err := os.ReadFile(fullPath)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "path": in.Path}), nil, nil
-		}
-		return jsonResult(map[string]any{"path": in.Path, "content": string(data)}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "find_references",
-		Title:       "Find all references to a symbol",
-		Description: "Search for all occurrences of a symbol across the fixture source tree using word-boundary ripgrep. Returns all matching lines with file paths.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in findReferencesInput) (*mcpsdk.CallToolResult, any, error) {
-		out, err := runRg(searchRoot, "-n", "-w", in.Symbol)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "symbol": in.Symbol}), nil, nil
-		}
-		return jsonResult(map[string]any{"symbol": in.Symbol, "references": out}), nil, nil
-	})
-}
-
-// ---------------------------------------------------------------------------
-// git toolset
-// ---------------------------------------------------------------------------
-
-type gitLogInput struct {
-	Path     *string `json:"path,omitempty"`
-	MaxCount *int    `json:"maxCount,omitempty"`
-}
-
-type gitShowInput struct {
-	CommitRef string `json:"commitRef"`
-}
-
-type gitBlameInput struct {
-	FilePath string `json:"filePath"`
-}
-
-type gitDiffInput struct {
-	CommitRef *string `json:"commitRef,omitempty"`
-}
-
-func registerGit(srv *mcpsdk.Server, fixtureDir string) {
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "git_log",
-		Title:       "Show git commit log",
-		Description: "Show the git commit log in one-line format. Optionally restrict to a path and limit the number of entries.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in gitLogInput) (*mcpsdk.CallToolResult, any, error) {
-		args := []string{"log", "--oneline"}
-		if in.MaxCount != nil && *in.MaxCount > 0 {
-			args = append(args, fmt.Sprintf("-%d", *in.MaxCount))
-		}
-		if in.Path != nil && *in.Path != "" {
-			args = append(args, "--", *in.Path)
-		}
-		out, err := runGit(fixtureDir, args...)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
-		}
-		return jsonResult(map[string]any{"commits": out}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "git_show",
-		Title:       "Show details of a git commit",
-		Description: "Show the full diff and commit message for a given commit reference.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in gitShowInput) (*mcpsdk.CallToolResult, any, error) {
-		out, err := runGit(fixtureDir, "show", in.CommitRef)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "commitRef": in.CommitRef}), nil, nil
-		}
-		return jsonResult(map[string]any{"commitRef": in.CommitRef, "diff": out}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "git_blame",
-		Title:       "Show git blame for a file",
-		Description: "Show line-by-line authorship information for a file in the repository.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in gitBlameInput) (*mcpsdk.CallToolResult, any, error) {
-		out, err := runGit(fixtureDir, "blame", in.FilePath)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "filePath": in.FilePath}), nil, nil
-		}
-		return jsonResult(map[string]any{"filePath": in.FilePath, "blame": out}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "git_diff",
-		Title:       "Show git diff",
-		Description: "Show the working tree diff, or the diff for a specific commit reference.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in gitDiffInput) (*mcpsdk.CallToolResult, any, error) {
-		args := []string{"diff"}
-		if in.CommitRef != nil && *in.CommitRef != "" {
-			args = append(args, *in.CommitRef)
-		}
-		out, err := runGit(fixtureDir, args...)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
-		}
-		return jsonResult(map[string]any{"diff": out}), nil, nil
-	})
-}
-
-// ---------------------------------------------------------------------------
-// incident-db toolset
-// ---------------------------------------------------------------------------
-
-type listTablesInput struct{}
-
-type describeTableInput struct {
-	TableName string `json:"tableName"`
-}
-
-type queryReadonlyInput struct {
-	Query string `json:"query"`
-}
-
-// isReadOnlySQL returns true if the statement is a read-only SQL statement
-// (SELECT, PRAGMA, or EXPLAIN).
-func isReadOnlySQL(query string) bool {
-	trimmed := strings.TrimSpace(strings.ToUpper(query))
-	if strings.HasPrefix(trimmed, "SELECT") {
-		return true
+// newBenchServer builds the in-process MCP server for a scenario server spec: a
+// functional toolset, or a corpus server.
+func newBenchServer(bs benchServer, fixtureDir, corpusDir string) (*mcpsdk.Server, error) {
+	if bs.Corpus {
+		return newCorpusServer(bs.Name, corpusDir, fixtureDir)
 	}
-	if strings.HasPrefix(trimmed, "PRAGMA") {
-		return true
-	}
-	if strings.HasPrefix(trimmed, "EXPLAIN") {
-		return true
-	}
-	return false
+	return newMCPServer(bs.Name, fixtureDir)
 }
 
-// forbiddenWriteStmt checks if the query contains forbidden write operations.
-func forbiddenWriteStmt(query string) bool {
-	upper := strings.ToUpper(query)
-	for _, keyword := range []string{"INSERT", "UPDATE", "DELETE", "DROP", "ALTER"} {
-		if strings.Contains(upper, keyword) {
-			return true
+// newCorpusServer builds an MCP server for a data-defined corpus server: it
+// loads <corpusDir>/<name>.json and serves each tool's raw schema, routing calls
+// by the tool's Behavior (D3): a deterministic stub (default), a realistic
+// authentication-required error (auth-gated rivals), or real data via a shared
+// functional backend (no-auth same-capability rivals). Adding a corpus server is
+// a data change.
+func newCorpusServer(name, corpusDir, fixtureDir string) (*mcpsdk.Server, error) {
+	cs, err := LoadCorpusServer(filepath.Join(corpusDir, name+".json"))
+	if err != nil {
+		return nil, fmt.Errorf("load corpus server %q: %w", name, err)
+	}
+	srv := mcpsdk.NewServer(&mcpsdk.Implementation{
+		Name:    "ozy-bench-" + name,
+		Title:   fmt.Sprintf("Ozy Bench %s Corpus MCP Server", name),
+		Version: "0.1.0",
+	}, nil)
+
+	for _, tool := range cs.Tools {
+		t := &mcpsdk.Tool{
+			Name:        tool.Name,
+			Description: tool.Description,
+			// Served verbatim: the SDK accepts any value marshaling to valid
+			// JSON schema for a server-only tool (no auto-validation).
+			InputSchema: tool.InputSchema,
+		}
+		srv.AddTool(t, corpusHandler(cs.Server, tool, fixtureDir))
+	}
+
+	srv.AddReceivingMiddleware(callLogMiddleware(name))
+	return srv, nil
+}
+
+// corpusHandler returns the tool handler for a corpus tool's behavior tier: a
+// legible auth-required error, a shared functional backend, or the deterministic
+// stub. Handlers are byte-stable per tool (the stub and auth error ignore
+// arguments; functional backends are deterministic over the baked fixture).
+func corpusHandler(server string, tool CorpusTool, fixtureDir string) mcpsdk.ToolHandler {
+	switch {
+	case tool.Behavior == "auth_error":
+		errResult := corpusAuthError(server)
+		return func(_ context.Context, _ *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
+			return errResult, nil
+		}
+	case strings.HasPrefix(tool.Behavior, "functional:"):
+		backend := strings.TrimPrefix(tool.Behavior, "functional:")
+		return corpusFunctionalHandler(backend, fixtureDir)
+	default:
+		resp := corpusResponse(tool)
+		return func(_ context.Context, _ *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
+			return &mcpsdk.CallToolResult{Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: resp}}}, nil
 		}
 	}
-	return false
 }
 
-func registerIncidentDB(srv *mcpsdk.Server, fixtureDir string) {
-	dbPath := filepath.Join(fixtureDir, "db", "incident.sqlite")
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "list_tables",
-		Title:       "List all tables in the incident database",
-		Description: "Return a list of all table names in the incident SQLite database.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ listTablesInput) (*mcpsdk.CallToolResult, any, error) {
-		db, err := sql.Open("sqlite", dbPath+"?mode=ro")
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("open db: %v", err)}), nil, nil
-		}
-		defer func() { _ = db.Close() }()
-
-		rows, err := db.QueryContext(ctx, "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("query tables: %v", err)}), nil, nil
-		}
-		defer func() { _ = rows.Close() }()
-
-		var tables []string
-		for rows.Next() {
-			var name string
-			if err := rows.Scan(&name); err != nil {
-				return jsonResult(map[string]any{"error": fmt.Sprintf("scan: %v", err)}), nil, nil
-			}
-			tables = append(tables, name)
-		}
-		if err := rows.Err(); err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("rows: %v", err)}), nil, nil
-		}
-		return jsonResult(map[string]any{"tables": tables}), nil, nil
+// corpusAuthError builds the deterministic authentication-required error an
+// auth-gated rival returns for a keyless agent, so the pick fails legibly and the
+// agent routes to a working tool (D3).
+func corpusAuthError(server string) *mcpsdk.CallToolResult {
+	msg, _ := json.Marshal(map[string]any{
+		"error":  "authentication required",
+		"code":   401,
+		"detail": server + " requires an API key or credentials that are not configured in this environment",
 	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "describe_table",
-		Title:       "Describe a table's schema",
-		Description: "Return column information for a table using PRAGMA table_info.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in describeTableInput) (*mcpsdk.CallToolResult, any, error) {
-		db, err := sql.Open("sqlite", dbPath+"?mode=ro")
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("open db: %v", err)}), nil, nil
-		}
-		defer func() { _ = db.Close() }()
-
-		rows, err := db.QueryContext(ctx, fmt.Sprintf("PRAGMA table_info(%s)", in.TableName))
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("describe table: %v", err), "tableName": in.TableName}), nil, nil
-		}
-		defer func() { _ = rows.Close() }()
-
-		cols, err := rows.Columns()
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("columns: %v", err)}), nil, nil
-		}
-		var results []map[string]any
-		for rows.Next() {
-			vals := make([]any, len(cols))
-			valPtrs := make([]any, len(cols))
-			for i := range vals {
-				valPtrs[i] = &vals[i]
-			}
-			if err := rows.Scan(valPtrs...); err != nil {
-				return jsonResult(map[string]any{"error": fmt.Sprintf("scan: %v", err)}), nil, nil
-			}
-			row := make(map[string]any, len(cols))
-			for i, col := range cols {
-				row[col] = fmt.Sprintf("%v", vals[i])
-			}
-			results = append(results, row)
-		}
-		if err := rows.Err(); err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("rows: %v", err)}), nil, nil
-		}
-		return jsonResult(map[string]any{"tableName": in.TableName, "columns": results}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "query_readonly",
-		Title:       "Execute a read-only SQL query",
-		Description: "Execute a SELECT, PRAGMA, or EXPLAIN query against the incident database. Write operations are rejected.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in queryReadonlyInput) (*mcpsdk.CallToolResult, any, error) {
-		if forbiddenWriteStmt(in.Query) {
-			return jsonResult(map[string]any{
-				"error":  "write statements are not allowed",
-				"detail": "only SELECT, PRAGMA, and EXPLAIN are permitted",
-			}), nil, nil
-		}
-		if !isReadOnlySQL(in.Query) {
-			return jsonResult(map[string]any{
-				"error":  "unrecognized statement type",
-				"detail": "only SELECT, PRAGMA, and EXPLAIN are permitted",
-			}), nil, nil
-		}
-
-		db, err := sql.Open("sqlite", dbPath+"?mode=ro")
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("open db: %v", err)}), nil, nil
-		}
-		defer func() { _ = db.Close() }()
-
-		rows, err := db.QueryContext(ctx, in.Query)
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("query: %v", err), "query": in.Query}), nil, nil
-		}
-		defer func() { _ = rows.Close() }()
-
-		cols, err := rows.Columns()
-		if err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("columns: %v", err)}), nil, nil
-		}
-		var results []map[string]any
-		for rows.Next() {
-			vals := make([]any, len(cols))
-			valPtrs := make([]any, len(cols))
-			for i := range vals {
-				valPtrs[i] = &vals[i]
-			}
-			if err := rows.Scan(valPtrs...); err != nil {
-				return jsonResult(map[string]any{"error": fmt.Sprintf("scan: %v", err)}), nil, nil
-			}
-			row := make(map[string]any, len(cols))
-			for i, col := range cols {
-				row[col] = fmt.Sprintf("%v", vals[i])
-			}
-			results = append(results, row)
-		}
-		if err := rows.Err(); err != nil {
-			return jsonResult(map[string]any{"error": fmt.Sprintf("rows: %v", err)}), nil, nil
-		}
-		return jsonResult(map[string]any{"columns": cols, "rows": results}), nil, nil
-	})
+	return &mcpsdk.CallToolResult{
+		IsError: true,
+		Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: string(msg)}},
+	}
 }
 
-// ---------------------------------------------------------------------------
-// filesystem toolset
-// ---------------------------------------------------------------------------
-
-type fsReadFileInput struct {
-	Path string `json:"path"`
-}
-
-type listDirInput struct {
-	Path string `json:"path"`
-}
-
-func registerFilesystem(srv *mcpsdk.Server, fixtureDir string) {
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "read_file",
-		Title:       "Read a file from the fixture directory",
-		Description: "Read and return the full content of a file within the fixture directory. Path is relative to the fixture root.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in fsReadFileInput) (*mcpsdk.CallToolResult, any, error) {
-		fullPath, err := safePath(fixtureDir, in.Path)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
+// corpusFunctionalHandler routes a no-auth same-capability rival to a shared
+// backend over the baked fixture: `search` ranks the fixture corpus; `pdf` writes
+// a PDF to the agent workspace. Args are read generically (rivals use varying
+// field names), so the same handler serves whichever schema the rival declares.
+func corpusFunctionalHandler(backend, fixtureDir string) mcpsdk.ToolHandler {
+	return func(_ context.Context, req *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
+		args := map[string]any{}
+		if req.Params != nil && len(req.Params.Arguments) > 0 {
+			_ = json.Unmarshal(req.Params.Arguments, &args)
 		}
-		//nolint:gosec // G304: path is validated by safePath above.
-		data, err := os.ReadFile(fullPath)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "path": in.Path}), nil, nil
-		}
-		return jsonResult(map[string]any{"path": in.Path, "content": string(data)}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "list_dir",
-		Title:       "List directory contents",
-		Description: "List files and directories within a path in the fixture directory. Path is relative to the fixture root.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in listDirInput) (*mcpsdk.CallToolResult, any, error) {
-		fullPath, err := safePath(fixtureDir, in.Path)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error()}), nil, nil
-		}
-		entries, err := os.ReadDir(fullPath)
-		if err != nil {
-			return jsonResult(map[string]any{"error": err.Error(), "path": in.Path}), nil, nil
-		}
-		var result []map[string]any
-		for _, e := range entries {
-			result = append(result, map[string]any{
-				"name":  e.Name(),
-				"isDir": e.IsDir(),
-			})
-		}
-		return jsonResult(map[string]any{"path": in.Path, "entries": result}), nil, nil
-	})
-}
-
-// ---------------------------------------------------------------------------
-// time toolset
-// ---------------------------------------------------------------------------
-
-type currentTimeInput struct{}
-
-type convertTimezoneInput struct {
-	Time   string `json:"time"`
-	FromTz string `json:"fromTz"`
-	ToTz   string `json:"toTz"`
-}
-
-func registerTime(srv *mcpsdk.Server) {
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "current_time",
-		Title:       "Get current UTC time",
-		Description: "Returns the current time in UTC as an ISO 8601 string.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ currentTimeInput) (*mcpsdk.CallToolResult, any, error) {
-		now := time.Now().UTC().Format(time.RFC3339)
-		return jsonResult(map[string]any{"time": now, "timezone": "UTC"}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "convert_timezone",
-		Title:       "Convert time between timezones",
-		Description: "Convert a time string from one timezone to another. Accepts ISO 8601 time strings.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in convertTimezoneInput) (*mcpsdk.CallToolResult, any, error) {
-		// Simple/fake conversion: parse the time, apply offset from timezone
-		// abbreviation or hour offset, and return the shifted time.
-		fromOffset := parseTzOffset(in.FromTz)
-		toOffset := parseTzOffset(in.ToTz)
-
-		t, err := time.Parse(time.RFC3339, in.Time)
-		if err != nil {
-			// Try a simpler format.
-			t, err = time.Parse("2006-01-02T15:04:05", in.Time)
+		switch backend {
+		case "search":
+			res, err := searchFixtureResults(fixtureDir, firstStringArg(args, "query", "q", "search"), intArg(args, "count", "max_results", "limit"))
 			if err != nil {
-				return jsonResult(map[string]any{"error": fmt.Sprintf("cannot parse time: %v", err)}), nil, nil
+				return jsonResult(map[string]any{"error": "no baked search corpus: " + err.Error()}), nil
 			}
+			return jsonResult(res), nil
+		case "pdf":
+			out := firstStringArg(args, "output_path", "outputPath", "path")
+			body := firstStringArg(args, "content", "html", "text", "markdown")
+			full, err := writeFixturePDF(out, "", body)
+			if err != nil {
+				return jsonResult(map[string]any{"error": err.Error()}), nil
+			}
+			return jsonResult(map[string]any{"outputPath": out, "path": full, "ok": true}), nil
+		default:
+			return jsonResult(map[string]any{"error": "unknown functional backend: " + backend}), nil
 		}
-
-		// Remove fromTz offset, add toTz offset.
-		adjusted := t.Add(time.Duration(-fromOffset) * time.Hour).Add(time.Duration(toOffset) * time.Hour)
-		return jsonResult(map[string]any{
-			"original":  in.Time,
-			"fromTz":    in.FromTz,
-			"toTz":      in.ToTz,
-			"converted": adjusted.Format(time.RFC3339),
-		}), nil, nil
-	})
+	}
 }
 
-// parseTzOffset converts a timezone string to an hour offset. Handles common
-// abbreviations and UTC offset strings like "+05:30" or "-04:00".
-func parseTzOffset(tz string) int {
-	tz = strings.TrimSpace(tz)
-	tzUpper := strings.ToUpper(tz)
-
-	offsets := map[string]int{
-		"UTC": 0, "GMT": 0, "Z": 0,
-		"EST": -5, "EDT": -4,
-		"CST": -6, "CDT": -5,
-		"MST": -7, "MDT": -6,
-		"PST": -8, "PDT": -7,
-		"CET": 1, "CEST": 2,
-		"EET": 2, "EEST": 3,
-		"IST":  5, // India: +05:30 (simplified to 5)
-		"JST":  9,
-		"AEST": 10,
-	}
-	if offset, ok := offsets[tzUpper]; ok {
-		return offset
-	}
-
-	// Try parsing as ±HH:MM or ±HH.
-	if strings.HasPrefix(tz, "+") || strings.HasPrefix(tz, "-") {
-		var sign int
-		if strings.HasPrefix(tz, "-") {
-			sign = -1
-		} else {
-			sign = 1
+// firstStringArg returns the first key in keys whose value is a string.
+func firstStringArg(args map[string]any, keys ...string) string {
+	for _, k := range keys {
+		if v, ok := args[k].(string); ok {
+			return v
 		}
-		cleanTz := strings.TrimPrefix(tz, "+")
-		cleanTz = strings.TrimPrefix(cleanTz, "-")
-
-		parts := strings.Split(cleanTz, ":")
-		if len(parts) == 2 {
-			h := 0
-			m := 0
-			_, _ = fmt.Sscanf(parts[0], "%d", &h)
-			_, _ = fmt.Sscanf(parts[1], "%d", &m)
-			return sign * h
-		}
-		h := 0
-		_, _ = fmt.Sscanf(cleanTz, "%d", &h)
-		return sign * h
 	}
+	return ""
+}
 
+// intArg returns the first key in keys whose value is a number, as an int (0 if
+// none). JSON numbers decode to float64.
+func intArg(args map[string]any, keys ...string) int {
+	for _, k := range keys {
+		if v, ok := args[k].(float64); ok {
+			return int(v)
+		}
+	}
 	return 0
 }
 
-// ---------------------------------------------------------------------------
-// memory toolset
-// ---------------------------------------------------------------------------
-
-type searchMemoryInput struct {
-	Query string `json:"query"`
-}
-
-type storeMemoryInput struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
-var (
-	memoryStore   = make(map[string]string)
-	memoryStoreMu sync.RWMutex
-)
-
-func registerMemory(srv *mcpsdk.Server) {
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "search_memory",
-		Title:       "Search the in-memory store",
-		Description: "Search keys and values in the in-process memory store for a matching substring.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in searchMemoryInput) (*mcpsdk.CallToolResult, any, error) {
-		memoryStoreMu.RLock()
-		defer memoryStoreMu.RUnlock()
-
-		var matches []map[string]string
-		for k, v := range memoryStore {
-			if strings.Contains(k, in.Query) || strings.Contains(v, in.Query) {
-				matches = append(matches, map[string]string{"key": k, "value": v})
-			}
+// corpusResponse returns the deterministic stub response for a corpus tool: the
+// authored override compacted to one line, else a stable envelope naming the
+// tool. It never depends on arguments (so it is byte-identical across calls)
+// and never carries a scenario ground-truth fact.
+func corpusResponse(tool CorpusTool) string {
+	if len(tool.CannedResponse) > 0 {
+		var buf bytes.Buffer
+		if err := json.Compact(&buf, tool.CannedResponse); err == nil {
+			return buf.String()
 		}
-		return jsonResult(map[string]any{"query": in.Query, "matches": matches}), nil, nil
+		return string(tool.CannedResponse)
+	}
+	b, _ := json.Marshal(map[string]any{
+		"ok":     true,
+		"tool":   tool.Name,
+		"detail": "stub response from corpus fixture server",
 	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "store_memory",
-		Title:       "Store a key-value pair in memory",
-		Description: "Store a key-value pair in the in-process memory store.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in storeMemoryInput) (*mcpsdk.CallToolResult, any, error) {
-		memoryStoreMu.Lock()
-		memoryStore[in.Key] = in.Value
-		memoryStoreMu.Unlock()
-		return jsonResult(map[string]any{"stored": true, "key": in.Key, "value": in.Value}), nil, nil
-	})
-}
-
-// ---------------------------------------------------------------------------
-// notes toolset
-// ---------------------------------------------------------------------------
-
-type createPlanInput struct {
-	Title string   `json:"title"`
-	Steps []string `json:"steps"`
-}
-
-type appendNoteInput struct {
-	Text string `json:"text"`
-}
-
-func registerNotes(srv *mcpsdk.Server) {
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "create_plan",
-		Title:       "Create a plan with steps",
-		Description: "Create a formatted plan with a title and ordered steps.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in createPlanInput) (*mcpsdk.CallToolResult, any, error) {
-		var sb strings.Builder
-		fmt.Fprintf(&sb, "# %s\n\n", in.Title)
-		for i, step := range in.Steps {
-			fmt.Fprintf(&sb, "%d. %s\n", i+1, step)
-		}
-		return jsonResult(map[string]any{
-			"plan":  sb.String(),
-			"title": in.Title,
-			"steps": in.Steps,
-			"count": len(in.Steps),
-		}), nil, nil
-	})
-
-	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name:        "append_note",
-		Title:       "Append a note",
-		Description: "Record a text note and return confirmation.",
-	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, in appendNoteInput) (*mcpsdk.CallToolResult, any, error) {
-		now := time.Now().UTC().Format(time.RFC3339)
-		return jsonResult(map[string]any{
-			"noted":     true,
-			"text":      in.Text,
-			"timestamp": now,
-		}), nil, nil
-	})
+	return string(b)
 }
 
 // ---------------------------------------------------------------------------
@@ -731,13 +257,28 @@ func registerNotes(srv *mcpsdk.Server) {
 func (a *app) mcpCmd() *cobra.Command {
 	var toolset string
 	var fixtureDir string
+	var server string
+	var corpusDir string
 	cmd := &cobra.Command{
 		Use:   "mcp",
 		Short: "Serve a fixture MCP server",
-		Long:  "Serve a parameterized fixture MCP server for the selected toolset over stdio.",
+		Long:  "Serve a parameterized fixture toolset (--toolset) or a data-defined corpus server (--server --corpus-dir) over stdio.",
 		RunE: func(_ *cobra.Command, _ []string) error {
+			// Corpus server mode: serve a data-defined server from the corpus dir.
+			if server != "" {
+				if corpusDir == "" {
+					corpusDir = os.Getenv("OZY_BENCH_CORPUS_DIR")
+				}
+				if corpusDir == "" {
+					return fmt.Errorf("--corpus-dir is required with --server (or set OZY_BENCH_CORPUS_DIR)")
+				}
+				if fixtureDir == "" {
+					fixtureDir = os.Getenv("OZY_BENCH_FIXTURE_DIR")
+				}
+				return ServeCorpus(server, corpusDir, fixtureDir)
+			}
 			if toolset == "" {
-				return fmt.Errorf("--toolset is required (valid: code-search, git, incident-db, filesystem, time, memory, notes)")
+				return fmt.Errorf("--toolset or --server is required")
 			}
 			if fixtureDir == "" {
 				fixtureDir = os.Getenv("OZY_BENCH_FIXTURE_DIR")
@@ -745,7 +286,9 @@ func (a *app) mcpCmd() *cobra.Command {
 			return ServeMCP(toolset, fixtureDir)
 		},
 	}
-	cmd.Flags().StringVar(&toolset, "toolset", "", "toolset to serve: code-search, git, incident-db, filesystem, time, memory, or notes")
-	cmd.Flags().StringVar(&fixtureDir, "fixture-dir", "", "path to the fixture directory (required for code-search, git, incident-db, filesystem)")
+	cmd.Flags().StringVar(&toolset, "toolset", "", "functional toolset to serve: code-search, git, incident-db, filesystem, time, memory, notes, weather, duckduckgo, wikipedia, pdf-toolkit")
+	cmd.Flags().StringVar(&fixtureDir, "fixture-dir", "", "path to the fixture directory (required for code-search, git, incident-db, filesystem, and the functional mirrored toolsets)")
+	cmd.Flags().StringVar(&server, "server", "", "corpus server name to serve from --corpus-dir")
+	cmd.Flags().StringVar(&corpusDir, "corpus-dir", "", "directory of corpus server data files (default: OZY_BENCH_CORPUS_DIR)")
 	return cmd
 }

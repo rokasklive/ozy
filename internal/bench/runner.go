@@ -11,7 +11,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
+
+	"github.com/rokasklive/ozy/internal/eval"
 )
 
 // RunResult captures the output of a single agent run.
@@ -20,6 +23,7 @@ type RunResult struct {
 	Mode        string         `json:"mode"`
 	Success     bool           `json:"success"`
 	TimedOut    bool           `json:"timedOut"`
+	ParseFailed bool           `json:"parseFailed"`
 	DurationSec float64        `json:"durationSec"`
 	Transcript  string         `json:"-"`
 	FinalAnswer string         `json:"finalAnswer"`
@@ -31,10 +35,11 @@ type RunResult struct {
 type Runner struct {
 	OpenCodePath string
 	ConfigPath   string
-	WorkDir      string // volume-mounted dir for artifacts
-	FixtureDir   string // OpenCode's working directory
+	WorkDir      string        // per-run artifact dir (written into directly)
+	FixtureDir   string        // fixture root the MCP servers read
+	Servers      []benchServer // the scenario's resolved server set (direct-mode wiring)
+	CallLogPath  string        // per-run server-side invocation log (OZY_BENCH_CALL_LOG)
 	Timeout      time.Duration
-	Spy          *ContextSpy // per-run ContextSpy session control (best-effort)
 }
 
 // NewRunner creates a runner for the given config.
@@ -48,9 +53,9 @@ func NewRunner(configPath, workDir, fixtureDir string, timeout time.Duration) *R
 	}
 }
 
-// Run launches OpenCode in non-interactive mode with the task prompt.
-// It creates a project-level opencode.json and .opencode/mcp.json in the work
-// directory, derived from environment variables — never touching user config.
+// Run launches OpenCode in non-interactive mode with the task prompt. It writes
+// a project-level opencode.json (model + MCP + instructions) into a per-run
+// workspace loaded via --dir, never touching user config.
 //
 //nolint:gosec // G301,G306: broad permissions and subprocess calls are intentional in bench harness.
 func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunResult, error) {
@@ -64,8 +69,10 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 		openCode = "opencode"
 	}
 
-	workDir := r.WorkDir + "/" + mode + "-" + runID
-	absWork, err := filepath.Abs(workDir)
+	// The runner writes directly into the run dir it is given (e.g.
+	// ozy/run-1/), with no mode-runID re-join — that re-join caused the
+	// ozy/run-1/ozy-run-1/ double nesting (D8).
+	absWork, err := filepath.Abs(r.WorkDir)
 	if err != nil {
 		return nil, fmt.Errorf("resolve work dir: %w", err)
 	}
@@ -88,22 +95,20 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 		return nil, fmt.Errorf("write agent instructions: %w", err)
 	}
 
-	// OpenCode HOME/config/data live in an absolute per-run dir. A *relative*
-	// HOME is resolved against OpenCode's own cwd and nests state under
-	// <cwd>/<HOME>, so the auth file lands where OpenCode never looks.
+	// OpenCode HOME/config/data live in an absolute per-run dir so each run is an
+	// independent sample with no shared agent state. A *relative* HOME would be
+	// resolved against OpenCode's own cwd and nest state where it never looks.
 	stateDir := filepath.Join(absWork, "agent-home")
 	dataDir := filepath.Join(stateDir, ".local", "share", "opencode")
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		return nil, fmt.Errorf("create agent state dir: %w", err)
 	}
 
-	// Provider + MCP + instructions go in the workspace as project config
-	// (loaded via --dir); auth goes in the agent data dir.
-	if err := writeOpenCodeConfig(workspaceDir, mode); err != nil {
+	// Model + MCP + instructions go in the workspace as project config (loaded
+	// via --dir). No provider block and no auth.json: the live tier drives
+	// OpenCode's built-in models, which need neither (D3).
+	if err := writeOpenCodeConfig(workspaceDir, mode, r.Servers); err != nil {
 		return nil, fmt.Errorf("write opencode config: %w", err)
-	}
-	if err := writeAuthConfig(dataDir); err != nil {
-		return nil, fmt.Errorf("write auth config: %w", err)
 	}
 
 	// Write the task prompt for reference (in the artifact dir).
@@ -116,16 +121,40 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 		"--format", "json",
 		"--dangerously-skip-permissions",
 		"--dir", workspaceDir,
-		"--model", modelName(),
+		"--model", benchModel(),
 		taskPrompt,
 	)
+
+	// OpenCode spawns the MCP servers as child processes that inherit its stdout
+	// pipe. On the default CommandContext teardown only OpenCode is SIGKILLed, so
+	// on a timeout its MCP children are orphaned holding the pipe open — and
+	// cmd.Wait() blocks forever waiting for EOF that never comes (the run "hangs"
+	// past its timeout).
+	setProcessGroupKill(cmd)
 
 	cmd.Dir = workspaceDir
 	cmd.Env = append(os.Environ(),
 		"HOME="+stateDir,
 		"XDG_CONFIG_HOME="+filepath.Join(stateDir, ".config"),
 		"XDG_DATA_HOME="+filepath.Join(stateDir, ".local", "share"),
+		// Hermeticity: point npm at an unroutable registry so OpenCode's
+		// opportunistic plugin auto-install never fetches at run time. Verified
+		// that `opencode run` completes fine offline — the model gateway is the
+		// only egress a run needs. Without this, each fresh per-run HOME triggers
+		// a plugin fetch that both breaks hermeticity and litters .npm/_cacache
+		// + node_modules debris into the run dir.
+		"npm_config_registry=http://127.0.0.1:0",
 	)
+	// Server-side invocation log: every fixture server (direct-mode children and
+	// ozy-mode downstream grandchildren alike) inherits this path and appends its
+	// calls, giving a mode-symmetric record of downstream tool selection (D4).
+	if r.CallLogPath != "" {
+		cmd.Env = append(cmd.Env, callLogEnv+"="+r.CallLogPath)
+	}
+	// Functional pdf-toolkit tools resolve relative output paths under this dir,
+	// so the grader finds the deliverable (e.g. output/report.pdf) at a known
+	// per-run path. Inherited by all fixture servers in both modes.
+	cmd.Env = append(cmd.Env, outputDirEnv+"="+workspaceDir)
 
 	// Tee OpenCode's combined output to both the transcript file (for later
 	// analysis) and stderr (for real-time visibility in docker logs).
@@ -149,14 +178,7 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 		_, _ = io.Copy(tf, tee)
 	}()
 
-	// Open a ContextSpy session so every model request this run makes is tagged
-	// with it — that's what gives a per-run token breakdown. session is unique
-	// per run; Breakdown reads the most recent session of that name.
-	session := mode + "-" + runID
-	r.Spy.StartSession(ctx, session)
-
 	if err := cmd.Start(); err != nil {
-		r.Spy.EndSession(context.Background())
 		return nil, fmt.Errorf("start opencode: %w", err)
 	}
 
@@ -189,30 +211,25 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 	<-teeDone
 	close(done)
 
-	// Close the session and pull its breakdown. Use a fresh context — the run
-	// ctx may already be cancelled/timed out, but the capture must still flush.
-	r.Spy.EndSession(context.Background())
-	if bd, err := r.Spy.Breakdown(context.Background(), session); err != nil {
-		fmt.Fprintf(os.Stderr, "[%s %s] contextspy breakdown: %v\n", mode, runID, err)
-	} else if bd != nil {
-		if err := WriteBreakdown(filepath.Join(absWork, "context-breakdown.json"), bd); err != nil {
-			fmt.Fprintf(os.Stderr, "[%s %s] write breakdown: %v\n", mode, runID, err)
-		} else {
-			fmt.Fprintf(os.Stderr, "[%s %s] contextspy: %d requests captured, %d tool-def tokens (total input %d)\n",
-				mode, runID, len(bd.Requests), bd.Totals.ToolDefinitions, bd.Totals.TotalInput)
-		}
-	}
-
 	duration := time.Since(start).Seconds()
 	timedOut := ctx.Err() != nil
 
-	// Re-read transcript for final answer and tool calls.
-	finalAnswer, toolCalls := parseTranscript(transcriptPath)
+	// Re-read transcript for final answer and tool calls. A non-empty transcript
+	// that parses to zero events is an output-format drift — a harness failure,
+	// not an agent failure (scenario-bench: "Agent output parsing fails loudly").
+	finalAnswer, toolCalls, events := parseTranscript(transcriptPath)
+	parseFailed := false
+	if fi, err := os.Stat(transcriptPath); err == nil && fi.Size() > 0 && events == 0 {
+		parseFailed = true
+		fmt.Fprintf(os.Stderr, "[%s %s] PARSE FAILED: %d-byte transcript yielded no parsable events\n",
+			mode, runID, fi.Size())
+	}
 
 	result := &RunResult{
 		RunID:       runID,
 		Mode:        mode,
 		TimedOut:    timedOut,
+		ParseFailed: parseFailed,
 		DurationSec: duration,
 		Transcript:  transcriptPath,
 		FinalAnswer: finalAnswer,
@@ -226,20 +243,42 @@ func (r *Runner) Run(ctx context.Context, mode, runID, taskPrompt string) (*RunR
 	return result, nil
 }
 
+// setProcessGroupKill makes a context timeout actually tear a run down. It puts
+// the command in its own process group and, on cancel, SIGKILLs the whole group
+// so any child processes (OpenCode's MCP servers) die with it instead of being
+// orphaned holding the stdout pipe — which is what makes cmd.Wait() hang forever
+// past the timeout. WaitDelay bounds the post-exit I/O wait as a final backstop.
+func setProcessGroupKill(cmd *exec.Cmd) {
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Cancel = func() error {
+		if cmd.Process != nil {
+			// Negative pid targets the process group led by cmd (its own, distinct
+			// from ozy-bench's), never the harness itself.
+			_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		}
+		return nil
+	}
+	cmd.WaitDelay = 10 * time.Second
+}
+
 // parseTranscript reads the transcript file and extracts the final answer
-// (all JSON text events concatenated) and tool call names.
+// (all JSON text events concatenated) and tool call names. The third return is
+// the count of recognized events (text + tool_use) — a non-empty transcript with
+// zero recognized events signals output-format drift to the caller.
 //
 //nolint:gosec // G304: path is a controlled artifact path in bench output.
-func parseTranscript(path string) (string, []ToolCallLog) {
+func parseTranscript(path string) (string, []ToolCallLog, int) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", nil
+		return "", nil, 0
 	}
 	defer func() { _ = f.Close() }()
 
 	var answer strings.Builder
 	var calls []ToolCallLog
+	events := 0
 	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 0, 64*1024), 8*1024*1024)
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -256,6 +295,7 @@ func parseTranscript(path string) (string, []ToolCallLog) {
 		}
 		if event.Type == "text" && event.Part.Text != "" {
 			answer.WriteString(event.Part.Text)
+			events++
 		}
 		// OpenCode emits tool calls as {"type":"tool_use","part":{"type":"tool",
 		// "tool":"<server>_<name>"}}. Names are namespaced by MCP server.
@@ -266,27 +306,42 @@ func parseTranscript(path string) (string, []ToolCallLog) {
 			}
 			if name != "" {
 				calls = append(calls, ToolCallLog{Tool: name})
+				events++
 			}
 		}
 	}
-	return strings.TrimSpace(answer.String()), calls
+	return strings.TrimSpace(answer.String()), calls, events
 }
 
 // Orchestrator manages the full benchmark lifecycle.
 type Orchestrator struct {
-	Scenario   *ScenarioConfig
-	FixtureDir string
-	RunDir     string
-	NumRuns    int
-	Mode       string // "direct", "ozy", or "both"
+	Scenario    *ScenarioConfig
+	FixtureDir  string
+	CorpusDir   string
+	RunDir      string
+	NumRuns     int
+	Mode        string              // "direct", "ozy", or "both"
+	SurfaceOnly bool                // skip the live tier; surface + surface-only comparison only
+	Estimator   eval.TokenEstimator // nil → eval.DefaultEstimator
 }
 
-// Run executes the full benchmark.
+// Run executes the full benchmark: the always-on static surface tier, then the
+// live tier per mode (unless SurfaceOnly), then aggregates, provenance, and the
+// cross-mode comparison. It returns an error only for harness failures; a mode
+// or run that fails the task is recorded, never a non-nil error.
 //
 //nolint:gosec // G301,G306,G204: broad permissions and subprocess calls are intentional in bench harness.
 func (o *Orchestrator) Run(ctx context.Context) error {
+	est := o.Estimator
+	if est == nil {
+		est = eval.DefaultEstimator
+	}
+
 	modes := []string{o.Mode}
-	if o.Mode == "both" {
+	switch o.Mode {
+	case "all":
+		modes = []string{"direct", "direct-lean", "ozy"}
+	case "both":
 		modes = []string{"direct", "ozy"}
 	}
 
@@ -294,37 +349,100 @@ func (o *Orchestrator) Run(ctx context.Context) error {
 		return fmt.Errorf("create run dir: %w", err)
 	}
 
-	spy := NewContextSpy()
-
-	// Write provenance.
-	provenance, err := BuildProvenance(o.Scenario, modes, o.NumRuns)
+	// Resolve the scenario's estate once: functional toolsets + corpus servers.
+	// Direct config, ozy downstream, and the surface all derive from this set.
+	servers, err := scenarioServers(o.Scenario.Toolsets, o.Scenario.CorpusEnabled(), o.FixtureDir, o.CorpusDir)
 	if err != nil {
-		return fmt.Errorf("build provenance: %w", err)
-	}
-	if err := WriteProvenance(filepath.Join(o.RunDir, "environment.json"), provenance); err != nil {
-		return fmt.Errorf("write provenance: %w", err)
+		return fmt.Errorf("resolve scenario servers: %w", err)
 	}
 
+	// Ground truth is scenario-level: its required tools are the canonical set
+	// the surface's irrelevant-token accounting and retrieval metrics score
+	// against; it also drives grading.
+	gt, err := LoadGroundTruth(o.Scenario.ResolvePath(o.Scenario.GroundTruth))
+	if err != nil {
+		return fmt.Errorf("load ground truth: %w", err)
+	}
+
+	// --- Static surface tier: always, before any live run, no model. ---
+	surface, err := ComputeSurfaceComparison(servers, o.FixtureDir, o.CorpusDir, gt.RequiredTools, est)
+	if err != nil {
+		return fmt.Errorf("compute surface: %w", err)
+	}
+	if err := WriteSurface(filepath.Join(o.RunDir, "surface.json"), surface); err != nil {
+		return fmt.Errorf("write surface: %w", err)
+	}
+	leanTools, leanTok := 0, 0
+	if surface.DirectLean != nil {
+		leanTools, leanTok = surface.DirectLean.ToolsVisible, surface.DirectLean.SchemaTokens
+	}
+	fmt.Fprintf(os.Stderr, "surface: direct=%d tools/%d tok, direct-lean=%d tools/%d tok, ozy=%d tools/%d tok\n",
+		surface.Direct.ToolsVisible, surface.Direct.SchemaTokens,
+		leanTools, leanTok,
+		surface.Ozy.ToolsVisible, surface.Ozy.SchemaTokens)
+
+	// --- Surface-only: no model, no live runs. Write provenance + comparison. ---
+	if o.SurfaceOnly {
+		prov, err := BuildProvenance(o.Scenario, modes, o.NumRuns, est.Name(), "skipped")
+		if err != nil {
+			return fmt.Errorf("build provenance: %w", err)
+		}
+		if err := WriteProvenance(filepath.Join(o.RunDir, "environment.json"), prov); err != nil {
+			return fmt.Errorf("write provenance: %w", err)
+		}
+		return WriteComparison(o.RunDir, surface, nil, prov)
+	}
+
+	// --- Preflight: an unresolvable model fails fast before any live run. ---
+	openCode := os.Getenv("OPENCODE_PATH")
+	if openCode == "" {
+		openCode = "opencode"
+	}
+	if err := resolveModel(ctx, openCode, benchModel()); err != nil {
+		return fmt.Errorf("model preflight: %w", err)
+	}
+
+	// Culprit hash reaches grading through the fixture metadata, never hardcoded.
+	culpritHash := ""
+	if meta, err := ReadFixtureMeta(o.FixtureDir); err == nil {
+		culpritHash = meta.CulpritHash
+	} else {
+		fmt.Fprintf(os.Stderr, "warning: no fixture-meta.json (%v); culprit check falls back to subject match\n", err)
+	}
+
+	// --- Live tier per mode. ---
+	aggregates := map[string]*Aggregate{}
 	for _, mode := range modes {
 		modeDir := filepath.Join(o.RunDir, mode)
 		if err := os.MkdirAll(modeDir, 0o755); err != nil {
 			return fmt.Errorf("create mode dir: %w", err)
 		}
 
-		// ozy mode is self-setup: write its config + index the fixture catalog
-		// once per mode (the fixture is identical across this mode's runs).
-		if mode == "ozy" {
-			if err := setupOzy(ctx, o.FixtureDir, modeDir); err != nil {
-				fmt.Fprintf(os.Stderr, "mode=ozy: setup failed, skipping mode: %v\n", err)
-				continue
-			}
+		surfaceTokens := surface.Direct.SchemaTokens
+		switch {
+		case mode == "ozy":
+			surfaceTokens = surface.Ozy.SchemaTokens
+		case mode == "direct-lean" && surface.DirectLean != nil:
+			surfaceTokens = surface.DirectLean.SchemaTokens
 		}
 
+		var metrics []*RunMetrics
 		for i := 1; i <= o.NumRuns; i++ {
 			runID := fmt.Sprintf("run-%d", i)
 			runDir := filepath.Join(modeDir, runID)
 			if err := os.MkdirAll(runDir, 0o755); err != nil {
 				return fmt.Errorf("create run dir: %w", err)
+			}
+
+			// ozy mode is self-setup, re-indexed into a fresh per-run catalog so
+			// no catalog or Ozy state carries over from a prior run (the fixture
+			// is immutable, so the index is deterministic — this is isolation, not
+			// a different result).
+			if mode == "ozy" {
+				if err := setupOzy(ctx, o.FixtureDir, servers, runDir); err != nil {
+					fmt.Fprintf(os.Stderr, "mode=ozy %d/%d: setup failed, skipping run: %v\n", i, o.NumRuns, err)
+					continue
+				}
 			}
 
 			fmt.Fprintf(os.Stderr, "mode=%s %d/%d: starting...\n", mode, i, o.NumRuns)
@@ -337,8 +455,16 @@ func (o *Orchestrator) Run(ctx context.Context) error {
 			}
 
 			configPath := "bench/configs/opencode." + mode + ".jsonc"
+			// Absolute: the fixture servers run with their own cwd (ozy's cwd in
+			// ozy mode), so a relative path would be written outside the run dir —
+			// or fail silently — and never reach the grader.
+			callLogPath, err := filepath.Abs(filepath.Join(runDir, "calls.jsonl"))
+			if err != nil {
+				return fmt.Errorf("resolve call log path: %w", err)
+			}
 			runner := NewRunner(configPath, runDir, o.FixtureDir, timeout)
-			runner.Spy = spy
+			runner.Servers = servers
+			runner.CallLogPath = callLogPath
 
 			taskData, err := os.ReadFile(o.Scenario.ResolvePath(o.Scenario.TaskFile))
 			if err != nil {
@@ -351,23 +477,36 @@ func (o *Orchestrator) Run(ctx context.Context) error {
 				continue
 			}
 
-			// Grade the result.
-			gtPath := o.Scenario.ResolvePath(o.Scenario.GroundTruth)
-			gt, err := LoadGroundTruth(gtPath)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "mode=%s %d/%d: load ground truth: %v\n", mode, i, o.NumRuns, err)
-				continue
+			// The server-side invocation log is the mode-symmetric record of
+			// downstream tool selection — used by both grading and retrieval metrics.
+			callLog := LoadCallLog(callLogPath)
+
+			// Grade the result (skipped when the transcript failed to parse — an
+			// empty answer is a harness problem, not a scored task failure).
+			if !result.ParseFailed {
+				grading := Grade(gt, GradeInput{
+					FinalAnswer: result.FinalAnswer,
+					ToolCalls:   callLog,
+					CulpritHash: culpritHash,
+					OutputDir:   filepath.Join(runDir, "workspace"),
+				})
+				result.Grading = grading
+				result.Success = grading.Overall
+				if err := WriteGradingResult(filepath.Join(runDir, "grading.json"), grading); err != nil {
+					fmt.Fprintf(os.Stderr, "mode=%s %d/%d: write grading: %v\n", mode, i, o.NumRuns, err)
+				}
 			}
 
-			// Get culprit hash from fixture meta.
-			culpritHash := ""
-			grading := Grade(gt, result.FinalAnswer, result.ToolCalls, culpritHash)
-			result.Grading = grading
-			result.Success = grading.Overall
-
-			if err := WriteGradingResult(filepath.Join(runDir, "grading.json"), grading); err != nil {
-				fmt.Fprintf(os.Stderr, "mode=%s %d/%d: write grading: %v\n", mode, i, o.NumRuns, err)
+			// Per-run metrics: measured from usage events, else estimated.
+			m := ComputeMetrics(result, surfaceTokens, est, RetrievalInput{
+				Calls:              callLog,
+				RequiredTools:      gt.RequiredTools,
+				FunctionalToolsets: o.Scenario.Toolsets,
+			})
+			if err := WriteMetrics(filepath.Join(runDir, "metrics.json"), m); err != nil {
+				fmt.Fprintf(os.Stderr, "mode=%s %d/%d: write metrics: %v\n", mode, i, o.NumRuns, err)
 			}
+			metrics = append(metrics, m)
 
 			// Write final answer.
 			if err := os.WriteFile(filepath.Join(runDir, "final-answer.md"), []byte(result.FinalAnswer), 0o644); err != nil {
@@ -385,12 +524,26 @@ func (o *Orchestrator) Run(ctx context.Context) error {
 				_ = tf.Close()
 			}
 
-			fmt.Fprintf(os.Stderr, "mode=%s %d/%d: done (%.1fs, pass=%v, timed_out=%v)\n",
-				mode, i, o.NumRuns, result.DurationSec, result.Success, result.TimedOut)
+			fmt.Fprintf(os.Stderr, "mode=%s %d/%d: done (%.1fs, pass=%v, timed_out=%v, parse_failed=%v)\n",
+				mode, i, o.NumRuns, result.DurationSec, result.Success, result.TimedOut, result.ParseFailed)
 		}
+
+		agg := ComputeAggregate(mode, metrics)
+		if err := WriteAggregate(filepath.Join(modeDir, "aggregate.json"), agg); err != nil {
+			fmt.Fprintf(os.Stderr, "mode=%s: write aggregate: %v\n", mode, err)
+		}
+		aggregates[mode] = agg
 	}
 
-	return nil
+	// --- Provenance + cross-mode comparison. ---
+	prov, err := BuildProvenance(o.Scenario, modes, o.NumRuns, est.Name(), usageSourceOf(aggregates))
+	if err != nil {
+		return fmt.Errorf("build provenance: %w", err)
+	}
+	if err := WriteProvenance(filepath.Join(o.RunDir, "environment.json"), prov); err != nil {
+		return fmt.Errorf("write provenance: %w", err)
+	}
+	return WriteComparison(o.RunDir, surface, aggregates, prov)
 }
 
 // remoteSystemInstruction is written as AGENTS.md into the agent's (empty)
@@ -407,51 +560,17 @@ search the code, read files, query data stores, and inspect version history.
 Begin by discovering which tools are available and what each one does.
 `
 
-// writeOpenCodeConfig writes opencode.json into dir with a single provider
-// derived from MODEL_BASE_URL / MODEL_API_KEY / MODEL_NAME and the mode's MCP
-// servers. MCP belongs under the top-level "mcp" key in opencode.json — a
-// separate .opencode/mcp.json is not read by OpenCode.
+// writeOpenCodeConfig writes opencode.json into dir: the built-in model ID, the
+// mode's MCP servers, and the AGENTS.md instruction. No provider block and no
+// auth file — the live tier drives OpenCode's built-in models (D3). MCP belongs
+// under the top-level "mcp" key; a separate .opencode/mcp.json is not read.
 //
 //nolint:gosec // G306: 0644 permissions are intentional for bench config files.
-func writeOpenCodeConfig(dir, mode string) error {
-	baseURL := os.Getenv("MODEL_BASE_URL")
-	if baseURL == "" {
-		baseURL = "http://localhost:8888/v1"
-	}
-	apiKey := os.Getenv("MODEL_API_KEY")
-	name := modelName()
-	parts := strings.SplitN(name, "/", 2)
-	providerID := parts[0]
-	modelID := name
-	if len(parts) == 2 {
-		modelID = parts[1]
-	}
-
+func writeOpenCodeConfig(dir, mode string, servers []benchServer) error {
 	cfg := map[string]any{
-		"$schema": "https://opencode.ai/config.json",
-		"provider": map[string]any{
-			providerID: map[string]any{
-				"npm":  "@ai-sdk/openai-compatible",
-				"name": "Bench provider",
-				"options": map[string]any{
-					"baseURL": baseURL,
-					"apiKey":  apiKey,
-				},
-				"models": map[string]any{
-					modelID: map[string]any{
-						"name": modelID,
-						"limit": map[string]any{
-							// Defaults suit a local 32K model; override per model via
-							// env (e.g. DeepSeek's large window) to avoid OpenCode
-							// auto-compacting far below the model's real limit.
-							"context": envInt("MODEL_CONTEXT", 32768),
-							"output":  envInt("MODEL_MAX_TOKENS", 8192),
-						},
-					},
-				},
-			},
-		},
-		"mcp":          mcpServers(mode),
+		"$schema":      "https://opencode.ai/config.json",
+		"model":        benchModel(),
+		"mcp":          mcpServersFor(mode, servers),
 		"instructions": []string{"AGENTS.md"},
 	}
 
@@ -465,35 +584,6 @@ func writeOpenCodeConfig(dir, mode string) error {
 	return os.WriteFile(filepath.Join(dir, "opencode.json"), data, 0o644)
 }
 
-// writeAuthConfig writes auth.json into dataDir (OpenCode's data dir,
-// $XDG_DATA_HOME/opencode) with a credential for the bench provider.
-//
-//nolint:gosec // G306: 0644 permissions are intentional for bench auth config.
-func writeAuthConfig(dataDir string) error {
-	if err := os.MkdirAll(dataDir, 0o755); err != nil {
-		return fmt.Errorf("mkdir auth dir: %w", err)
-	}
-
-	apiKey := os.Getenv("MODEL_API_KEY")
-	if apiKey == "" {
-		apiKey = "not-needed"
-	}
-	parts := strings.SplitN(modelName(), "/", 2)
-	providerID := parts[0]
-
-	auth := map[string]any{
-		providerID: map[string]any{
-			"type": "api",
-			"key":  apiKey,
-		},
-	}
-	data, err := json.MarshalIndent(auth, "", "  ")
-	if err != nil {
-		return fmt.Errorf("marshal auth: %w", err)
-	}
-	return os.WriteFile(filepath.Join(dataDir, "auth.json"), data, 0o644)
-}
-
 // setupOzy makes ozy mode self-contained instead of a manual pre-step: it
 // writes an ozy config listing the same fixture MCP servers direct mode uses,
 // then runs `ozy index` to populate a per-run catalog. It sets OZY_CONFIG and
@@ -502,7 +592,7 @@ func writeAuthConfig(dataDir string) error {
 // the user's default, unindexed config and advertise nothing.
 //
 //nolint:gosec // G204,G306: subprocess and permissions are intentional in bench harness.
-func setupOzy(ctx context.Context, fixtureDir, dir string) error {
+func setupOzy(ctx context.Context, fixtureDir string, servers []benchServer, dir string) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("create ozy dir: %w", err)
 	}
@@ -516,8 +606,19 @@ func setupOzy(ctx context.Context, fixtureDir, dir string) error {
 	}
 
 	// The downstream servers are exactly direct mode's fixture servers, nested
-	// under the "mcp" key ozy's config loader expects.
-	cfg := map[string]any{"mcp": mcpServers("direct")}
+	// under the "mcp" key ozy's config loader expects. Semantic + the embedding
+	// model/backend are pinned explicitly so the runtime sidecar marker matches
+	// the venv baked into the image (see bench/Dockerfile): a match means `ozy
+	// index` reuses the baked venv+model offline instead of attempting a fetch.
+	// Semantic is already default-on in ozy config; pinning is cheap insurance.
+	cfg := map[string]any{
+		"mcp":    mcpServersFor("direct", servers),
+		"search": map[string]any{"semantic": map[string]any{"enabled": true}},
+		"embedding": map[string]any{
+			"model":         benchEmbeddingModel,
+			"vectorBackend": benchVectorBackend,
+		},
+	}
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal ozy config: %w", err)
@@ -542,19 +643,83 @@ func setupOzy(ctx context.Context, fixtureDir, dir string) error {
 	return nil
 }
 
-// mcpServers returns the MCP server map for the given mode: direct exposes all
-// seven fixture servers, ozy exposes only the ozy broker. Each fixture server
-// is a stdio child process (ozy-bench mcp --toolset X) over the fixture.
-func mcpServers(mode string) map[string]any {
-	benchBin := os.Getenv("OZY_BENCH_BIN")
-	if benchBin == "" {
-		benchBin, _ = filepath.Abs("ozy-bench")
-	}
-	fixtureDir := os.Getenv("OZY_BENCH_FIXTURE_DIR")
-	if fixtureDir == "" {
-		fixtureDir = "/tmp/ozy-bench-fixture"
-	}
+// benchServer is one MCP server in a scenario's estate: a name, the
+// `ozy-bench mcp` args that serve it, and whether it is a corpus stub (vs a
+// functional toolset). One resolver feeds direct-mode config, ozy's downstream
+// config, and the static surface enumeration, so they cannot diverge.
+type benchServer struct {
+	Name   string
+	Args   []string
+	Corpus bool
+}
 
+// benchBin returns the fixture binary path (OZY_BENCH_BIN or a resolved
+// ozy-bench).
+func benchBin() string {
+	if b := os.Getenv("OZY_BENCH_BIN"); b != "" {
+		return b
+	}
+	b, _ := filepath.Abs("ozy-bench")
+	return b
+}
+
+// ozyBin returns the ozy broker binary path.
+func ozyBin() string {
+	if b := os.Getenv("OZY_BIN"); b != "" {
+		return b
+	}
+	return "ozy"
+}
+
+// toolsetNeedsFixture reports whether a functional toolset reads the scenario
+// fixture dir. pdf-toolkit writes to the agent workspace and reads no baked
+// fixture data, so it needs none; the search/lookup toolsets do.
+func toolsetNeedsFixture(ts string) bool {
+	return ts != "pdf-toolkit"
+}
+
+// scenarioServers resolves the ordered MCP server set for a scenario: its
+// functional toolsets first, then every corpus server when the corpus attaches.
+// fixtureDir/corpusDir are substituted into the served commands (callers pass
+// real paths for the runner, or {env:...} placeholders for the checked-in
+// templates), so the wired set is identical across consumers.
+func scenarioServers(toolsets []string, corpus bool, fixtureDir, corpusDir string) ([]benchServer, error) {
+	var servers []benchServer
+	for _, ts := range toolsets {
+		args := []string{"--toolset", ts}
+		if toolsetNeedsFixture(ts) {
+			args = append(args, "--fixture-dir", fixtureDir)
+		}
+		servers = append(servers, benchServer{Name: ts, Args: args})
+	}
+	if corpus {
+		names, err := CorpusServerNames(corpusDir)
+		if err != nil {
+			return nil, fmt.Errorf("enumerate corpus servers: %w", err)
+		}
+		for _, n := range names {
+			args := []string{"--server", n, "--corpus-dir", corpusDir}
+			// A corpus server hosting a functional:search tool reads the baked
+			// fixture corpus, so it needs the fixture dir like the toolsets do (D3).
+			if CorpusServerNeedsFixture(corpusDir, n) {
+				args = append(args, "--fixture-dir", fixtureDir)
+			}
+			servers = append(servers, benchServer{
+				Name:   n,
+				Args:   args,
+				Corpus: true,
+			})
+		}
+	}
+	return servers, nil
+}
+
+// mcpServersFor returns the OpenCode MCP server map for the given mode: direct
+// exposes every scenario server; direct-lean exposes only the functional
+// toolsets (the corpus is dropped — the "installed only the MCPs I need"
+// baseline); ozy exposes only the broker (which reaches the full set downstream
+// after `ozy index`).
+func mcpServersFor(mode string, servers []benchServer) map[string]any {
 	if mode == "ozy" {
 		// Forward the per-run config + catalog (written by setupOzy) so the broker
 		// serves the indexed fixture catalog rather than the user's default config.
@@ -565,14 +730,14 @@ func mcpServers(mode string) map[string]any {
 		if v := os.Getenv("OZY_CATALOG"); v != "" {
 			env["OZY_CATALOG"] = v
 		}
-		ozyBin := os.Getenv("OZY_BIN")
-		if ozyBin == "" {
-			ozyBin = "ozy"
+		fixtureDir := os.Getenv("OZY_BENCH_FIXTURE_DIR")
+		if fixtureDir == "" {
+			fixtureDir = "/tmp/ozy-bench-fixture"
 		}
 		return map[string]any{
 			"ozy": map[string]any{
 				"type":        "local",
-				"command":     []string{ozyBin, "mcp"},
+				"command":     []string{ozyBin(), "mcp"},
 				"cwd":         fixtureDir,
 				"environment": env,
 				"enabled":     true,
@@ -580,34 +745,65 @@ func mcpServers(mode string) map[string]any {
 		}
 	}
 
-	server := func(args ...string) map[string]any {
-		return map[string]any{"type": "local", "command": append([]string{benchBin, "mcp"}, args...), "enabled": true}
-	}
-	return map[string]any{
-		"code-search": server("--toolset", "code-search", "--fixture-dir", fixtureDir),
-		"git":         server("--toolset", "git", "--fixture-dir", fixtureDir),
-		"incident-db": server("--toolset", "incident-db", "--fixture-dir", fixtureDir),
-		"filesystem":  server("--toolset", "filesystem", "--fixture-dir", fixtureDir),
-		"time":        server("--toolset", "time"),
-		"memory":      server("--toolset", "memory"),
-		"notes":       server("--toolset", "notes"),
-	}
-}
-
-// modelName returns the model identifier from MODEL_NAME env or a default.
-func modelName() string {
-	if n := os.Getenv("MODEL_NAME"); n != "" {
-		return n
-	}
-	return "unsloth/gemma-4-E2B-it-GGUF"
-}
-
-// envInt reads an int from env var name, falling back to def when unset or unparseable.
-func envInt(name string, def int) int {
-	if v := os.Getenv(name); v != "" {
-		if n, err := strconv.Atoi(v); err == nil {
-			return n
+	bin := benchBin()
+	out := make(map[string]any, len(servers))
+	for _, s := range servers {
+		// direct-lean wires the functional toolsets whole (all their tools,
+		// task-critical and sibling alike) but never the corpus stubs.
+		if mode == "direct-lean" && s.Corpus {
+			continue
+		}
+		out[s.Name] = map[string]any{
+			"type":    "local",
+			"command": append([]string{bin, "mcp"}, s.Args...),
+			"enabled": true,
 		}
 	}
-	return def
+	return out
+}
+
+// DefaultBenchModel is the pinned free model the zero-config bench drives.
+// Confirmed resolvable by the pinned OpenCode (1.17.7) via `opencode models`;
+// its free tier lists big-pickle, deepseek-v4-flash-free, nemotron-3-ultra-free,
+// hy3-free, mimo-v2.5-free, and north-mini-code-free. resolveModel fails fast if
+// this ever stops resolving. big-pickle is the default over deepseek-v4-flash-free
+// because the latter stalls mid-stream (silent gateway hang) often enough to wedge
+// runs; big-pickle completes a full three-mode pass reliably.
+const DefaultBenchModel = "opencode/big-pickle"
+
+// benchEmbeddingModel and benchVectorBackend pin ozy's semantic stack to exactly
+// what bench/Dockerfile bakes into the image. setupOzy writes these into the
+// per-run config so the runtime sidecar-provision marker matches the baked venv
+// (no runtime reprovision or model fetch). They mirror config.DefaultEmbeddingModel
+// and config.DefaultVectorBackend; kept as local literals to avoid a config import.
+const (
+	benchEmbeddingModel = "BAAI/bge-small-en-v1.5"
+	benchVectorBackend  = "turbovec"
+)
+
+// benchModel returns the effective model ID: BENCH_MODEL env override, else the
+// pinned free default.
+func benchModel() string {
+	if m := os.Getenv("BENCH_MODEL"); m != "" {
+		return m
+	}
+	return DefaultBenchModel
+}
+
+// resolveModel fails fast when the selected model ID cannot be resolved by the
+// pinned OpenCode, before any live run is attempted. It checks membership in
+// `opencode models`. If that command is unavailable or errors for an unrelated
+// reason, it does not block — the first run then surfaces a real model error.
+func resolveModel(ctx context.Context, openCode, model string) error {
+	//nolint:gosec // G204: opencode is the pinned agent binary in the bench image.
+	out, err := exec.CommandContext(ctx, openCode, "models").Output()
+	if err != nil {
+		return nil // can't enumerate; let the run surface a bad model
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		if strings.TrimSpace(line) == model {
+			return nil
+		}
+	}
+	return fmt.Errorf("model %q is not resolvable by the pinned OpenCode (not listed by `opencode models`); set BENCH_MODEL to a resolvable model", model)
 }

@@ -1,0 +1,288 @@
+{
+  "server": "elasticsearch",
+  "mirrorSource": "Elasticsearch MCP server (elastic/mcp-server-elasticsearch), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "bulk",
+      "description": "Execute a batch of index, update, and delete operations.",
+      "inputSchema": {
+        "properties": {
+          "operations": {
+            "description": "NDJSON bulk operations.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "operations"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "cluster_health",
+      "description": "Return the cluster health status.",
+      "inputSchema": {
+        "properties": {
+          "index": {
+            "description": "Restrict to an index.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "count",
+      "description": "Count documents matching a query.",
+      "inputSchema": {
+        "properties": {
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Query DSL body.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "index"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_index",
+      "description": "Create an index with settings and mappings.",
+      "inputSchema": {
+        "properties": {
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          },
+          "mappings": {
+            "description": "Field mappings.",
+            "type": "object"
+          },
+          "settings": {
+            "description": "Index settings.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "index"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_document",
+      "description": "Delete a document by ID.",
+      "inputSchema": {
+        "properties": {
+          "id": {
+            "description": "Document ID.",
+            "type": "string"
+          },
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_index",
+      "description": "Delete an index.",
+      "inputSchema": {
+        "properties": {
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_document",
+      "description": "Fetch a document by ID.",
+      "inputSchema": {
+        "properties": {
+          "id": {
+            "description": "Document ID.",
+            "type": "string"
+          },
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_mapping",
+      "description": "Fetch the field mappings for an index.",
+      "inputSchema": {
+        "properties": {
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "index_document",
+      "description": "Index a document, optionally with an ID.",
+      "inputSchema": {
+        "properties": {
+          "document": {
+            "description": "Document body.",
+            "type": "object"
+          },
+          "id": {
+            "description": "Document ID.",
+            "type": "string"
+          },
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "document"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_indices",
+      "description": "List indices and their health.",
+      "inputSchema": {
+        "properties": {
+          "pattern": {
+            "description": "Index name pattern.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "put_mapping",
+      "description": "Add fields to an index's mapping.",
+      "inputSchema": {
+        "properties": {
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          },
+          "properties": {
+            "description": "Field definitions.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "index",
+          "properties"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "reindex",
+      "description": "Copy documents from one index to another.",
+      "inputSchema": {
+        "properties": {
+          "dest": {
+            "description": "Destination index.",
+            "type": "string"
+          },
+          "source": {
+            "description": "Source index.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "dest"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search",
+      "description": "Run a search query against an index.",
+      "inputSchema": {
+        "properties": {
+          "from": {
+            "description": "Offset for pagination.",
+            "type": "integer"
+          },
+          "index": {
+            "description": "Index name or pattern.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Query DSL body.",
+            "type": "object"
+          },
+          "size": {
+            "description": "Number of hits.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "index",
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_document",
+      "description": "Partially update a document.",
+      "inputSchema": {
+        "properties": {
+          "doc": {
+            "description": "Partial document.",
+            "type": "object"
+          },
+          "id": {
+            "description": "Document ID.",
+            "type": "string"
+          },
+          "index": {
+            "description": "Index name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "id",
+          "doc"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "server": "okta",
+  "mirrorSource": "Okta MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_user_to_group",
+      "description": "Add a user to a group.",
+      "inputSchema": {
+        "properties": {
+          "group_id": {
+            "description": "Group ID.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "User ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "group_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "assign_app",
+      "description": "Assign an application to a user.",
+      "inputSchema": {
+        "properties": {
+          "app_id": {
+            "description": "Application ID.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "User ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "app_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_group",
+      "description": "Create a group.",
+      "inputSchema": {
+        "properties": {
+          "description": {
+            "description": "Group description.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Group name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_user",
+      "description": "Create an Okta user with a profile.",
+      "inputSchema": {
+        "properties": {
+          "activate": {
+            "description": "Activate immediately.",
+            "type": "boolean"
+          },
+          "email": {
+            "description": "User email and login.",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name.",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "first_name",
+          "last_name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "deactivate_user",
+      "description": "Deactivate a user account.",
+      "inputSchema": {
+        "properties": {
+          "user_id": {
+            "description": "User ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_user",
+      "description": "Fetch a user by ID or login.",
+      "inputSchema": {
+        "properties": {
+          "user_id": {
+            "description": "User ID or login.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_apps",
+      "description": "List applications in the org.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_groups",
+      "description": "List groups.",
+      "inputSchema": {
+        "properties": {
+          "search": {
+            "description": "Search expression.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_users",
+      "description": "List or search users.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Page size.",
+            "type": "integer"
+          },
+          "search": {
+            "description": "Search expression.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "reset_password",
+      "description": "Trigger a password reset for a user.",
+      "inputSchema": {
+        "properties": {
+          "send_email": {
+            "description": "Send the reset email.",
+            "type": "boolean"
+          },
+          "user_id": {
+            "description": "User ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

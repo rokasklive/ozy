@@ -1,0 +1,116 @@
+{
+  "server": "office-export",
+  "mirrorSource": "synthesized (near-miss for the canonical pdf-toolkit)",
+  "tools": [
+    {
+      "name": "export_to_excel",
+      "description": "Export tabular data to an Excel workbook.",
+      "inputSchema": {
+        "properties": {
+          "output_path": {
+            "description": "Destination .xlsx path.",
+            "type": "string"
+          },
+          "rows": {
+            "description": "Rows of cell values.",
+            "type": "array"
+          },
+          "sheet_name": {
+            "description": "Worksheet name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rows",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "export_to_google_docs",
+      "description": "Export content into a new Google Doc.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "Document content.",
+            "type": "string"
+          },
+          "title": {
+            "description": "New document title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "export_to_pdf",
+      "description": "Export structured content to a PDF via the office renderer.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "Document content.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .pdf path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "output_path"
+        ],
+        "type": "object"
+      },
+      "behavior": "functional:pdf"
+    },
+    {
+      "name": "export_to_powerpoint",
+      "description": "Export slides to a PowerPoint deck.",
+      "inputSchema": {
+        "properties": {
+          "output_path": {
+            "description": "Destination .pptx path.",
+            "type": "string"
+          },
+          "slides": {
+            "description": "Slide definitions.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "slides",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "export_to_word",
+      "description": "Export structured content to a Word document.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "Document content.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination .docx path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "server": "aws-s3",
+  "mirrorSource": "AWS S3 MCP server (awslabs/mcp), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "copy_object",
+      "description": "Copy an object to a new key or bucket.",
+      "inputSchema": {
+        "properties": {
+          "dest_bucket": {
+            "description": "Destination bucket.",
+            "type": "string"
+          },
+          "dest_key": {
+            "description": "Destination key.",
+            "type": "string"
+          },
+          "source_bucket": {
+            "description": "Source bucket.",
+            "type": "string"
+          },
+          "source_key": {
+            "description": "Source key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_bucket",
+          "source_key",
+          "dest_bucket",
+          "dest_key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_bucket",
+      "description": "Create a new S3 bucket in a region.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "region": {
+            "description": "AWS region.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_bucket",
+      "description": "Delete an empty S3 bucket.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_object",
+      "description": "Delete an object.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Object key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "enable_versioning",
+      "description": "Enable object versioning on a bucket.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "generate_presigned_url",
+      "description": "Create a time-limited URL to get or put an object.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "expires_in": {
+            "description": "URL lifetime in seconds.",
+            "type": "integer"
+          },
+          "key": {
+            "description": "Object key.",
+            "type": "string"
+          },
+          "operation": {
+            "description": "get_object or put_object.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key",
+          "operation"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_object",
+      "description": "Download an object's contents.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Object key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_object_metadata",
+      "description": "Fetch an object's size, type, and metadata.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Object key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_buckets",
+      "description": "List all S3 buckets in the account.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_object_versions",
+      "description": "List the versions of objects under a prefix.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "Key prefix filter.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_objects",
+      "description": "List objects under a bucket prefix.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "max_keys": {
+            "description": "Maximum keys.",
+            "type": "integer"
+          },
+          "prefix": {
+            "description": "Key prefix filter.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "put_object",
+      "description": "Upload data to an object key.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Object content.",
+            "type": "string"
+          },
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "content_type": {
+            "description": "MIME type.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Object key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "set_bucket_policy",
+      "description": "Attach an access policy to a bucket.",
+      "inputSchema": {
+        "properties": {
+          "bucket": {
+            "description": "Bucket name.",
+            "type": "string"
+          },
+          "policy": {
+            "description": "Policy document JSON.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "policy"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

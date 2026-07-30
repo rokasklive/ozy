@@ -1,0 +1,182 @@
+{
+  "server": "snowflake",
+  "mirrorSource": "Snowflake MCP server (Snowflake-Labs/mcp), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "copy_into",
+      "description": "Load data from a stage into a table.",
+      "inputSchema": {
+        "properties": {
+          "file_format": {
+            "description": "File format name.",
+            "type": "string"
+          },
+          "stage": {
+            "description": "Source stage.",
+            "type": "string"
+          },
+          "table": {
+            "description": "Target table.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "stage"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_stage",
+      "description": "Create a stage for loading and unloading data.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Stage name.",
+            "type": "string"
+          },
+          "url": {
+            "description": "External storage URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "describe_table",
+      "description": "Return a table's column definitions.",
+      "inputSchema": {
+        "properties": {
+          "table": {
+            "description": "Fully-qualified table name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "execute_query",
+      "description": "Run a SQL statement on a warehouse.",
+      "inputSchema": {
+        "properties": {
+          "database": {
+            "description": "Database context.",
+            "type": "string"
+          },
+          "schema": {
+            "description": "Schema context.",
+            "type": "string"
+          },
+          "statement": {
+            "description": "SQL statement.",
+            "type": "string"
+          },
+          "warehouse": {
+            "description": "Warehouse to use.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "statement"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_query_history",
+      "description": "List recent query executions.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Number of queries.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_databases",
+      "description": "List databases.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_schemas",
+      "description": "List schemas in a database.",
+      "inputSchema": {
+        "properties": {
+          "database": {
+            "description": "Database name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "database"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_warehouses",
+      "description": "List virtual warehouses and their state.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "resize_warehouse",
+      "description": "Change a warehouse's size.",
+      "inputSchema": {
+        "properties": {
+          "size": {
+            "description": "New warehouse size.",
+            "type": "string"
+          },
+          "warehouse": {
+            "description": "Warehouse name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "warehouse",
+          "size"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "unload_data",
+      "description": "Unload query results to a stage.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Query producing rows.",
+            "type": "string"
+          },
+          "stage": {
+            "description": "Destination stage.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query",
+          "stage"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

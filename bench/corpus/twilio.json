@@ -1,0 +1,249 @@
+{
+  "server": "twilio",
+  "mirrorSource": "Twilio MCP server (twilio-labs/mcp), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "buy_phone_number",
+      "description": "Purchase an available phone number.",
+      "inputSchema": {
+        "properties": {
+          "friendly_name": {
+            "description": "Label for the number.",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Number in E.164 format.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "check_verification",
+      "description": "Check an OTP code against a Verify challenge.",
+      "inputSchema": {
+        "properties": {
+          "code": {
+            "description": "Code entered by the user.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Destination number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "code"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_verification",
+      "description": "Start a Verify OTP challenge to a number.",
+      "inputSchema": {
+        "properties": {
+          "channel": {
+            "description": "sms, call, or email.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Destination number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "channel"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_message",
+      "description": "Fetch a message by SID.",
+      "inputSchema": {
+        "properties": {
+          "message_sid": {
+            "description": "Message SID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message_sid"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_calls",
+      "description": "List call records.",
+      "inputSchema": {
+        "properties": {
+          "status": {
+            "description": "Filter by call status.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_messages",
+      "description": "List sent and received messages.",
+      "inputSchema": {
+        "properties": {
+          "date_sent": {
+            "description": "Filter by date.",
+            "type": "string"
+          },
+          "from": {
+            "description": "Filter by sender.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Filter by recipient.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_phone_numbers",
+      "description": "List the account's phone numbers.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "lookup_number",
+      "description": "Look up carrier and caller-name data for a number.",
+      "inputSchema": {
+        "properties": {
+          "phone_number": {
+            "description": "Number in E.164 format.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "make_call",
+      "description": "Place an outbound phone call with TwiML instructions.",
+      "inputSchema": {
+        "properties": {
+          "from": {
+            "description": "Caller Twilio number.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Destination number.",
+            "type": "string"
+          },
+          "url": {
+            "description": "TwiML instructions URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "from"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "send_mms",
+      "description": "Send an MMS with media attachments.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Message text.",
+            "type": "string"
+          },
+          "from": {
+            "description": "Sender number.",
+            "type": "string"
+          },
+          "media_url": {
+            "description": "Media URLs to attach.",
+            "type": "array"
+          },
+          "to": {
+            "description": "Destination number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "media_url"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "send_sms",
+      "description": "Send an SMS message from a Twilio number.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Message text.",
+            "type": "string"
+          },
+          "from": {
+            "description": "Sender Twilio number.",
+            "type": "string"
+          },
+          "to": {
+            "description": "Destination phone number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "send_whatsapp",
+      "description": "Send a WhatsApp message via Twilio.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Message text.",
+            "type": "string"
+          },
+          "from": {
+            "description": "WhatsApp sender.",
+            "type": "string"
+          },
+          "to": {
+            "description": "WhatsApp destination.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "from",
+          "body"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

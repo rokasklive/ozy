@@ -1,0 +1,323 @@
+{
+  "server": "notion",
+  "mirrorSource": "Notion MCP server (makenotion/notion-mcp-server), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "append_block_children",
+      "description": "Append content blocks to a page or block.",
+      "inputSchema": {
+        "properties": {
+          "block_id": {
+            "description": "Parent block or page ID.",
+            "type": "string"
+          },
+          "children": {
+            "description": "Blocks to append.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "block_id",
+          "children"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "archive_page",
+      "description": "Archive (soft-delete) a page.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_comment",
+      "description": "Add a comment to a page or discussion.",
+      "inputSchema": {
+        "properties": {
+          "parent": {
+            "description": "Page or discussion reference.",
+            "type": "object"
+          },
+          "rich_text": {
+            "description": "Comment rich text.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "parent",
+          "rich_text"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_database",
+      "description": "Create a database under a page with a schema.",
+      "inputSchema": {
+        "properties": {
+          "parent": {
+            "description": "Parent page reference.",
+            "type": "object"
+          },
+          "properties": {
+            "description": "Column schema.",
+            "type": "object"
+          },
+          "title": {
+            "description": "Database title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "parent",
+          "title",
+          "properties"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_page",
+      "description": "Create a page under a parent page or database.",
+      "inputSchema": {
+        "properties": {
+          "children": {
+            "description": "Initial content blocks.",
+            "type": "array"
+          },
+          "parent": {
+            "description": "Parent page or database reference.",
+            "type": "object"
+          },
+          "properties": {
+            "description": "Page property values.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "parent",
+          "properties"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_block",
+      "description": "Delete (archive) a block.",
+      "inputSchema": {
+        "properties": {
+          "block_id": {
+            "description": "Block ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "block_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "duplicate_page",
+      "description": "Duplicate a page under a new parent.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID to duplicate.",
+            "type": "string"
+          },
+          "parent": {
+            "description": "Destination parent.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_block",
+      "description": "Retrieve a single block by ID.",
+      "inputSchema": {
+        "properties": {
+          "block_id": {
+            "description": "Block ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "block_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_database",
+      "description": "Fetch a database's schema and metadata.",
+      "inputSchema": {
+        "properties": {
+          "database_id": {
+            "description": "Database ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "database_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_page",
+      "description": "Retrieve a page's properties by ID.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_page_property",
+      "description": "Fetch a single paginated property value from a page.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          },
+          "property_id": {
+            "description": "Property ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "property_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_users",
+      "description": "List the workspace's users.",
+      "inputSchema": {
+        "properties": {
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "query_database",
+      "description": "Query a database with filters and sorts.",
+      "inputSchema": {
+        "properties": {
+          "database_id": {
+            "description": "Database ID.",
+            "type": "string"
+          },
+          "filter": {
+            "description": "Filter conditions.",
+            "type": "object"
+          },
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          },
+          "sorts": {
+            "description": "Sort specifications.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "database_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search pages and databases the integration can access.",
+      "inputSchema": {
+        "properties": {
+          "filter": {
+            "description": "Restrict to page or database.",
+            "type": "object"
+          },
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Search text.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_block",
+      "description": "Update the content of a block.",
+      "inputSchema": {
+        "properties": {
+          "block_id": {
+            "description": "Block ID.",
+            "type": "string"
+          },
+          "content": {
+            "description": "New block content.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "block_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_page",
+      "description": "Update a page's property values.",
+      "inputSchema": {
+        "properties": {
+          "page_id": {
+            "description": "Page ID.",
+            "type": "string"
+          },
+          "properties": {
+            "description": "Property values to set.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "page_id",
+          "properties"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

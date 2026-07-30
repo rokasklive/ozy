@@ -12,20 +12,24 @@ import (
 
 func (a *app) runCmd() *cobra.Command {
 	var (
-		scenario string
-		mode     string
-		numRuns  int
+		scenario    string
+		mode        string
+		numRuns     int
+		surfaceOnly bool
 	)
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run a scenario benchmark",
-		Long:  "Run a scenario benchmark in direct, ozy, or both modes against an OpenAI-compatible model endpoint.",
+		Long:  "Run a scenario benchmark in direct, direct-lean, ozy, all, or both modes against an OpenCode built-in model. 'all' (the default) runs direct + direct-lean + ozy in one pass; 'both' is a back-compat alias for direct + ozy. Always writes the static surface tier; --surface-only skips the live tier.",
+		// The harness exits 0 for any completed invocation and non-zero only for
+		// harness errors (fixture/config failure, unresolvable model). A returned
+		// error becomes a non-zero exit; nil is exit 0.
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if scenario == "" {
 				scenario = os.Getenv("SCENARIO")
 			}
 			if scenario == "" {
-				scenario = "suspended-account-invoice-regression"
+				scenario = "historical-weather-report"
 			}
 
 			scenarioDir := filepath.Join("scenarios", scenario)
@@ -33,8 +37,14 @@ func (a *app) runCmd() *cobra.Command {
 
 			cfg, err := LoadScenario(cfgPath)
 			if err != nil {
-				fmt.Fprintf(a.errOut, "ozy-bench run: load scenario: %v\n", err)
-				return nil
+				return fmt.Errorf("load scenario: %w", err)
+			}
+
+			if mode == "" {
+				mode = os.Getenv("MODE")
+			}
+			if mode == "" {
+				mode = "all"
 			}
 
 			runCount := ResolveRunCount(numRuns, cfg)
@@ -51,26 +61,28 @@ func (a *app) runCmd() *cobra.Command {
 				fixtureDir, _ = filepath.Abs(scenarioDir)
 			}
 
-			fmt.Fprintf(a.out, "=== Scenario bench: %s ===\n", scenario)
-			fmt.Fprintf(a.out, "Mode: %s, Runs: %d\n", mode, runCount)
-
-			if os.Getenv("MODEL_BASE_URL") == "" {
-				fmt.Fprintf(a.out, "=== Live agent tier skipped (no MODEL_BASE_URL) ===\n")
-				return nil
+			// The corpus dir is scenario-independent (shared estate). Default to
+			// bench/corpus relative to the bench cwd; OZY_BENCH_CORPUS_DIR overrides.
+			corpusDir := os.Getenv("OZY_BENCH_CORPUS_DIR")
+			if corpusDir == "" {
+				corpusDir = "corpus"
 			}
+
+			fmt.Fprintf(a.out, "=== Scenario bench: %s ===\n", scenario)
+			fmt.Fprintf(a.out, "Mode: %s, Runs: %d, Model: %s, Surface-only: %v\n", mode, runCount, benchModel(), surfaceOnly)
 
 			orchestrator := &Orchestrator{
-				Scenario:   cfg,
-				FixtureDir: fixtureDir,
-				RunDir:     runDir,
-				NumRuns:    runCount,
-				Mode:       mode,
+				Scenario:    cfg,
+				FixtureDir:  fixtureDir,
+				CorpusDir:   corpusDir,
+				RunDir:      runDir,
+				NumRuns:     runCount,
+				Mode:        mode,
+				SurfaceOnly: surfaceOnly,
 			}
 
-			fmt.Fprintf(a.out, "=== Live agent tier ===\n")
 			if err := orchestrator.Run(context.Background()); err != nil {
-				fmt.Fprintf(a.errOut, "ozy-bench run: %v\n", err)
-				return nil
+				return fmt.Errorf("run: %w", err)
 			}
 
 			fmt.Fprintf(a.out, "Run directory: %s\n", runDir)
@@ -78,8 +90,9 @@ func (a *app) runCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&scenario, "scenario", "", "scenario name to run")
-	cmd.Flags().StringVar(&mode, "mode", "both", "execution mode: direct, ozy, or both")
-	cmd.Flags().IntVar(&numRuns, "runs", 0, "number of live runs per mode (overrides scenario config and BENCH_RUNS)")
+	cmd.Flags().StringVar(&scenario, "scenario", "", "scenario name to run (default: SCENARIO env or historical-weather-report)")
+	cmd.Flags().StringVar(&mode, "mode", "", "execution mode: direct, direct-lean, ozy, all, or both (default: MODE env or all)")
+	cmd.Flags().IntVar(&numRuns, "runs", 0, "live runs per mode; precedence: flag > BENCH_RUNS > scenario config > 5")
+	cmd.Flags().BoolVar(&surfaceOnly, "surface-only", false, "compute the static surface tier only — no model, no live runs")
 	return cmd
 }

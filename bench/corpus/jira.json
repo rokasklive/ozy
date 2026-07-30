@@ -1,0 +1,482 @@
+{
+  "server": "jira",
+  "mirrorSource": "Atlassian Jira MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_comment",
+      "description": "Add a comment to a Jira issue.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Comment body.",
+            "type": "string"
+          },
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_issue_to_sprint",
+      "description": "Move issues into a sprint.",
+      "inputSchema": {
+        "properties": {
+          "issues": {
+            "description": "Issue keys to add.",
+            "type": "array"
+          },
+          "sprint_id": {
+            "description": "Sprint ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sprint_id",
+          "issues"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_worklog",
+      "description": "Log work time against an issue.",
+      "inputSchema": {
+        "properties": {
+          "comment": {
+            "description": "Worklog comment.",
+            "type": "string"
+          },
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          },
+          "time_spent": {
+            "description": "Time spent, e.g. 2h.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key",
+          "time_spent"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "assign_issue",
+      "description": "Assign a Jira issue to a user.",
+      "inputSchema": {
+        "properties": {
+          "assignee": {
+            "description": "Assignee account ID.",
+            "type": "string"
+          },
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key",
+          "assignee"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "bulk_update_issues",
+      "description": "Apply the same field update to multiple issues.",
+      "inputSchema": {
+        "properties": {
+          "fields": {
+            "description": "Field values to set.",
+            "type": "object"
+          },
+          "issue_keys": {
+            "description": "Issue keys to update.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "issue_keys",
+          "fields"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_epic",
+      "description": "Create an epic in a project.",
+      "inputSchema": {
+        "properties": {
+          "description": {
+            "description": "Epic description.",
+            "type": "string"
+          },
+          "project_key": {
+            "description": "Project key.",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Epic summary.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_key",
+          "summary"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_issue",
+      "description": "Create a Jira issue in a project with a type, summary, and description.",
+      "inputSchema": {
+        "properties": {
+          "assignee": {
+            "description": "Assignee account ID.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Issue description.",
+            "type": "string"
+          },
+          "issue_type": {
+            "description": "Issue type name, e.g. Bug.",
+            "type": "string"
+          },
+          "priority": {
+            "description": "Priority name.",
+            "type": "string"
+          },
+          "project_key": {
+            "description": "Project key, e.g. ENG.",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Issue summary.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_key",
+          "issue_type",
+          "summary"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new Jira project.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "Project key.",
+            "type": "string"
+          },
+          "lead": {
+            "description": "Project lead account ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Project name.",
+            "type": "string"
+          },
+          "project_type": {
+            "description": "Project type key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_sprint",
+      "description": "Create a sprint on a Scrum board.",
+      "inputSchema": {
+        "properties": {
+          "board_id": {
+            "description": "Board ID.",
+            "type": "integer"
+          },
+          "end_date": {
+            "description": "Sprint end date.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Sprint name.",
+            "type": "string"
+          },
+          "start_date": {
+            "description": "Sprint start date.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "board_id",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_version",
+      "description": "Create a release version in a project.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Version name.",
+            "type": "string"
+          },
+          "project_key": {
+            "description": "Project key.",
+            "type": "string"
+          },
+          "release_date": {
+            "description": "Planned release date.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_key",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_board",
+      "description": "Fetch an agile board by ID.",
+      "inputSchema": {
+        "properties": {
+          "board_id": {
+            "description": "Board ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "board_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "Retrieve a Jira issue by key with its fields and status.",
+      "inputSchema": {
+        "properties": {
+          "issue_key": {
+            "description": "Issue key, e.g. ENG-123.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_issue_watchers",
+      "description": "List the watchers of an issue.",
+      "inputSchema": {
+        "properties": {
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_project",
+      "description": "Fetch a Jira project by key.",
+      "inputSchema": {
+        "properties": {
+          "key": {
+            "description": "Project key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_transitions",
+      "description": "List the available workflow transitions for an issue.",
+      "inputSchema": {
+        "properties": {
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "link_issues",
+      "description": "Create a link between two issues.",
+      "inputSchema": {
+        "properties": {
+          "inward_issue": {
+            "description": "Inward issue key.",
+            "type": "string"
+          },
+          "link_type": {
+            "description": "Link type, e.g. Blocks.",
+            "type": "string"
+          },
+          "outward_issue": {
+            "description": "Outward issue key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "inward_issue",
+          "outward_issue",
+          "link_type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_boards",
+      "description": "List agile boards, optionally filtered by project.",
+      "inputSchema": {
+        "properties": {
+          "project_key": {
+            "description": "Filter by project key.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_comments",
+      "description": "List comments on a Jira issue.",
+      "inputSchema": {
+        "properties": {
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_projects",
+      "description": "List accessible Jira projects.",
+      "inputSchema": {
+        "properties": {
+          "max_results": {
+            "description": "Maximum results.",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_issues_jql",
+      "description": "Search issues using a JQL query.",
+      "inputSchema": {
+        "properties": {
+          "fields": {
+            "description": "Fields to return.",
+            "type": "array"
+          },
+          "jql": {
+            "description": "JQL query string.",
+            "type": "string"
+          },
+          "max_results": {
+            "description": "Maximum results.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "jql"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "transition_issue",
+      "description": "Move an issue to a new workflow status.",
+      "inputSchema": {
+        "properties": {
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          },
+          "transition": {
+            "description": "Target status or transition name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key",
+          "transition"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_issue",
+      "description": "Update fields on a Jira issue.",
+      "inputSchema": {
+        "properties": {
+          "description": {
+            "description": "New description.",
+            "type": "string"
+          },
+          "issue_key": {
+            "description": "Issue key.",
+            "type": "string"
+          },
+          "priority": {
+            "description": "New priority.",
+            "type": "string"
+          },
+          "summary": {
+            "description": "New summary.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_key"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

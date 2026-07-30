@@ -1,0 +1,362 @@
+{
+  "server": "salesforce-crm",
+  "mirrorSource": "Salesforce MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "convert_lead",
+      "description": "Convert a lead into an account, contact, and opportunity.",
+      "inputSchema": {
+        "properties": {
+          "lead_id": {
+            "description": "Lead ID.",
+            "type": "string"
+          },
+          "opportunity_name": {
+            "description": "Name for the new opportunity.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_account",
+      "description": "Create an account record.",
+      "inputSchema": {
+        "properties": {
+          "industry": {
+            "description": "Industry.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Account name.",
+            "type": "string"
+          },
+          "website": {
+            "description": "Website URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_case",
+      "description": "Open a support case.",
+      "inputSchema": {
+        "properties": {
+          "contact_id": {
+            "description": "Related contact.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Case description.",
+            "type": "string"
+          },
+          "priority": {
+            "description": "Case priority.",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Case subject.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_contact",
+      "description": "Create a contact record.",
+      "inputSchema": {
+        "properties": {
+          "account_id": {
+            "description": "Related account ID.",
+            "type": "string"
+          },
+          "email": {
+            "description": "Contact email.",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name.",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Contact last name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "last_name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_lead",
+      "description": "Create a lead record.",
+      "inputSchema": {
+        "properties": {
+          "company": {
+            "description": "Company name.",
+            "type": "string"
+          },
+          "email": {
+            "description": "Lead email.",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Lead last name.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Lead status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "last_name",
+          "company"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_opportunity",
+      "description": "Create an opportunity on an account.",
+      "inputSchema": {
+        "properties": {
+          "amount": {
+            "description": "Deal amount.",
+            "type": "number"
+          },
+          "close_date": {
+            "description": "Expected close date.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Opportunity name.",
+            "type": "string"
+          },
+          "stage_name": {
+            "description": "Sales stage.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "stage_name",
+          "close_date"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_task",
+      "description": "Create an activity task linked to a record.",
+      "inputSchema": {
+        "properties": {
+          "due_date": {
+            "description": "Due date.",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Task subject.",
+            "type": "string"
+          },
+          "what_id": {
+            "description": "Related account or opportunity.",
+            "type": "string"
+          },
+          "who_id": {
+            "description": "Related contact or lead.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_account",
+      "description": "Fetch an account by ID.",
+      "inputSchema": {
+        "properties": {
+          "account_id": {
+            "description": "Account ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_contact",
+      "description": "Fetch a contact by ID.",
+      "inputSchema": {
+        "properties": {
+          "contact_id": {
+            "description": "Contact ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_lead",
+      "description": "Fetch a lead by ID.",
+      "inputSchema": {
+        "properties": {
+          "lead_id": {
+            "description": "Lead ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_opportunities",
+      "description": "List opportunities filtered by stage or account.",
+      "inputSchema": {
+        "properties": {
+          "account_id": {
+            "description": "Filter by account.",
+            "type": "string"
+          },
+          "stage_name": {
+            "description": "Filter by stage.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "run_soql",
+      "description": "Run a SOQL query.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "SOQL query string.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_records",
+      "description": "Run a SOSL search across objects.",
+      "inputSchema": {
+        "properties": {
+          "objects": {
+            "description": "Objects to search.",
+            "type": "array"
+          },
+          "search": {
+            "description": "SOSL search string.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "search"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_case",
+      "description": "Update a case's status or fields.",
+      "inputSchema": {
+        "properties": {
+          "case_id": {
+            "description": "Case ID.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Other fields to set.",
+            "type": "object"
+          },
+          "status": {
+            "description": "New status.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_contact",
+      "description": "Update fields on a contact.",
+      "inputSchema": {
+        "properties": {
+          "contact_id": {
+            "description": "Contact ID.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Field values to set.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "contact_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_opportunity",
+      "description": "Update an opportunity's stage or amount.",
+      "inputSchema": {
+        "properties": {
+          "amount": {
+            "description": "New amount.",
+            "type": "number"
+          },
+          "opportunity_id": {
+            "description": "Opportunity ID.",
+            "type": "string"
+          },
+          "stage_name": {
+            "description": "New stage.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "opportunity_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

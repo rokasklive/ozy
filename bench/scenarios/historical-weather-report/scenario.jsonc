@@ -1,0 +1,28 @@
+{
+  "name": "historical-weather-report",
+  "taskFile": "task.md",
+  "fixture": "historical-weather-report",
+  // Four canonical functional toolsets; the ≥500-tool corpus attaches on top
+  // (default), so retrieval must pick the right tool out of the full estate.
+  "toolsets": ["weather", "duckduckgo", "wikipedia", "pdf-toolkit"],
+  "corpus": true,
+  "model": {
+    "nameEnv": "MODEL_NAME",
+    "baseURLEnv": "MODEL_BASE_URL",
+    "apiKeyEnv": "MODEL_API_KEY",
+    "temperature": "0.0",
+    "maxTokens": 4096,
+    "contextWindow": 32768
+  },
+  "agentConfigs": {
+    "direct": "bench/configs/opencode.direct.jsonc",
+    "ozy": "bench/configs/opencode.ozy.jsonc"
+  },
+  "limits": {
+    // A 4-server chain over a 500+ tool estate: direct-mode startup and per-turn
+    // costs grow with the schema volume, so the timeout is raised (D8).
+    "runs": 5,
+    "timeoutSeconds": 1200
+  },
+  "groundTruth": "expected/ground_truth.json"
+}

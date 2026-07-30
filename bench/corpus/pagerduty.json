@@ -1,0 +1,208 @@
+{
+  "server": "pagerduty",
+  "mirrorSource": "PagerDuty MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "acknowledge_incident",
+      "description": "Acknowledge an incident.",
+      "inputSchema": {
+        "properties": {
+          "incident_id": {
+            "description": "Incident ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "incident_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_note",
+      "description": "Add a note to an incident.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "Note text.",
+            "type": "string"
+          },
+          "incident_id": {
+            "description": "Incident ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "incident_id",
+          "content"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_incident",
+      "description": "Manually create an incident on a service.",
+      "inputSchema": {
+        "properties": {
+          "service_id": {
+            "description": "Service ID.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Incident title.",
+            "type": "string"
+          },
+          "urgency": {
+            "description": "high or low.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_id",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_maintenance_window",
+      "description": "Create a maintenance window to suppress alerts.",
+      "inputSchema": {
+        "properties": {
+          "end_time": {
+            "description": "Window end.",
+            "type": "string"
+          },
+          "service_ids": {
+            "description": "Services to suppress.",
+            "type": "array"
+          },
+          "start_time": {
+            "description": "Window start.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_ids",
+          "start_time",
+          "end_time"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_service",
+      "description": "Create a service with an escalation policy.",
+      "inputSchema": {
+        "properties": {
+          "escalation_policy_id": {
+            "description": "Escalation policy ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Service name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "escalation_policy_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_incident",
+      "description": "Fetch an incident by ID.",
+      "inputSchema": {
+        "properties": {
+          "incident_id": {
+            "description": "Incident ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "incident_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_oncall",
+      "description": "Return who is currently on call for a schedule.",
+      "inputSchema": {
+        "properties": {
+          "schedule_id": {
+            "description": "Schedule ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_escalation_policies",
+      "description": "List escalation policies.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_incidents",
+      "description": "List incidents filtered by status and service.",
+      "inputSchema": {
+        "properties": {
+          "service_ids": {
+            "description": "Filter by service.",
+            "type": "array"
+          },
+          "statuses": {
+            "description": "triggered, acknowledged, or resolved.",
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_schedules",
+      "description": "List on-call schedules.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_services",
+      "description": "List monitored services.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "resolve_incident",
+      "description": "Resolve an incident.",
+      "inputSchema": {
+        "properties": {
+          "incident_id": {
+            "description": "Incident ID.",
+            "type": "string"
+          },
+          "resolution": {
+            "description": "Resolution note.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "incident_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

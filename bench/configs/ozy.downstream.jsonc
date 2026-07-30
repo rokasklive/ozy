@@ -1,39 +1,28 @@
 {
-  // Ozy downstream config — the same 7 fixture servers as direct mode.
+  // Ozy downstream config — the historical-weather-report scenario's functional
+  // fixture toolsets, the same set direct mode wires. Reference only: setupOzy
+  // writes the real downstream config per run from the scenario's server set
+  // (corpus included when corpus:true). Functional wiring is asserted by
+  // TestModeTemplatesMatchRunner.
   "mcp": {
-    "code-search": {
+    "weather": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "code-search", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "command": ["ozy-bench", "mcp", "--toolset", "weather", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
       "enabled": true
     },
-    "git": {
+    "duckduckgo": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "git", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "command": ["ozy-bench", "mcp", "--toolset", "duckduckgo", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
       "enabled": true
     },
-    "incident-db": {
+    "wikipedia": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "incident-db", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
+      "command": ["ozy-bench", "mcp", "--toolset", "wikipedia", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
       "enabled": true
     },
-    "filesystem": {
+    "pdf-toolkit": {
       "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "filesystem", "--fixture-dir", "{env:OZY_BENCH_FIXTURE_DIR}"],
-      "enabled": true
-    },
-    "time": {
-      "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "time"],
-      "enabled": true
-    },
-    "memory": {
-      "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "memory"],
-      "enabled": true
-    },
-    "notes": {
-      "type": "local",
-      "command": ["ozy-bench", "mcp", "--toolset", "notes"],
+      "command": ["ozy-bench", "mcp", "--toolset", "pdf-toolkit"],
       "enabled": true
     }
   }

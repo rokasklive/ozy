@@ -1,0 +1,82 @@
+{
+  "server": "kagi-search",
+  "mirrorSource": "synthesized (near-miss for the canonical duckduckgo search)",
+  "tools": [
+    {
+      "name": "enrich",
+      "description": "Return supplementary non-commercial results for a query.",
+      "inputSchema": {
+        "properties": {
+          "q": {
+            "description": "Query to enrich.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "fastgpt",
+      "description": "Answer a question with cited web sources.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Question to answer.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "search",
+      "description": "Search the web with Kagi and return ranked results.",
+      "inputSchema": {
+        "properties": {
+          "limit": {
+            "description": "Number of results.",
+            "type": "integer"
+          },
+          "q": {
+            "description": "Search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "summarize_url",
+      "description": "Summarize the content of a web page URL.",
+      "inputSchema": {
+        "properties": {
+          "summary_type": {
+            "description": "summary or takeaway.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Page URL to summarize.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    }
+  ]
+}

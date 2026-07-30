@@ -1,0 +1,130 @@
+{
+  "server": "esign-service",
+  "mirrorSource": "synthesized (near-miss for the canonical pdf-toolkit)",
+  "tools": [
+    {
+      "name": "add_signer",
+      "description": "Add a signer with signature fields to an envelope.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Signer email.",
+            "type": "string"
+          },
+          "envelope_id": {
+            "description": "Envelope ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Signer name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "envelope_id",
+          "email",
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_envelope",
+      "description": "Create a signing envelope from a document.",
+      "inputSchema": {
+        "properties": {
+          "document_path": {
+            "description": "Source document path.",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Envelope subject.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "download_signed",
+      "description": "Download the completed, signed document.",
+      "inputSchema": {
+        "properties": {
+          "envelope_id": {
+            "description": "Envelope ID.",
+            "type": "string"
+          },
+          "output_path": {
+            "description": "Destination path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "envelope_id",
+          "output_path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_envelope_status",
+      "description": "Check the signing status of an envelope.",
+      "inputSchema": {
+        "properties": {
+          "envelope_id": {
+            "description": "Envelope ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "envelope_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "send_for_signature",
+      "description": "Send an envelope to recipients for signature.",
+      "inputSchema": {
+        "properties": {
+          "envelope_id": {
+            "description": "Envelope ID.",
+            "type": "string"
+          },
+          "recipients": {
+            "description": "Recipient email and name pairs.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "envelope_id",
+          "recipients"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "void_envelope",
+      "description": "Void an envelope so it can no longer be signed.",
+      "inputSchema": {
+        "properties": {
+          "envelope_id": {
+            "description": "Envelope ID.",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Void reason.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "envelope_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

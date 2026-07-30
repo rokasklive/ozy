@@ -1,0 +1,247 @@
+{
+  "server": "zendesk",
+  "mirrorSource": "Zendesk MCP server, captured 2026-07-15",
+  "tools": [
+    {
+      "name": "add_comment",
+      "description": "Add a public or internal comment to a ticket.",
+      "inputSchema": {
+        "properties": {
+          "body": {
+            "description": "Comment body.",
+            "type": "string"
+          },
+          "public": {
+            "description": "Whether the comment is public.",
+            "type": "boolean"
+          },
+          "ticket_id": {
+            "description": "Ticket ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "body"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_tags",
+      "description": "Add tags to a ticket.",
+      "inputSchema": {
+        "properties": {
+          "tags": {
+            "description": "Tags to add.",
+            "type": "array"
+          },
+          "ticket_id": {
+            "description": "Ticket ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "tags"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "assign_ticket",
+      "description": "Assign a ticket to an agent or group.",
+      "inputSchema": {
+        "properties": {
+          "assignee_id": {
+            "description": "Agent ID.",
+            "type": "integer"
+          },
+          "group_id": {
+            "description": "Group ID.",
+            "type": "integer"
+          },
+          "ticket_id": {
+            "description": "Ticket ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_organization",
+      "description": "Create an organization.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Organization name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_ticket",
+      "description": "Open a support ticket.",
+      "inputSchema": {
+        "properties": {
+          "comment": {
+            "description": "First comment body.",
+            "type": "string"
+          },
+          "priority": {
+            "description": "Ticket priority.",
+            "type": "string"
+          },
+          "requester_email": {
+            "description": "Requester email.",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Ticket subject.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "comment"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_user",
+      "description": "Create an end user or agent.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "User email.",
+            "type": "string"
+          },
+          "name": {
+            "description": "User name.",
+            "type": "string"
+          },
+          "role": {
+            "description": "end-user, agent, or admin.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_ticket",
+      "description": "Fetch a ticket by ID.",
+      "inputSchema": {
+        "properties": {
+          "ticket_id": {
+            "description": "Ticket ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_ticket_metrics",
+      "description": "Fetch reply and resolution time metrics for a ticket.",
+      "inputSchema": {
+        "properties": {
+          "ticket_id": {
+            "description": "Ticket ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_organizations",
+      "description": "List organizations.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_tickets",
+      "description": "List tickets filtered by status.",
+      "inputSchema": {
+        "properties": {
+          "sort_by": {
+            "description": "Sort field.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Filter by status.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "search",
+      "description": "Search tickets, users, and organizations.",
+      "inputSchema": {
+        "properties": {
+          "query": {
+            "description": "Zendesk search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_ticket",
+      "description": "Update a ticket's status, priority, or assignee.",
+      "inputSchema": {
+        "properties": {
+          "assignee_id": {
+            "description": "Assignee agent ID.",
+            "type": "integer"
+          },
+          "priority": {
+            "description": "New priority.",
+            "type": "string"
+          },
+          "status": {
+            "description": "New status.",
+            "type": "string"
+          },
+          "ticket_id": {
+            "description": "Ticket ID.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

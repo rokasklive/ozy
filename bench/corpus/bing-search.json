@@ -1,0 +1,107 @@
+{
+  "server": "bing-search",
+  "mirrorSource": "synthesized (near-miss for the canonical duckduckgo search)",
+  "tools": [
+    {
+      "name": "entity_search",
+      "description": "Look up an entity in the Bing knowledge graph.",
+      "inputSchema": {
+        "properties": {
+          "q": {
+            "description": "Entity name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "image_search",
+      "description": "Search Bing for images.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Result count.",
+            "type": "integer"
+          },
+          "q": {
+            "description": "Image query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "news_search",
+      "description": "Search Bing News for recent stories.",
+      "inputSchema": {
+        "properties": {
+          "freshness": {
+            "description": "Day, Week, or Month.",
+            "type": "string"
+          },
+          "q": {
+            "description": "News query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "suggestions",
+      "description": "Return query autosuggestions for a partial query.",
+      "inputSchema": {
+        "properties": {
+          "q": {
+            "description": "Partial query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    },
+    {
+      "name": "web_search",
+      "description": "Run a Bing web search and return organic results.",
+      "inputSchema": {
+        "properties": {
+          "count": {
+            "description": "Result count.",
+            "type": "integer"
+          },
+          "market": {
+            "description": "Market code, e.g. en-US.",
+            "type": "string"
+          },
+          "q": {
+            "description": "Search query.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "behavior": "auth_error"
+    }
+  ]
+}

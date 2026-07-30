@@ -1,0 +1,226 @@
+{
+  "server": "cloudflare",
+  "mirrorSource": "Cloudflare MCP server (cloudflare/mcp-server-cloudflare), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "create_dns_record",
+      "description": "Create a DNS record in a zone.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "Record value.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Record name.",
+            "type": "string"
+          },
+          "proxied": {
+            "description": "Proxy through Cloudflare.",
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Record type.",
+            "type": "string"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "type",
+          "name",
+          "content"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_firewall_rule",
+      "description": "Create a firewall rule with an expression and action.",
+      "inputSchema": {
+        "properties": {
+          "action": {
+            "description": "block, challenge, or allow.",
+            "type": "string"
+          },
+          "expression": {
+            "description": "Filter expression.",
+            "type": "string"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "expression",
+          "action"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_page_rule",
+      "description": "Create a page rule for URL-based behavior.",
+      "inputSchema": {
+        "properties": {
+          "actions": {
+            "description": "Actions to apply.",
+            "type": "array"
+          },
+          "target": {
+            "description": "URL match pattern.",
+            "type": "string"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "target",
+          "actions"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_analytics",
+      "description": "Return traffic analytics for a zone over a window.",
+      "inputSchema": {
+        "properties": {
+          "since": {
+            "description": "Start time.",
+            "type": "string"
+          },
+          "until": {
+            "description": "End time.",
+            "type": "string"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_zone",
+      "description": "Fetch a zone's settings by ID.",
+      "inputSchema": {
+        "properties": {
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_dns_records",
+      "description": "List DNS records in a zone.",
+      "inputSchema": {
+        "properties": {
+          "type": {
+            "description": "Filter by record type.",
+            "type": "string"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_firewall_rules",
+      "description": "List firewall rules for a zone.",
+      "inputSchema": {
+        "properties": {
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_zones",
+      "description": "List zones (domains) in the account.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "purge_cache",
+      "description": "Purge cached files for a zone, by URL or everything.",
+      "inputSchema": {
+        "properties": {
+          "files": {
+            "description": "URLs to purge.",
+            "type": "array"
+          },
+          "purge_everything": {
+            "description": "Purge the entire cache.",
+            "type": "boolean"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_dns_record",
+      "description": "Update a DNS record.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "New value.",
+            "type": "string"
+          },
+          "record_id": {
+            "description": "Record ID.",
+            "type": "string"
+          },
+          "zone_id": {
+            "description": "Zone ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "record_id"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

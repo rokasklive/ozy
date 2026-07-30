@@ -1,0 +1,418 @@
+{
+  "server": "kubernetes",
+  "mirrorSource": "kubernetes MCP server (Flux159/mcp-server-kubernetes), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "apply_manifest",
+      "description": "Apply a YAML or JSON manifest to the cluster.",
+      "inputSchema": {
+        "properties": {
+          "manifest": {
+            "description": "Manifest document.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Target namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manifest"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "cordon_node",
+      "description": "Mark a node unschedulable.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Node name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_namespace",
+      "description": "Create a new namespace.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Namespace name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_pod",
+      "description": "Delete a pod, triggering its controller to reschedule.",
+      "inputSchema": {
+        "properties": {
+          "grace_period": {
+            "description": "Grace period in seconds.",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Pod name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_resource",
+      "description": "Delete a resource by kind and name.",
+      "inputSchema": {
+        "properties": {
+          "kind": {
+            "description": "Resource kind.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Resource name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "describe_node",
+      "description": "Show a node's conditions, allocatable resources, and pods.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Node name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "exec_in_pod",
+      "description": "Run a command inside a pod's container.",
+      "inputSchema": {
+        "properties": {
+          "command": {
+            "description": "Command and arguments.",
+            "type": "array"
+          },
+          "container": {
+            "description": "Container name.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Pod name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "namespace",
+          "command"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_events",
+      "description": "List recent events in a namespace.",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "Namespace, or all if omitted.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pod",
+      "description": "Describe a single pod including containers and conditions.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Pod name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_pod_logs",
+      "description": "Fetch logs from a pod's container.",
+      "inputSchema": {
+        "properties": {
+          "container": {
+            "description": "Container name.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Pod name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          },
+          "tail": {
+            "description": "Number of trailing lines.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_secret",
+      "description": "Read a secret's keys and decoded values.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Secret name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_service",
+      "description": "Describe a service and its endpoints.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Service name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_configmaps",
+      "description": "List ConfigMaps in a namespace.",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_deployments",
+      "description": "List deployments with their replica status.",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "Namespace, or all if omitted.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_namespaces",
+      "description": "List all namespaces in the cluster.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_nodes",
+      "description": "List cluster nodes with their status and capacity.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_pods",
+      "description": "List pods in a namespace with their phase and readiness.",
+      "inputSchema": {
+        "properties": {
+          "label_selector": {
+            "description": "Label selector filter.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace, or all if omitted.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_services",
+      "description": "List services and their cluster IPs and ports.",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "Namespace, or all if omitted.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "port_forward",
+      "description": "Forward a local port to a pod port.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Pod name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          },
+          "ports": {
+            "description": "Local:remote port pairs.",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "namespace",
+          "ports"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "rollout_restart",
+      "description": "Trigger a rolling restart of a deployment.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Deployment name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "namespace"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "scale_deployment",
+      "description": "Scale a deployment to a target replica count.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Deployment name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace.",
+            "type": "string"
+          },
+          "replicas": {
+            "description": "Desired replica count.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "namespace",
+          "replicas"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "top_pods",
+      "description": "Show CPU and memory usage per pod.",
+      "inputSchema": {
+        "properties": {
+          "namespace": {
+            "description": "Namespace, or all if omitted.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  ]
+}

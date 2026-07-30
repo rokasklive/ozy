@@ -13,13 +13,28 @@ COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compos
 build: ## Build the ozy binary
 	go build -o $(BINARY) ./cmd/ozy
 
-.PHONY: bench
-bench: ## Build the ozy-bench binary
+.PHONY: bench-build
+bench-build: ## Build the ozy-bench binary
 	go build -o $(BENCH_BINARY) ./cmd/ozy-bench
 
-.PHONY: bench-run
-bench-run: ## Run the scenario benchmark in Docker (config from .env)
-	$(COMPOSE) -f bench/docker-compose.yml up --build --abort-on-container-exit
+.PHONY: bench
+bench: ## Run the benchmark in Docker (all modes, semantic, 5 runs). Set runs: `make bench 10`.
+	@BENCH_RUNS=$(or $(filter-out bench,$(MAKECMDGOALS)),$${BENCH_RUNS:-5}) $(COMPOSE) -f bench/docker-compose.yml up --build --exit-code-from bench-runner
+
+# `make bench 10` passes the run count as an extra goal; swallow it as a no-op
+# (only when bench is invoked) so make doesn't look for a target named "10".
+ifneq ($(filter bench,$(MAKECMDGOALS)),)
+$(filter-out bench,$(MAKECMDGOALS)):
+	@:
+endif
+
+.PHONY: bench-surface
+bench-surface: bench-build ## Compute the static surface tier natively — no Docker, no model
+	cd bench && ../$(BENCH_BINARY) run --surface-only
+
+.PHONY: bench-clean
+bench-clean: ## Prune local bench run artifacts
+	rm -rf bench/runs/*/
 
 .PHONY: test
 test: ## Run the test suite

@@ -1,0 +1,248 @@
+{
+  "server": "gdrive",
+  "mirrorSource": "Google Drive MCP server (modelcontextprotocol/servers gdrive), captured 2026-07-15",
+  "tools": [
+    {
+      "name": "copy_file",
+      "description": "Create a copy of a file.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name for the copy.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_folder",
+      "description": "Create a folder under a parent.",
+      "inputSchema": {
+        "properties": {
+          "name": {
+            "description": "Folder name.",
+            "type": "string"
+          },
+          "parent_id": {
+            "description": "Parent folder ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_file",
+      "description": "Move a file to the trash.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "download_file",
+      "description": "Download a file's binary or text content.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "export_file",
+      "description": "Export a Google-format file to another MIME type.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "Target MIME type.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id",
+          "mime_type"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_file",
+      "description": "Fetch a file's metadata by ID.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_file_permissions",
+      "description": "List the sharing permissions on a file.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_files",
+      "description": "List files and folders, optionally within a parent.",
+      "inputSchema": {
+        "properties": {
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          },
+          "parent_id": {
+            "description": "Parent folder ID.",
+            "type": "string"
+          },
+          "query": {
+            "description": "Drive query string.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "move_file",
+      "description": "Move a file to a different parent folder.",
+      "inputSchema": {
+        "properties": {
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          },
+          "new_parent_id": {
+            "description": "Destination folder ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id",
+          "new_parent_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_files",
+      "description": "Search files by a Drive query.",
+      "inputSchema": {
+        "properties": {
+          "page_size": {
+            "description": "Results per page.",
+            "type": "integer"
+          },
+          "query": {
+            "description": "Drive query string.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "share_file",
+      "description": "Grant a user or group access to a file.",
+      "inputSchema": {
+        "properties": {
+          "email": {
+            "description": "Grantee email.",
+            "type": "string"
+          },
+          "file_id": {
+            "description": "File ID.",
+            "type": "string"
+          },
+          "role": {
+            "description": "reader, commenter, or writer.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_id",
+          "email",
+          "role"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "upload_file",
+      "description": "Upload a new file with content and a parent folder.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "File content.",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "MIME type.",
+            "type": "string"
+          },
+          "name": {
+            "description": "File name.",
+            "type": "string"
+          },
+          "parent_id": {
+            "description": "Parent folder ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "content"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

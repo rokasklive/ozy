@@ -189,10 +189,10 @@ func TestDirectLeanSurfaceBetweenDirectAndOzy(t *testing.T) {
 		t.Fatal("lean surface / reduction not computed")
 	}
 	// ozy < direct-lean < direct in both tool count and schema tokens.
-	if !(c.Ozy.ToolsVisible < c.DirectLean.ToolsVisible && c.DirectLean.ToolsVisible < c.Direct.ToolsVisible) {
+	if c.Ozy.ToolsVisible >= c.DirectLean.ToolsVisible || c.DirectLean.ToolsVisible >= c.Direct.ToolsVisible {
 		t.Errorf("lean tools %d not between ozy %d and direct %d", c.DirectLean.ToolsVisible, c.Ozy.ToolsVisible, c.Direct.ToolsVisible)
 	}
-	if !(c.Ozy.SchemaTokens < c.DirectLean.SchemaTokens && c.DirectLean.SchemaTokens < c.Direct.SchemaTokens) {
+	if c.Ozy.SchemaTokens >= c.DirectLean.SchemaTokens || c.DirectLean.SchemaTokens >= c.Direct.SchemaTokens {
 		t.Errorf("lean tokens %d not between ozy %d and direct %d", c.DirectLean.SchemaTokens, c.Ozy.SchemaTokens, c.Direct.SchemaTokens)
 	}
 	// The tool delta between direct and lean is exactly the 7 corpus tools.

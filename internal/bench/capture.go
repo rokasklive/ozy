@@ -107,10 +107,7 @@ func CaptureFixture(ctx context.Context, spec *CaptureSpec, outDir string, conne
 		if err := writeJSON(filepath.Join(outDir, s.Name+".schemas.json"), schemas); err != nil {
 			return err
 		}
-		baked, err := shapeCapture(s.Shape, calls)
-		if err != nil {
-			return fmt.Errorf("shape %q: %w", s.Name, err)
-		}
+		baked := shapeCapture(s.Shape, calls)
 		if err := writeJSON(filepath.Join(outDir, s.BakeTo), baked); err != nil {
 			return err
 		}
@@ -153,7 +150,7 @@ func toolResultText(res *mcpsdk.CallToolResult) string {
 // "search" flattens each result's {results:[…]} (or a bare array) into the
 // ranked search corpus the duckduckgo toolset replays; anything else bakes the
 // raw responses verbatim.
-func shapeCapture(shape string, calls []json.RawMessage) (any, error) {
+func shapeCapture(shape string, calls []json.RawMessage) any {
 	switch shape {
 	case "search":
 		out := []searchEntry{}
@@ -170,9 +167,9 @@ func shapeCapture(shape string, calls []json.RawMessage) (any, error) {
 				out = append(out, arr...)
 			}
 		}
-		return out, nil
+		return out
 	default:
-		return calls, nil
+		return calls
 	}
 }
 

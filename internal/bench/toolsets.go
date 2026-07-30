@@ -258,19 +258,19 @@ func registerDuckDuckGo(srv *mcpsdk.Server, fixtureDir string) {
 }
 
 // searchFixtureResults ranks the baked search corpus for a query and returns the
-// {query, results[]} envelope, capped at max (0 = all). It is the shared search
-// backend for both the functional duckduckgo toolset and the corpus
+// {query, results[]} envelope, capped at maxResults (0 = all). It is the shared
+// search backend for both the functional duckduckgo toolset and the corpus
 // `functional:search` behavior, so a no-auth search rival returns real results
 // from the same data (D3/4.3).
-func searchFixtureResults(fixtureDir, query string, max int) (map[string]any, error) {
+func searchFixtureResults(fixtureDir, query string, maxResults int) (map[string]any, error) {
 	var corpus []searchEntry
 	if err := readBakedJSON(fixtureDir, "search.json", &corpus); err != nil {
 		return nil, err
 	}
 	ranked := rankSearch(corpus, query)
 	limit := len(ranked)
-	if max > 0 && max < limit {
-		limit = max
+	if maxResults > 0 && maxResults < limit {
+		limit = maxResults
 	}
 	out := make([]map[string]any, 0, limit)
 	for _, e := range ranked[:limit] {
